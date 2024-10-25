@@ -3384,6 +3384,15 @@ abstract class AbstractRepositorySpec extends Specification {
         TimeZone.setDefault(defaultTimeZone)
     }
 
+    void "test one-to-many custom query"() {
+        given:
+        saveSampleBooks()
+        when:
+        def authors = authorRepository.findAllByNameCustom("Stephen King")
+        then:
+        authors
+    }
+
     void "find by joined entity in list"() {
         given:
         saveSampleBooks()

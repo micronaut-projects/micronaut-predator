@@ -19,6 +19,7 @@ import io.micronaut.core.annotation.NonNull;
 import io.micronaut.context.annotation.Parameter;
 import io.micronaut.data.annotation.Id;
 import io.micronaut.data.annotation.Join;
+import io.micronaut.data.annotation.Query;
 import io.micronaut.data.annotation.Where;
 import io.micronaut.data.model.CursoredPage;
 import io.micronaut.data.model.CursoredPageable;
@@ -126,4 +127,15 @@ public interface AuthorRepository extends CrudRepository<Author, Long> {
 
     @Join(value = "books", type = Join.Type.LEFT_FETCH)
     CursoredPage<Author> findByBooksTotalPages(int totalPages, CursoredPageable pageable);
+
+    @Join(value = "books", alias = "b_")
+    @Query("""
+        SELECT a.*,
+               b.id AS b_id, b.author_id AS b_author_id, b.genre_id AS b_genre_id,
+               b.title AS b_title, b.total_pages AS b_total_pages, b.publisher_id AS b_publisher_id,
+               b.last_updated AS b_last_updated
+        FROM author a INNER JOIN book b ON a.id = b.author_id
+        WHERE a.name = :name
+        """)
+    List<Author> findAllByNameCustom(String name);
 }
