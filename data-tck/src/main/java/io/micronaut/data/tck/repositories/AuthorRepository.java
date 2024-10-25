@@ -130,12 +130,12 @@ public interface AuthorRepository extends CrudRepository<Author, Long> {
 
     @Join(value = "books", alias = "b_")
     @Query("""
-        SELECT a.*,
-               b.id AS b_id, b.author_id AS b_author_id, b.genre_id AS b_genre_id,
-               b.title AS b_title, b.total_pages AS b_total_pages, b.publisher_id AS b_publisher_id,
-               b.last_updated AS b_last_updated
-        FROM author a INNER JOIN book b ON a.id = b.author_id
-        WHERE a.name = :name
+        SELECT author_.*,
+               b_.id AS b_id, b_.author_id AS b_author_id, b_.genre_id AS b_genre_id,
+               b_.title AS b_title, b_.total_pages AS b_total_pages, b_.publisher_id AS b_publisher_id,
+               b_.last_updated AS b_last_updated
+        FROM author author_ INNER JOIN book b_ ON author_.id = b_.author_id
+        WHERE author_.name = :name
         """)
     List<Author> findAllByNameCustom(String name);
 }
