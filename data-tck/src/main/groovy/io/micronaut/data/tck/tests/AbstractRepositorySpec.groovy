@@ -3387,10 +3387,12 @@ abstract class AbstractRepositorySpec extends Specification {
     void "test one-to-many custom query"() {
         given:
         saveSampleBooks()
-        when:
+        when:"Author retrieved"
         def authors = authorRepository.findAllByNameCustom("Stephen King")
-        then:
+        then:"Author's books are also retrieved via custom one-to-many query"
         authors
+        authors.size() == 1
+        authors[0].books.size() > 0
     }
 
     void "find by joined entity in list"() {
