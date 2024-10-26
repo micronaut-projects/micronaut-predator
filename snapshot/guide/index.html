@@ -7898,6 +7898,9 @@ If you want to use JPA annotations in your entities with Micronaut Data JDBC, we
 
 import jakarta.persistence.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 public class Book {
     @Id
@@ -7905,10 +7908,17 @@ public class Book {
     private Long id;
     private String title;
     private int pages;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "book")
+    private Set&lt;Review&gt; reviews;
 
     public Book(String title, int pages) {
+        this(title, pages, Set.of());
+    }
+
+    public Book(String title, int pages, Set&lt;Review&gt; reviews) {
         this.title = title;
         this.pages = pages;
+        this.reviews = reviews;
     }
 
     public Long getId() {
@@ -7926,6 +7936,14 @@ public class Book {
     public int getPages() {
         return pages;
     }
+
+    public Set&lt;Review&gt; getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(Set&lt;Review&gt; reviews) {
+        this.reviews = reviews;
+    }
 }</code></pre>
 </div>
 </div>
@@ -7942,10 +7960,17 @@ class Book {
     Long id
     private String title
     private int pages
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "book")
+    private Set&lt;Review&gt; reviews
 
     Book(String title, int pages) {
+        this(title, pages, Set.of())
+    }
+
+    Book(String title, int pages, Set&lt;Review&gt; reviews) {
         this.title = title
         this.pages = pages
+        this.reviews = reviews
     }
 
     String getTitle() {
@@ -7955,6 +7980,14 @@ class Book {
     int getPages() {
         return pages
     }
+
+    Set&lt;Review&gt; getReviews() {
+        return reviews
+    }
+
+    void setReviews(Set&lt;Review&gt; reviews) {
+        this.reviews = reviews
+    }
 }</code></pre>
 </div>
 </div>
@@ -7962,6 +7995,7 @@ class Book {
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">package example
 
+import io.micronaut.data.annotation.Relation
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.Id
@@ -7969,9 +8003,14 @@ import jakarta.persistence.Id
 @Entity
 data class Book(@Id
                 @GeneratedValue
-                var id: Long,
-                var title: String,
-                var pages: Int = 0)</code></pre>
+                val id: Long,
+                val title: String,
+                val pages: Int = 0,
+                @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "book", cascade = [Relation.Cascade.ALL])
+                val reviews: Set&lt;Review&gt;) {
+    constructor(id: Long, title: String, pages: Int) : this(id, title, pages, setOf()) {
+    }
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -8024,6 +8063,7 @@ interface BookRepository extends CrudRepository&lt;Book, Long&gt; { // <b class=
 import io.micronaut.context.annotation.Executable
 import io.micronaut.core.annotation.NonNull
 import io.micronaut.data.annotation.Id
+import io.micronaut.data.annotation.Join
 import io.micronaut.data.annotation.Query
 import io.micronaut.data.annotation.sql.Procedure
 import io.micronaut.data.jdbc.annotation.JdbcRepository
@@ -8089,8 +8129,7 @@ bookRepository.save(book)</code></pre>
 </div>
 <div class="listingblock multi-language-sample">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">var book = Book(0,"The Stand", 1000)
-bookRepository.save(book)</code></pre>
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">var book = bookRepository.save(Book(0,"The Stand", 1000))</code></pre>
 </div>
 </div>
 <div class="admonitionblock note">
@@ -11962,6 +12001,51 @@ It is necessary to use the "logical name" of the field in the <code>@Join</code>
 </td>
 </tr>
 </table>
+</div>
+<div class="paragraph">
+<p>The above example demonstrated a custom query with a many-to-one relation whilst the following example defines a custom query with one-to-many relation:</p>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">    @Query("""
+        SELECT book_.*,
+               reviews_.id AS reviews_id, reviews_.reviewer AS reviews_reviewer,
+               reviews_.content AS reviews_content, reviews_.book_id AS reviews_book_id
+        FROM book book_ INNER JOIN review reviews_ ON book_.id = reviews_.book_id
+        WHERE book_.title = :title
+        """)
+    @Join("reviews")
+    List&lt;Book&gt; searchBooksByTitle(String title);</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">    @Query("""
+        SELECT book_.*,
+               reviews_.id AS reviews_id, reviews_.reviewer AS reviews_reviewer,
+               reviews_.content AS reviews_content, reviews_.book_id AS reviews_book_id
+        FROM book book_ INNER JOIN review reviews_ ON book_.id = reviews_.book_id
+        WHERE book_.title = :title
+        """)
+    @Join("reviews")
+    List&lt;Book&gt; searchBooksByTitle(String title)</code></pre>
+</div>
+</div>
+<div class="listingblock multi-language-sample">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-kotlin hljs" data-lang="kotlin">    @Query("""
+        SELECT book_.*,
+               reviews_.id AS reviews_id, reviews_.reviewer AS reviews_reviewer,
+               reviews_.content AS reviews_content, reviews_.book_id AS reviews_book_id
+        FROM book book_ INNER JOIN review reviews_ ON book_.id = reviews_.book_id
+        WHERE book_.title = :title
+        """)
+    @Join("reviews")
+    fun searchBooksByTitle(title: String): List&lt;Book&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If alias is not configured in the <code>@Join</code> annotation then default alias will be <code>@Join</code> annotation value plus underscore. In this example alias will be <code>reviews_</code>.</p>
 </div>
 </div>
 
