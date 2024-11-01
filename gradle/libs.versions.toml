@@ -1,5 +1,5 @@
 [versions]
-micronaut = "4.7.0"
+micronaut = "4.7.1"
 micronaut-platform = "4.4.2"
 micronaut-docs = "2.0.0"
 micronaut-gradle-plugin = "4.4.3"
@@ -10,8 +10,8 @@ micronaut-reactor = "3.6.0"
 micronaut-rxjava2 = "2.5.0"
 micronaut-r2dbc = "5.6.1"
 micronaut-sql = "5.8.2"
-micronaut-serde = "2.11.1"
-micronaut-spring = "5.8.1"
+micronaut-serde = "2.12.0"
+micronaut-spring = "5.9.0"
 micronaut-test = "4.4.0"
 micronaut-mongo = "5.4.0"
 micronaut-kotlin = "4.4.0"
@@ -39,13 +39,13 @@ jmh = "1.37"
 ksp-gradle-plugin = "1.9.25-1.0.20"
 kotlin-gradle-plugin = "1.9.25"
 jmh-gradle-plugin = "0.7.2"
-spring-boot-gradle-plugin = "3.3.4"
+spring-boot-gradle-plugin = "3.3.5"
 spring-dependency-management-gradle-plugin = "1.1.6"
 shadow-gradle-plugin = "8.0.0"
 
 # Dependency versions which are found in the platform BOM
 # meaning that they should be extracted into their own BOM
-kotlin-coroutines = "1.8.1"
+kotlin-coroutines = "1.9.0"
 
 [libraries]
 micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }

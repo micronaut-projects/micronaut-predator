@@ -5,6 +5,7 @@ package example
 import io.micronaut.context.annotation.Executable
 import io.micronaut.core.annotation.NonNull
 import io.micronaut.data.annotation.Id
+import io.micronaut.data.annotation.Join
 import io.micronaut.data.annotation.Query
 import io.micronaut.data.annotation.sql.Procedure
 import io.micronaut.data.jdbc.annotation.JdbcRepository
@@ -123,6 +124,18 @@ interface BookRepository : CrudRepository<Book, Long> { // <2>
     @Procedure
     fun calculateSum(bookId: @NonNull Long): Long
     // end::procedure[]
+
+    // tag::onetomanycustom[]
+    @Query("""
+        SELECT book_.*,
+               reviews_.id AS reviews_id, reviews_.reviewer AS reviews_reviewer,
+               reviews_.content AS reviews_content, reviews_.book_id AS reviews_book_id
+        FROM book book_ INNER JOIN review reviews_ ON book_.id = reviews_.book_id
+        WHERE book_.title = :title
+        """)
+    @Join("reviews")
+    fun searchBooksByTitle(title: String): List<Book>
+    // end::onetomanycustom[]
 
 // tag::repository[]
 }

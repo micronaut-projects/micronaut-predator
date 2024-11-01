@@ -117,6 +117,18 @@ interface BookRepository extends CrudRepository<Book, Long> { // <2>
     Long calculateSum(@NonNull Long bookId);
     // end::procedure[]
 
+    // tag::onetomanycustom[]
+    @Query("""
+        SELECT book_.*,
+               reviews_.id AS reviews_id, reviews_.reviewer AS reviews_reviewer,
+               reviews_.content AS reviews_content, reviews_.book_id AS reviews_book_id
+        FROM book book_ INNER JOIN review reviews_ ON book_.id = reviews_.book_id
+        WHERE book_.title = :title
+        """)
+    @Join("reviews")
+    List<Book> searchBooksByTitle(String title)
+    // end::onetomanycustom[]
+
 // tag::repository[]
 }
 // end::repository[]
