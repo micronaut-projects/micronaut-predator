@@ -92,9 +92,6 @@ spring-data-commons = { module = "org.springframework.data:spring-data-commons",
 
 micronaut-azure-cosmos = { module = "io.micronaut.azure:micronaut-azure-cosmos", version.ref = "micronaut-azure" }
 
-# Reactor Netty Dependencies
-reactor-netty-core = { module = "io.projectreactor.netty:reactor-netty-core" }
-
 # Test
 
 jupiter-engine = { module = 'org.junit.jupiter:junit-jupiter-engine' }
