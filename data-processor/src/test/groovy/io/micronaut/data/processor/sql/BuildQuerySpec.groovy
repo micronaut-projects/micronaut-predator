@@ -26,11 +26,13 @@ import io.micronaut.data.model.entities.Invoice
 import io.micronaut.data.model.query.QueryModel
 import io.micronaut.data.model.query.builder.sql.Dialect
 import io.micronaut.data.model.query.builder.sql.SqlQueryBuilder
+import io.micronaut.data.model.runtime.StoredQuery
 import io.micronaut.data.processor.entity.ActivityPeriodEntity
 import io.micronaut.data.processor.visitors.AbstractDataSpec
 import io.micronaut.data.tck.entities.Author
 import io.micronaut.data.tck.entities.Restaurant
 import io.micronaut.data.tck.jdbc.entities.EmployeeGroup
+import io.micronaut.inject.ExecutableMethod
 import spock.lang.Issue
 import spock.lang.PendingFeature
 import spock.lang.Unroll
@@ -40,6 +42,7 @@ import static io.micronaut.data.processor.visitors.TestUtils.getCountQuery
 import static io.micronaut.data.processor.visitors.TestUtils.getDataInterceptor
 import static io.micronaut.data.processor.visitors.TestUtils.getDataTypes
 import static io.micronaut.data.processor.visitors.TestUtils.getJoins
+import static io.micronaut.data.processor.visitors.TestUtils.getOperationType
 import static io.micronaut.data.processor.visitors.TestUtils.getParameterBindingIndexes
 import static io.micronaut.data.processor.visitors.TestUtils.getParameterBindingPaths
 import static io.micronaut.data.processor.visitors.TestUtils.getParameterExpressions
@@ -601,10 +604,14 @@ interface CitiesRepository extends CrudRepository<City, Long> {
     int countDistinctByCountryRegionCountryUuid(UUID id);
 }
 """)
-        def query = getQuery(repository.getRequiredMethod("countDistinctByCountryRegionCountryUuid", UUID))
+
+            def method = repository.getRequiredMethod("countDistinctByCountryRegionCountryUuid", UUID)
+            def query = getQuery(method)
+            def op = getOperationType(method)
 
         expect:
         query == 'SELECT COUNT(DISTINCT(city_.`id`)) FROM `T_CITY` city_ INNER JOIN `CountryRegion` city_country_region_ ON city_.`country_region_id`=city_country_region_.`id` WHERE (city_country_region_.`countryId` = ?)'
+        op == DataMethod.OperationType.COUNT
 
     }
 
