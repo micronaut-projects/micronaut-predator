@@ -111,7 +111,7 @@ class PageSpec extends Specification {
                 propertyOne: "value three",
                 propertyTwo: 3L,
                 propertyThree: new BigDecimal("3.00")
-        )], Pageable.from(0, 3), 14)
+        )], Pageable.from(1, 3), 14)
 
         when:
         def json = serdeMapper.writeValueAsString(page)
@@ -130,18 +130,18 @@ class PageSpec extends Specification {
     }
 
     void "test serialization and deserialization of a pageable - serde"() {
-        def pageable = Pageable.from(0, 3)
+        def pageable = Pageable.from(1, 3)
 
         when:
         def json = serdeMapper.writeValueAsString(pageable)
 
         then:
-        json == '{"size":3,"number":0,"sort":{},"mode":"OFFSET"}'
+        json == '{"size":3,"number":1,"sort":{},"mode":"OFFSET"}'
         def deserializedPageable = serdeMapper.readValue(json, Pageable)
         deserializedPageable == pageable
 
         when:
-        def json2 = '{"size":3,"number":0,"sort":{}}'
+        def json2 = '{"size":3,"number":1,"sort":{}}'
         def deserializedPageable2 = serdeMapper.readValue(json2, Pageable)
 
         then:
@@ -197,6 +197,24 @@ class PageSpec extends Specification {
         mappedCursoredPage.size == -1
         !mappedCursoredPage.cursors
         !mappedCursoredPage.hasTotalSize()
+    }
+
+    void "empty page can be mapped "() {
+        when:
+        Page<String> page = Page.empty()
+        def copy = page.map { it -> it }
+        copy.getTotalSize()
+
+        then:
+        notThrown(Throwable)
+
+        when:
+        CursoredPage<String> cursoredPage = CursoredPage.empty()
+        def newCopy = cursoredPage.map {it -> it }
+        newCopy.getTotalSize()
+
+        then:
+        notThrown(Throwable)
     }
 
     @EqualsAndHashCode

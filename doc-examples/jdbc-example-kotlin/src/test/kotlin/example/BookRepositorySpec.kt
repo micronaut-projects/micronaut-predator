@@ -55,8 +55,7 @@ class BookRepositorySpec {
 
         // Create: Save a new book
         // tag::save[]
-        var book = Book(0,"The Stand", 1000)
-        bookRepository.save(book)
+        var book = bookRepository.save(Book(0,"The Stand", 1000))
         // end::save[]
 
         val id = book.id
@@ -179,5 +178,17 @@ class BookRepositorySpec {
         val bookDTO = bookRepository.findOne("The Shining")
 
         assertEquals("The Shining", bookDTO.title)
+    }
+
+    @Test
+    fun testOneToManyCustomQuery() {
+        val savedBook = bookRepository.save(Book(0, "Dummy Book", 20, setOf(Review("Anonymous", "Lorem Ipsum"),
+            Review("Member", "Interesting"))))
+
+        val books = bookRepository.searchBooksByTitle("Dummy Book")
+        assertEquals(1, books.size);
+        val book = books.get(0)
+        assertEquals("Dummy Book", book.title)
+        assertEquals(2, book.reviews.size)
     }
 }
