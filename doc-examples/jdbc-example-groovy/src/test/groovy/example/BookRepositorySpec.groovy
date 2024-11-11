@@ -89,5 +89,15 @@ class BookRepositorySpec extends Specification {
         pageByTitleStarts.getNumberOfElements() == 3
     }
 
-
+    void "test one-to-many custom query"() {
+        when:
+        bookRepository.save(new Book("Dummy Book", 20, Set.of(new Review(reviewer: "Anonymous", content: "Lorem Ipsum"),
+                new Review(reviewer: "Library Member", content: "Interesting"))))
+        def books = bookRepository.searchBooksByTitle("Dummy Book")
+        then:
+        books.size() == 1
+        def book = books.get(0)
+        book.getTitle() == "Dummy Book"
+        book.reviews.size() == 2
+    }
 }

@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 @MicronautTest
 class BookRepositorySpec {
@@ -201,5 +202,16 @@ class BookRepositorySpec {
 
         assertEquals(1, bookRepository.count());
         assertTrue(bookRepository.findAll().iterator().hasNext());
+    }
+
+    @Test
+    void testOneToManyCustomQuery() {
+        bookRepository.save(new Book("Dummy Book", 20, Set.of(new Review("Anonymous", "Lorem Ipsum"),
+            new Review("Member", "Interesting"))));
+        List<Book> books = bookRepository.searchBooksByTitle("Dummy Book");
+        assertEquals(1, books.size());
+        Book book = books.get(0);
+        assertEquals("Dummy Book", book.getTitle());
+        assertEquals(2, book.getReviews().size());
     }
 }
