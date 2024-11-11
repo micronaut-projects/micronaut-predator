@@ -1,5 +1,5 @@
 [versions]
-micronaut = "4.7.2"
+micronaut = "4.7.3"
 micronaut-platform = "4.6.3"
 micronaut-docs = "2.0.0"
 micronaut-gradle-plugin = "4.4.4"
@@ -21,7 +21,7 @@ micronaut-logging = "1.5.0"
 micronaut-flyway = "7.5.0"
 micronaut-coherence = "5.0.4"
 
-groovy = "4.0.23"
+groovy = "4.0.24"
 
 managed-javax-persistence = "2.2"
 
