@@ -104,6 +104,13 @@ class OracleJdbcJsonViewSpec extends Specification {
         allSorted[0].name == "Denis"
         allSorted[1].name == "Fred"
         allSorted[2].name == "Josh"
+        when:
+        allSorted = studentViewRepository.findAll(Sort.of(Sort.Order.asc("startDateTime")))
+        then:
+        allSorted.size() == 3
+        allSorted[0].name == "Denis"
+        allSorted[1].name == "Josh"
+        allSorted[2].name == "Fred"
 
         when:
         def allPages = studentViewRepository.findAll(Pageable.from(0, 2, Sort.of(Sort.Order.desc("name"))))
@@ -164,6 +171,22 @@ class OracleJdbcJsonViewSpec extends Specification {
         def optUnexpectedStudent = studentViewRepository.findByName(randomName)
         then:"Expected not found"
         !optUnexpectedStudent.present
+
+        when:
+        denisStudentView = studentViewRepository.findByName("Denis").orElse(null)
+        denisStudentView.setActive(false)
+        studentViewRepository.update(denisStudentView)
+        allSorted = studentViewRepository.findAllOrderByActive()
+        then:
+        allSorted.size() == 3
+        allSorted[0].name == "Denis"
+        when:
+        def inActives = studentViewRepository.findAllByActive(false)
+        def actives = studentViewRepository.findAllByActive(true)
+        then:
+        inActives.size() == 1
+        inActives[0].name == "Denis"
+        actives.size() == 2
     }
 
     def "find and update partial"() {

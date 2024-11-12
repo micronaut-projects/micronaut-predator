@@ -660,7 +660,11 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
                 if (computePropertyPaths() && jsonEntityColumn == null) {
                     buff.append(propertyPath.getColumnName()).append(SPACE).append(direction);
                 } else {
-                    buff.append(propertyPath.getPath()).append(SPACE).append(direction);
+                    buff.append(propertyPath.getPath());
+                    if (jsonEntityColumn != null) {
+                        appendJsonProjection(buff, propertyPath.getProperty().getDataType());
+                    }
+                    buff.append(SPACE).append(direction);
                 }
                 if (i.hasNext()) {
                     buff.append(",");
@@ -1084,6 +1088,9 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
 
         if (!computePropertyPaths() || jsonEntityColumn != null) {
             buff.append(path.getProperty().getName());
+            if (jsonEntityColumn != null) {
+                appendJsonProjection(buff, path.getProperty().getDataType());
+            }
         } else {
             buff.append(getColumnName(path.getProperty()));
         }
@@ -1282,8 +1289,6 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
                     } else {
                         query.append(propertyPath.getPath());
                     }
-                }
-                if (jsonEntityColumn != null && isProjection) {
                     DataType dataType = propertyPath.getProperty().getDataType();
                     appendJsonProjection(query, dataType);
                 }
@@ -1300,15 +1305,15 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
      * @param dataType the property data type
      */
     private void appendJsonProjection(StringBuilder sb, DataType dataType) {
-        if (dataType == DataType.STRING) {
-            sb.append(".string()");
-        } else if (dataType.isNumeric() || dataType == DataType.BOOLEAN) {
+        if (dataType.isNumeric() || dataType == DataType.BOOLEAN) {
             // Boolean is represented as number in Oracle (which only supports json view)
-            sb.append(".number()");
+            sb.append(".numberOnly()");
+        } else if (dataType == DataType.STRING) {
+            sb.append(".stringOnly()");
         } else if (dataType == DataType.TIMESTAMP) {
             sb.append(".timestamp()");
         } else if (dataType == DataType.DATE) {
-            sb.append(".date()");
+            sb.append(".dateOnly()");
         }
     }
 

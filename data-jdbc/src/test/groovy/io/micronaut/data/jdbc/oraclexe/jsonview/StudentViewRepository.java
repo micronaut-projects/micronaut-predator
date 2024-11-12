@@ -9,6 +9,7 @@ import io.micronaut.data.model.query.builder.sql.Dialect;
 import io.micronaut.data.repository.PageableRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @JdbcRepository(dialect = Dialect.ORACLE)
@@ -33,6 +34,10 @@ public interface StudentViewRepository extends PageableRepository<StudentView, L
     Optional<LocalDateTime> findStartDateTimeById(Long id);
 
     boolean findActiveById(Long id);
+
+    List<StudentView> findAllByActive(boolean active);
+
+    List<StudentView> findAllOrderByActive();
 
     String findAddressStreetById(Long id);
 }

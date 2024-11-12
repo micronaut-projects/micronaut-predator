@@ -63,23 +63,23 @@ interface ContactViewRepository extends CrudRepository<ContactView, Long> {
         def findAllOrderByAddressZipCodeDescQuery = getQuery(repository.getRequiredMethod("findAllOrderByAddressZipCodeDesc"))
 
         expect:
-        findStartDateTimeByIdQuery == 'SELECT cv.DATA.startDateTime.timestamp() FROM "CONTACT_VIEW" cv WHERE (cv.DATA."_id" = ?)'
-        findByIdQuery == 'SELECT cv.* FROM "CONTACT_VIEW" cv WHERE (cv.DATA."_id" = ?)'
+        findStartDateTimeByIdQuery == 'SELECT cv.DATA.startDateTime.timestamp() FROM "CONTACT_VIEW" cv WHERE (cv.DATA."_id".numberOnly() = ?)'
+        findByIdQuery == 'SELECT cv.* FROM "CONTACT_VIEW" cv WHERE (cv.DATA."_id".numberOnly() = ?)'
         saveQuery == 'BEGIN INSERT INTO "CONTACT_VIEW" VALUES (?) RETURNING JSON_VALUE(DATA,\'$._id\') INTO ?; END;'
-        updateQuery == 'UPDATE "CONTACT_VIEW" cv SET cv.DATA=? WHERE (cv.DATA."_id" = ?)'
-        updateAgeAndNameQuery == 'UPDATE "CONTACT_VIEW" cv SET cv.DATA= json_transform(DATA, SET \'$.age\' = ?, SET \'$.name\' = ?) WHERE (cv.DATA."_id" = ?)'
-        updateByAddressStreetQuery == 'UPDATE "CONTACT_VIEW" cv SET cv.DATA= json_transform(DATA, SET \'$.name\' = ?) WHERE (cv.DATA.address.street = ?)'
-        deleteByIdQuery == 'DELETE  FROM "CONTACT_VIEW"  cv WHERE (cv.DATA."_id" = ?)'
-        deleteQuery == 'DELETE  FROM "CONTACT_VIEW"  cv WHERE (cv.DATA."_id" = ?)'
+        updateQuery == 'UPDATE "CONTACT_VIEW" cv SET cv.DATA=? WHERE (cv.DATA."_id".numberOnly() = ?)'
+        updateAgeAndNameQuery == 'UPDATE "CONTACT_VIEW" cv SET cv.DATA= json_transform(DATA, SET \'$.age\' = ?, SET \'$.name\' = ?) WHERE (cv.DATA."_id".numberOnly() = ?)'
+        updateByAddressStreetQuery == 'UPDATE "CONTACT_VIEW" cv SET cv.DATA= json_transform(DATA, SET \'$.name\' = ?) WHERE (cv.DATA.address.street.stringOnly() = ?)'
+        deleteByIdQuery == 'DELETE  FROM "CONTACT_VIEW"  cv WHERE (cv.DATA."_id".numberOnly() = ?)'
+        deleteQuery == 'DELETE  FROM "CONTACT_VIEW"  cv WHERE (cv.DATA."_id".numberOnly() = ?)'
         deleteAllQuery == 'DELETE  FROM "CONTACT_VIEW"  cv'
-        deleteAllIterableQuery == 'DELETE  FROM "CONTACT_VIEW"  cv WHERE (cv.DATA."_id" IN (?))'
-        findNameByIdQuery == 'SELECT cv.DATA.name.string() FROM "CONTACT_VIEW" cv WHERE (cv.DATA."_id" = ?)'
-        findMaxAgeQuery == 'SELECT MAX(cv.DATA.age.number()) FROM "CONTACT_VIEW" cv'
-        findActiveByNameQuery == 'SELECT cv.DATA.active.number() FROM "CONTACT_VIEW" cv WHERE (cv.DATA.name = ?)'
-        findAllOrderByStartDateTimeQuery == 'SELECT cv.* FROM "CONTACT_VIEW" cv ORDER BY cv.DATA.startDateTime ASC'
-        findByAddressStreetQuery == 'SELECT cv.* FROM "CONTACT_VIEW" cv WHERE (cv.DATA.address.street = ?)'
-        findAddressStreetByIdQuery == 'SELECT cv.DATA.address.street.string() FROM "CONTACT_VIEW" cv WHERE (cv.DATA."_id" = ?)'
-        findAllOrderByAddressZipCodeDescQuery == 'SELECT cv.* FROM "CONTACT_VIEW" cv ORDER BY cv.DATA.address.zipCode DESC'
+        deleteAllIterableQuery == 'DELETE  FROM "CONTACT_VIEW"  cv WHERE (cv.DATA."_id".numberOnly() IN (?))'
+        findNameByIdQuery == 'SELECT cv.DATA.name.stringOnly() FROM "CONTACT_VIEW" cv WHERE (cv.DATA."_id".numberOnly() = ?)'
+        findMaxAgeQuery == 'SELECT MAX(cv.DATA.age.numberOnly()) FROM "CONTACT_VIEW" cv'
+        findActiveByNameQuery == 'SELECT cv.DATA.active.numberOnly() FROM "CONTACT_VIEW" cv WHERE (cv.DATA.name.stringOnly() = ?)'
+        findAllOrderByStartDateTimeQuery == 'SELECT cv.* FROM "CONTACT_VIEW" cv ORDER BY cv.DATA.startDateTime.timestamp() ASC'
+        findByAddressStreetQuery == 'SELECT cv.* FROM "CONTACT_VIEW" cv WHERE (cv.DATA.address.street.stringOnly() = ?)'
+        findAddressStreetByIdQuery == 'SELECT cv.DATA.address.street.stringOnly() FROM "CONTACT_VIEW" cv WHERE (cv.DATA."_id".numberOnly() = ?)'
+        findAllOrderByAddressZipCodeDescQuery == 'SELECT cv.* FROM "CONTACT_VIEW" cv ORDER BY cv.DATA.address.zipCode.stringOnly() DESC'
     }
 
     void "test JsonView repository with unsupported dialect"() {
