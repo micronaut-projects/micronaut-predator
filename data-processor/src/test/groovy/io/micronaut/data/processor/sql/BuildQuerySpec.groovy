@@ -1992,4 +1992,28 @@ interface TestRepository extends GenericRepository<Book, Long> {
         expect:
             getQuery(findByAuthorInListMethod) == "SELECT book_.`id`,book_.`author_id`,book_.`genre_id`,book_.`title`,book_.`total_pages`,book_.`publisher_id`,book_.`last_updated` FROM `book` book_ WHERE (book_.`author_id` IN (?))"
     }
+
+    void "test repository with reused embedded entity"() {
+        when:
+        buildRepository('test.TestRepository', """
+import io.micronaut.data.jdbc.annotation.JdbcRepository;
+import io.micronaut.data.repository.GenericRepository;
+import io.micronaut.data.model.query.builder.sql.Dialect;
+import io.micronaut.data.tck.entities.embedded.BookEntity;
+import io.micronaut.data.tck.entities.embedded.BookState;
+import io.micronaut.data.tck.entities.embedded.HouseEntity;
+import io.micronaut.data.tck.entities.embedded.HouseState;
+import java.util.List;
+@JdbcRepository(dialect = Dialect.POSTGRES)
+interface TestRepository extends GenericRepository<HouseEntity, Long> {
+    List<HouseEntity> findAllByResourceState(HouseState state);
+}
+@JdbcRepository(dialect = Dialect.POSTGRES)
+interface OtherRepository extends GenericRepository<BookEntity, Long> {
+    List<BookEntity> findAllByResourceState(BookState state);
+}
+""")
+        then:
+        noExceptionThrown()
+    }
 }

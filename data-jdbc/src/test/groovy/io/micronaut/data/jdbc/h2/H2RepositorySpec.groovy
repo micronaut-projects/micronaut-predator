@@ -16,6 +16,9 @@
 package io.micronaut.data.jdbc.h2
 
 import groovy.transform.Memoized
+import io.micronaut.data.tck.entities.embedded.BookEntity
+import io.micronaut.data.tck.entities.embedded.BookState
+import io.micronaut.data.tck.entities.embedded.ResourceEntity
 import io.micronaut.data.tck.repositories.AuthorRepository
 import io.micronaut.data.tck.repositories.BasicTypesRepository
 import io.micronaut.data.tck.repositories.BookDtoRepository
@@ -112,6 +115,9 @@ class H2RepositorySpec extends AbstractRepositorySpec implements H2TestPropertyP
 
     @Shared
     H2EntityWithIdClass2Repository entityWithIdClass2Repo = context.getBean(H2EntityWithIdClass2Repository)
+
+    @Shared
+    H2BookEntityRepository bookEntityRepository = context.getBean(H2BookEntityRepository)
 
     @Override
     EntityWithIdClassRepository getEntityWithIdClassRepository() {
@@ -293,4 +299,12 @@ class H2RepositorySpec extends AbstractRepositorySpec implements H2TestPropertyP
         cleanupData()
     }
 
+    void "find by embedded entity field"() {
+        when:
+        def bookEntity = new BookEntity(1L, new ResourceEntity<BookState>("1984", BookState.BORROWED))
+        bookEntityRepository.save(bookEntity)
+        def result = bookEntityRepository.findAllByResourceState(BookState.BORROWED)
+        then:
+        result
+    }
 }
