@@ -10,7 +10,6 @@ import io.micronaut.data.tck.entities.Metadata;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Locale;
 
 @JsonView
 public class StudentView {
