@@ -7,6 +7,7 @@ import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
 import spock.lang.Specification
 
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
@@ -44,9 +45,10 @@ class OracleJdbcJsonViewSpec extends Specification {
         Address address2 = addressRepository.save(new Address("New Street", "City1"))
 
         def startDateTime = LocalDateTime.now()
-        Student denis = studentRepository.save(new Student("Denis", 8.5, startDateTime.minusDays(1), address1))
-        Student josh = studentRepository.save(new Student("Josh", 9.1, startDateTime, address1))
-        Student fred = studentRepository.save(new Student("Fred", 7.6, startDateTime.plusDays(2), address2))
+        def birthDate = LocalDate.now().minusYears(20)
+        Student denis = studentRepository.save(new Student("Denis", birthDate, 8.5, startDateTime.minusDays(1), address1))
+        Student josh = studentRepository.save(new Student("Josh", birthDate.minusMonths(3), 9.1, startDateTime, address1))
+        Student fred = studentRepository.save(new Student("Fred", birthDate.plusMonths(1), 7.6, startDateTime.plusDays(2), address2))
 
         Class math = classRepository.save(new Class("Math", "A101", LocalTime.of(10, 00), teacherAnna))
         Class english = classRepository.save(new Class("English", "A102", LocalTime.of(11, 00), teacherJeff))
@@ -187,6 +189,18 @@ class OracleJdbcJsonViewSpec extends Specification {
         inActives.size() == 1
         inActives[0].name == "Denis"
         actives.size() == 2
+
+        when:
+        def birthDate = studentViewRepository.findBirthDateById(denisStudentView.id)
+        then:
+        birthDate == denisStudentView.birthDate
+        when:
+        allSorted = studentViewRepository.findAllOrderByBirthDate()
+        then:
+        allSorted.size() == 3
+        allSorted[0].name == "Josh_"
+        allSorted[1].name == "Denis"
+        allSorted[2].name == "Fred_"
     }
 
     def "find and update partial"() {
@@ -229,11 +243,13 @@ class OracleJdbcJsonViewSpec extends Specification {
         when:"Test inserting into the view"
         def ivoneStudentView = new StudentView()
         def ivoneStudentName = "Ivone"
-        ivoneStudentView.setName(ivoneStudentName)
+        ivoneStudentView.name = ivoneStudentName
+        ivoneStudentView.birthDate = LocalDate.now().minusYears(20)
 
         def peterStudentView = new StudentView()
         def peterStudentName = "Peter"
-        peterStudentView.setName(peterStudentName)
+        peterStudentView.name = peterStudentName
+        peterStudentView.birthDate = LocalDate.now().minusYears(20).minusDays(10)
 
         def newStudentScheduleView = new StudentScheduleView()
 

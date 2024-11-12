@@ -1313,7 +1313,7 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
         } else if (dataType == DataType.TIMESTAMP) {
             sb.append(".timestamp()");
         } else if (dataType == DataType.DATE) {
-            sb.append(".dateOnly()");
+            sb.append(".date()");
         }
     }
 

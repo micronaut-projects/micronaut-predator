@@ -7,8 +7,10 @@ import io.micronaut.data.annotation.JsonView;
 import io.micronaut.data.annotation.Relation;
 import io.micronaut.data.tck.entities.Metadata;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 
 @JsonView
 public class StudentView {
@@ -17,6 +19,7 @@ public class StudentView {
     private Long id;
 
     private String name;
+    private LocalDate birthDate;
 
     private Double averageGrade;
 
@@ -47,6 +50,14 @@ public class StudentView {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public LocalDate getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
     }
 
     public Double getAverageGrade() {

@@ -8,6 +8,7 @@ import io.micronaut.data.model.DataType;
 import io.micronaut.data.model.query.builder.sql.Dialect;
 import io.micronaut.data.repository.PageableRepository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -40,4 +41,8 @@ public interface StudentViewRepository extends PageableRepository<StudentView, L
     List<StudentView> findAllOrderByActive();
 
     String findAddressStreetById(Long id);
+
+    LocalDate findBirthDateById(Long id);
+
+    List<StudentView> findAllOrderByBirthDate();
 }
