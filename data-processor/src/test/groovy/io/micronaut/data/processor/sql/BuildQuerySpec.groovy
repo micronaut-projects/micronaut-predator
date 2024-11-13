@@ -2053,4 +2053,28 @@ interface TestRepository extends GenericRepository<Book, Long> {
             countQueryAnnotation.stringValue().get() == """SELECT COUNT(DISTINCT(book_."id")) FROM "book" book_ LEFT JOIN "book_student" book_students_book_student_ ON book_."id"=book_students_book_student_."book_id"  LEFT JOIN "student" book_students_ ON book_students_book_student_."student_id"=book_students_."id" WHERE (book_students_."name" IN (?))"""
             countQueryAnnotation.getAnnotations("parameters").size() == 1
     }
+
+    void "test repository with reused embedded entity"() {
+        when:
+        buildRepository('test.TestRepository', """
+import io.micronaut.data.jdbc.annotation.JdbcRepository;
+import io.micronaut.data.repository.GenericRepository;
+import io.micronaut.data.model.query.builder.sql.Dialect;
+import io.micronaut.data.tck.entities.embedded.BookEntity;
+import io.micronaut.data.tck.entities.embedded.BookState;
+import io.micronaut.data.tck.entities.embedded.HouseEntity;
+import io.micronaut.data.tck.entities.embedded.HouseState;
+import java.util.List;
+@JdbcRepository(dialect = Dialect.POSTGRES)
+interface TestRepository extends GenericRepository<HouseEntity, Long> {
+    List<HouseEntity> findAllByResourceState(HouseState state);
+}
+@JdbcRepository(dialect = Dialect.POSTGRES)
+interface OtherRepository extends GenericRepository<BookEntity, Long> {
+    List<BookEntity> findAllByResourceState(BookState state);
+}
+""")
+        then:
+        noExceptionThrown()
+    }
 }
