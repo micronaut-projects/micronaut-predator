@@ -17,6 +17,8 @@ package io.micronaut.data.processor.sql
 
 
 import io.micronaut.data.intercept.UpdateInterceptor
+import io.micronaut.data.intercept.UpdateReturningManyInterceptor
+import io.micronaut.data.intercept.UpdateReturningOneInterceptor
 import io.micronaut.data.intercept.annotation.DataMethod
 import io.micronaut.data.intercept.async.UpdateAsyncInterceptor
 import io.micronaut.data.intercept.reactive.UpdateReactiveInterceptor
@@ -65,6 +67,134 @@ interface PersonRepository extends CrudRepository<Person, Long> {
         'long'                                        | UpdateInterceptor
         'Long'                                        | UpdateInterceptor
         'void'                                        | UpdateInterceptor
+    }
+
+    @Unroll
+    void "test build update returning for type #type"() {
+        given:
+        def repository = buildRepository('test.PersonRepository', """
+import io.micronaut.data.jdbc.annotation.JdbcRepository;
+import io.micronaut.data.model.query.builder.sql.Dialect;
+import io.micronaut.data.tck.entities.Person;
+
+@JdbcRepository(dialect= Dialect.MYSQL)
+@io.micronaut.context.annotation.Executable
+interface PersonRepository extends CrudRepository<Person, Long> {
+
+    @Query("UPDATE person SET name = 'test' WHERE id = :id RETURNING *")
+    $type customUpdateReturning(Long id);
+
+}
+""")
+        def method = repository.findPossibleMethods("customUpdateReturning").findFirst().get()
+        def updateQuery = getQuery(method)
+
+        expect:
+        updateQuery == "UPDATE person SET name = 'test' WHERE id = :id RETURNING *"
+        method.classValue(DataMethod, "interceptor").get() == interceptor
+
+        where:
+        type                                          | interceptor
+        'java.util.List<Person>'                      | UpdateReturningManyInterceptor
+        'Person'                                      | UpdateReturningOneInterceptor
+    }
+
+    @Unroll
+    void "test build update returning for type #type text-block no-indent"() {
+        given:
+        def repository = buildRepository('test.PersonRepository', """
+import io.micronaut.data.jdbc.annotation.JdbcRepository;
+import io.micronaut.data.model.query.builder.sql.Dialect;
+import io.micronaut.data.tck.entities.Person;
+
+@JdbcRepository(dialect= Dialect.MYSQL)
+@io.micronaut.context.annotation.Executable
+interface PersonRepository extends CrudRepository<Person, Long> {
+
+    @Query(\"""
+            UPDATE person SET name = 'test'
+            WHERE id = :id
+            RETURNING *
+            \""")
+    $type customUpdateReturning(Long id);
+
+}
+""")
+        def method = repository.findPossibleMethods("customUpdateReturning").findFirst().get()
+        def updateQuery = getQuery(method)
+
+        expect:
+        updateQuery.replace('\n', ' ') == "UPDATE person SET name = 'test' WHERE id = :id RETURNING * "
+        method.classValue(DataMethod, "interceptor").get() == interceptor
+
+        where:
+        type                                          | interceptor
+        'java.util.List<Person>'                      | UpdateReturningManyInterceptor
+        'Person'                                      | UpdateReturningOneInterceptor
+    }
+
+    @Unroll
+    void "test build update returning property for type #type"() {
+        given:
+        def repository = buildRepository('test.PersonRepository', """
+import io.micronaut.data.jdbc.annotation.JdbcRepository;
+import io.micronaut.data.model.query.builder.sql.Dialect;
+import io.micronaut.data.tck.entities.Person;
+
+@JdbcRepository(dialect= Dialect.MYSQL)
+@io.micronaut.context.annotation.Executable
+interface PersonRepository extends CrudRepository<Person, Long> {
+
+    @Query("UPDATE person SET name = 'test' WHERE id = :id RETURNING id")
+    $type customUpdateReturning(Long id);
+
+}
+""")
+        def method = repository.findPossibleMethods("customUpdateReturning").findFirst().get()
+        def updateQuery = getQuery(method)
+
+        expect:
+        updateQuery == "UPDATE person SET name = 'test' WHERE id = :id RETURNING id"
+        method.classValue(DataMethod, "interceptor").get() == interceptor
+
+        where:
+        type                                          | interceptor
+        'java.util.List<Long>'                        | UpdateReturningManyInterceptor
+        'Long'                                        | UpdateReturningOneInterceptor
+    }
+
+    @Unroll
+    void "test build update returning property for type #type text-block no-indent"() {
+        given:
+        def repository = buildRepository('test.PersonRepository', """
+import io.micronaut.data.jdbc.annotation.JdbcRepository;
+import io.micronaut.data.model.query.builder.sql.Dialect;
+import io.micronaut.data.tck.entities.Person;
+
+@JdbcRepository(dialect= Dialect.MYSQL)
+@io.micronaut.context.annotation.Executable
+interface PersonRepository extends CrudRepository<Person, Long> {
+
+    @Query(\"""
+            UPDATE person SET name = 'test'
+            WHERE id = :id
+            RETURNING id
+            \""")
+    $type customUpdateReturning(Long id);
+
+}
+""")
+        def method = repository.findPossibleMethods("customUpdateReturning").findFirst().get()
+        def updateQuery = getQuery(method)
+
+        expect:
+        updateQuery.replace('\n', ' ') == "UPDATE person SET name = 'test' WHERE id = :id RETURNING id "
+        method.classValue(DataMethod, "interceptor").get() == interceptor
+
+        where:
+        type                                          | interceptor
+        'java.util.List<Long>'                        | UpdateReturningManyInterceptor
+        'Long'                                        | UpdateReturningOneInterceptor
     }
 
     @Unroll
