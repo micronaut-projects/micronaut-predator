@@ -64,9 +64,9 @@ public class RawQueryMethodMatcher implements MethodMatcher {
     private static final String SELECT = "select";
     private static final String DELETE = "delete";
     private static final String UPDATE = "update";
-    private static final String RETURNING = " returning ";
     private static final String INSERT = "insert";
 
+    private static final Pattern RETURNING_PATTERN = Pattern.compile(".*\\breturning\\b.*");
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("([^:\\\\]*)((?<![:]):([a-zA-Z0-9]+))([^:]*)");
 
     @Override
@@ -176,12 +176,12 @@ public class RawQueryMethodMatcher implements MethodMatcher {
         if (query.startsWith(SELECT)) {
             return DataMethod.OperationType.QUERY;
         } else if (query.startsWith(DELETE)) {
-            if (query.contains(RETURNING)) {
+            if (RETURNING_PATTERN.matcher(query).find()) {
                 return DataMethod.OperationType.DELETE_RETURNING;
             }
             return DataMethod.OperationType.DELETE;
         } else if (query.startsWith(UPDATE)) {
-            if (query.contains(RETURNING)) {
+            if (RETURNING_PATTERN.matcher(query).find()) {
                 return DataMethod.OperationType.UPDATE_RETURNING;
             }
             if (DeleteMethodMatcher.METHOD_PATTERN.matcher(methodName.toLowerCase(Locale.ENGLISH)).matches()) {
@@ -189,7 +189,7 @@ public class RawQueryMethodMatcher implements MethodMatcher {
             }
             return DataMethod.OperationType.UPDATE;
         } else if (query.startsWith(INSERT)) {
-            if (query.contains(RETURNING)) {
+            if (RETURNING_PATTERN.matcher(query).find()) {
                 return DataMethod.OperationType.INSERT_RETURNING;
             }
             return DataMethod.OperationType.INSERT;

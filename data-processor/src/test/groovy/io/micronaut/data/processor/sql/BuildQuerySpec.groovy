@@ -26,11 +26,13 @@ import io.micronaut.data.model.entities.Invoice
 import io.micronaut.data.model.query.QueryModel
 import io.micronaut.data.model.query.builder.sql.Dialect
 import io.micronaut.data.model.query.builder.sql.SqlQueryBuilder
+import io.micronaut.data.model.runtime.StoredQuery
 import io.micronaut.data.processor.entity.ActivityPeriodEntity
 import io.micronaut.data.processor.visitors.AbstractDataSpec
 import io.micronaut.data.tck.entities.Author
 import io.micronaut.data.tck.entities.Restaurant
 import io.micronaut.data.tck.jdbc.entities.EmployeeGroup
+import io.micronaut.inject.ExecutableMethod
 import spock.lang.Issue
 import spock.lang.PendingFeature
 import spock.lang.Unroll
@@ -40,6 +42,7 @@ import static io.micronaut.data.processor.visitors.TestUtils.getCountQuery
 import static io.micronaut.data.processor.visitors.TestUtils.getDataInterceptor
 import static io.micronaut.data.processor.visitors.TestUtils.getDataTypes
 import static io.micronaut.data.processor.visitors.TestUtils.getJoins
+import static io.micronaut.data.processor.visitors.TestUtils.getOperationType
 import static io.micronaut.data.processor.visitors.TestUtils.getParameterBindingIndexes
 import static io.micronaut.data.processor.visitors.TestUtils.getParameterBindingPaths
 import static io.micronaut.data.processor.visitors.TestUtils.getParameterExpressions
@@ -601,10 +604,14 @@ interface CitiesRepository extends CrudRepository<City, Long> {
     int countDistinctByCountryRegionCountryUuid(UUID id);
 }
 """)
-        def query = getQuery(repository.getRequiredMethod("countDistinctByCountryRegionCountryUuid", UUID))
+
+            def method = repository.getRequiredMethod("countDistinctByCountryRegionCountryUuid", UUID)
+            def query = getQuery(method)
+            def op = getOperationType(method)
 
         expect:
         query == 'SELECT COUNT(DISTINCT(city_.`id`)) FROM `T_CITY` city_ INNER JOIN `CountryRegion` city_country_region_ ON city_.`country_region_id`=city_country_region_.`id` WHERE (city_country_region_.`countryId` = ?)'
+        op == DataMethod.OperationType.COUNT
 
     }
 
@@ -2045,5 +2052,29 @@ interface TestRepository extends GenericRepository<Book, Long> {
             getQuery(findAllByStudentsNameIn) == """SELECT book_."id",book_."author_id",book_."genre_id",book_."title",book_."total_pages",book_."publisher_id",book_."last_updated",book_students_."id" AS students_id,book_students_."version" AS students_version,book_students_."name" AS students_name,book_students_."creation_time" AS students_creation_time,book_students_."last_updated_time" AS students_last_updated_time FROM "book" book_ LEFT JOIN "book_student" book_students_book_student_ ON book_."id"=book_students_book_student_."book_id"  LEFT JOIN "student" book_students_ ON book_students_book_student_."student_id"=book_students_."id" WHERE (book_."id" IN (SELECT book_book_."id" FROM "book" book_book_ WHERE (book_book_."id" IN (SELECT book_book_book_."id" FROM "book" book_book_book_ LEFT JOIN "book_student" book_book_book_students_book_student_ ON book_book_book_."id"=book_book_book_students_book_student_."book_id"  LEFT JOIN "student" book_book_book_students_ ON book_book_book_students_book_student_."student_id"=book_book_book_students_."id" WHERE (book_book_book_students_."name" IN (?))))"""
             countQueryAnnotation.stringValue().get() == """SELECT COUNT(DISTINCT(book_."id")) FROM "book" book_ LEFT JOIN "book_student" book_students_book_student_ ON book_."id"=book_students_book_student_."book_id"  LEFT JOIN "student" book_students_ ON book_students_book_student_."student_id"=book_students_."id" WHERE (book_students_."name" IN (?))"""
             countQueryAnnotation.getAnnotations("parameters").size() == 1
+    }
+
+    void "test repository with reused embedded entity"() {
+        when:
+        buildRepository('test.TestRepository', """
+import io.micronaut.data.jdbc.annotation.JdbcRepository;
+import io.micronaut.data.repository.GenericRepository;
+import io.micronaut.data.model.query.builder.sql.Dialect;
+import io.micronaut.data.tck.entities.embedded.BookEntity;
+import io.micronaut.data.tck.entities.embedded.BookState;
+import io.micronaut.data.tck.entities.embedded.HouseEntity;
+import io.micronaut.data.tck.entities.embedded.HouseState;
+import java.util.List;
+@JdbcRepository(dialect = Dialect.POSTGRES)
+interface TestRepository extends GenericRepository<HouseEntity, Long> {
+    List<HouseEntity> findAllByResourceState(HouseState state);
+}
+@JdbcRepository(dialect = Dialect.POSTGRES)
+interface OtherRepository extends GenericRepository<BookEntity, Long> {
+    List<BookEntity> findAllByResourceState(BookState state);
+}
+""")
+        then:
+        noExceptionThrown()
     }
 }

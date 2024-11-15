@@ -15,6 +15,9 @@
  */
 package io.micronaut.data.processor.sql
 
+import io.micronaut.data.intercept.DeleteReturningManyInterceptor
+import io.micronaut.data.intercept.DeleteReturningOneInterceptor
+import io.micronaut.data.intercept.annotation.DataMethod
 import io.micronaut.data.model.DataType
 import io.micronaut.data.processor.visitors.AbstractDataSpec
 import spock.lang.Unroll
@@ -429,4 +432,129 @@ interface AccountRepository extends CrudRepository<Account, Long> {
             getResultDataType(deleteById) == null
     }
 
+    @Unroll
+    void "test build delete returning for type #type"() {
+        given:
+        def repository = buildRepository('test.PersonRepository', """
+import io.micronaut.data.jdbc.annotation.JdbcRepository;
+import io.micronaut.data.model.query.builder.sql.Dialect;
+import io.micronaut.data.tck.entities.Person;
+
+@JdbcRepository(dialect= Dialect.MYSQL)
+@io.micronaut.context.annotation.Executable
+interface PersonRepository extends CrudRepository<Person, Long> {
+
+    @Query("DELETE FROM person RETURNING *")
+    $type customDeleteReturning(Long id);
+
+}
+""")
+        def method = repository.findPossibleMethods("customDeleteReturning").findFirst().get()
+        def deleteQuery = getQuery(method)
+
+        expect:
+        deleteQuery == "DELETE FROM person RETURNING *"
+        method.classValue(DataMethod, "interceptor").get() == interceptor
+
+        where:
+        type                                          | interceptor
+        'java.util.List<Person>'                      | DeleteReturningManyInterceptor
+        'Person'                                      | DeleteReturningOneInterceptor
+    }
+
+    @Unroll
+    void "test build delete returning for type #type text-block no-indent"() {
+        given:
+        def repository = buildRepository('test.PersonRepository', """
+import io.micronaut.data.jdbc.annotation.JdbcRepository;
+import io.micronaut.data.model.query.builder.sql.Dialect;
+import io.micronaut.data.tck.entities.Person;
+
+@JdbcRepository(dialect= Dialect.MYSQL)
+@io.micronaut.context.annotation.Executable
+interface PersonRepository extends CrudRepository<Person, Long> {
+
+    @Query(\"""
+            DELETE FROM person
+            RETURNING *
+            \""")
+    $type customDeleteReturning(Long id);
+
+}
+""")
+        def method = repository.findPossibleMethods("customDeleteReturning").findFirst().get()
+        def deleteQuery = getQuery(method)
+
+        expect:
+        deleteQuery.replace('\n', ' ') == "DELETE FROM person RETURNING * "
+        method.classValue(DataMethod, "interceptor").get() == interceptor
+
+        where:
+        type                                          | interceptor
+        'java.util.List<Person>'                      | DeleteReturningManyInterceptor
+        'Person'                                      | DeleteReturningOneInterceptor
+    }
+
+    @Unroll
+    void "test build delete returning property for type #type"() {
+        given:
+        def repository = buildRepository('test.PersonRepository', """
+import io.micronaut.data.jdbc.annotation.JdbcRepository;
+import io.micronaut.data.model.query.builder.sql.Dialect;
+import io.micronaut.data.tck.entities.Person;
+
+@JdbcRepository(dialect= Dialect.MYSQL)
+@io.micronaut.context.annotation.Executable
+interface PersonRepository extends CrudRepository<Person, Long> {
+
+    @Query("DELETE FROM person RETURNING id")
+    $type customDeleteReturning(Long id);
+
+}
+""")
+        def method = repository.findPossibleMethods("customDeleteReturning").findFirst().get()
+        def deleteQuery = getQuery(method)
+
+        expect:
+        deleteQuery == "DELETE FROM person RETURNING id"
+        method.classValue(DataMethod, "interceptor").get() == interceptor
+
+        where:
+        type                                          | interceptor
+        'java.util.List<Long>'                        | DeleteReturningManyInterceptor
+        'Long'                                        | DeleteReturningOneInterceptor
+    }
+
+    @Unroll
+    void "test build delete returning property for type #type text-block no-indent"() {
+        given:
+        def repository = buildRepository('test.PersonRepository', """
+import io.micronaut.data.jdbc.annotation.JdbcRepository;
+import io.micronaut.data.model.query.builder.sql.Dialect;
+import io.micronaut.data.tck.entities.Person;
+
+@JdbcRepository(dialect= Dialect.MYSQL)
+@io.micronaut.context.annotation.Executable
+interface PersonRepository extends CrudRepository<Person, Long> {
+
+    @Query(\"""
+            DELETE FROM person
+            RETURNING id
+            \""")
+    $type customDeleteReturning(Long id);
+
+}
+""")
+        def method = repository.findPossibleMethods("customDeleteReturning").findFirst().get()
+        def deleteQuery = getQuery(method)
+
+        expect:
+        deleteQuery.replace('\n', ' ') == "DELETE FROM person RETURNING id "
+        method.classValue(DataMethod, "interceptor").get() == interceptor
+
+        where:
+        type                                          | interceptor
+        'java.util.List<Long>'                        | DeleteReturningManyInterceptor
+        'Long'                                        | DeleteReturningOneInterceptor
+    }
 }

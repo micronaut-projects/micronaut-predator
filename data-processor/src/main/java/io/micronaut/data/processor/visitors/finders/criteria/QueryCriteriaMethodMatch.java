@@ -397,7 +397,7 @@ public class QueryCriteriaMethodMatch extends AbstractCriteriaMethodMatch {
         }
 
         return new MethodMatchInfo(
-            DataMethod.OperationType.QUERY,
+            getOperationType(),
             result.resultType(),
             interceptorType
         )

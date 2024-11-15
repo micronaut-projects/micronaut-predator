@@ -258,7 +258,11 @@ public abstract class AbstractPersistentEntityQuery<T, Self extends PersistentEn
 
     @Override
     public Self where(Expression<Boolean> restriction) {
-        predicate = new ConjunctionPredicate(Collections.singleton((IExpression<Boolean>) restriction));
+        if (restriction instanceof ConjunctionPredicate conjunctionPredicate) {
+            predicate = conjunctionPredicate;
+        } else {
+            predicate = new ConjunctionPredicate(Collections.singleton((IExpression<Boolean>) restriction));
+        }
         return self();
     }
 

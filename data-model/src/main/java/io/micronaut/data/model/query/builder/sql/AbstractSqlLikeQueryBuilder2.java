@@ -660,7 +660,11 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
                 if (computePropertyPaths() && jsonEntityColumn == null) {
                     buff.append(propertyPath.getColumnName()).append(SPACE).append(direction);
                 } else {
-                    buff.append(propertyPath.getPath()).append(SPACE).append(direction);
+                    buff.append(propertyPath.getPath());
+                    if (jsonEntityColumn != null) {
+                        appendJsonProjection(buff, propertyPath.getProperty().getDataType());
+                    }
+                    buff.append(SPACE).append(direction);
                 }
                 if (i.hasNext()) {
                     buff.append(",");
@@ -1084,6 +1088,9 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
 
         if (!computePropertyPaths() || jsonEntityColumn != null) {
             buff.append(path.getProperty().getName());
+            if (jsonEntityColumn != null) {
+                appendJsonProjection(buff, path.getProperty().getDataType());
+            }
         } else {
             buff.append(getColumnName(path.getProperty()));
         }
@@ -1282,8 +1289,6 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
                     } else {
                         query.append(propertyPath.getPath());
                     }
-                }
-                if (jsonEntityColumn != null && isProjection) {
                     DataType dataType = propertyPath.getProperty().getDataType();
                     appendJsonProjection(query, dataType);
                 }
@@ -1300,11 +1305,11 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
      * @param dataType the property data type
      */
     private void appendJsonProjection(StringBuilder sb, DataType dataType) {
-        if (dataType == DataType.STRING) {
-            sb.append(".string()");
-        } else if (dataType.isNumeric() || dataType == DataType.BOOLEAN) {
+        if (dataType.isNumeric() || dataType == DataType.BOOLEAN) {
             // Boolean is represented as number in Oracle (which only supports json view)
-            sb.append(".number()");
+            sb.append(".numberOnly()");
+        } else if (dataType == DataType.STRING) {
+            sb.append(".stringOnly()");
         } else if (dataType == DataType.TIMESTAMP) {
             sb.append(".timestamp()");
         } else if (dataType == DataType.DATE) {
@@ -1939,14 +1944,21 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
 
         private void visitConjunctionPredicates(Collection<? extends IExpression<Boolean>> predicates) {
             Iterator<? extends IExpression<Boolean>> iterator = predicates.iterator();
+            boolean appendLogicalAnd = true;
             while (iterator.hasNext()) {
                 IExpression<Boolean> expression = iterator.next();
                 if (expression instanceof ConjunctionPredicate conjunctionPredicate) {
-                    visitConjunctionPredicates(conjunctionPredicate.getPredicates());
+                    Collection<? extends IExpression<Boolean>> conjunctionPredicates = conjunctionPredicate.getPredicates();
+                    if (CollectionUtils.isEmpty(conjunctionPredicates)) {
+                        // Nothing was added to the query so skip adding AND
+                        appendLogicalAnd = false;
+                    } else {
+                        visitConjunctionPredicates(conjunctionPredicates);
+                    }
                 } else {
                     visitPredicate(expression);
                 }
-                if (iterator.hasNext()) {
+                if (appendLogicalAnd && iterator.hasNext()) {
                     query.append(LOGICAL_AND);
                 }
             }
