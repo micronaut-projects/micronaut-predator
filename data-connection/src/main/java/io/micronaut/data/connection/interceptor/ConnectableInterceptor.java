@@ -31,7 +31,7 @@ import io.micronaut.data.connection.ConnectionOperations;
 import io.micronaut.data.connection.ConnectionOperationsRegistry;
 import io.micronaut.data.connection.DefaultConnectionDefinition;
 import io.micronaut.data.connection.annotation.Connectable;
-import io.micronaut.data.connection.annotation.OracleConnectionClientInfo;
+import io.micronaut.data.connection.annotation.ConnectionClientInfo;
 import io.micronaut.data.connection.async.AsyncConnectionOperations;
 import io.micronaut.data.connection.reactive.ReactiveStreamsConnectionOperations;
 import io.micronaut.data.connection.reactive.ReactorConnectionOperations;
@@ -58,7 +58,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @InterceptorBean(Connectable.class)
 public final class ConnectableInterceptor implements MethodInterceptor<Object, Object> {
 
-    private static final String DISABLE_CLIENT_INFO_TRACING_MEMBER = "disableClientInfoTracing";
+    private static final String ENABLED = "enabled";
     private static final String TRACING_MODULE_MEMBER = "tracingModule";
     private static final String TRACING_ACTION_MEMBER = "tracingAction";
     private static final String INTERCEPTED_SUFFIX = "$Intercepted";
@@ -184,7 +184,7 @@ public final class ConnectableInterceptor implements MethodInterceptor<Object, O
      *
      * This method examines the annotations present on the executable method to determine the connection definition.
      * It looks for the presence of the {@link Connectable} annotation and uses its attributes to construct the connection definition.
-     * Additionally, it checks for the presence of the {@link OracleConnectionClientInfo} annotation to obtain connection tracing information.
+     * Additionally, it checks for the presence of the {@link ConnectionClientInfo} annotation to obtain connection tracing information.
      *
      * @param context      the invocation context, may be null
      * @param executableMethod the executable method to retrieve the connection definition for
@@ -199,7 +199,7 @@ public final class ConnectableInterceptor implements MethodInterceptor<Object, O
         if (annotation == null) {
             throw new IllegalStateException("No declared @Connectable annotation present");
         }
-        AnnotationValue<OracleConnectionClientInfo> oracleConnectionClientInfoAnnotationValue = executableMethod.getAnnotation(OracleConnectionClientInfo.class);
+        AnnotationValue<ConnectionClientInfo> oracleConnectionClientInfoAnnotationValue = executableMethod.getAnnotation(ConnectionClientInfo.class);
         ConnectionTracingInfo connectionTracingInfo = oracleConnectionClientInfoAnnotationValue == null ? null : getConnectionClientTracingInfo(oracleConnectionClientInfoAnnotationValue, context, executableMethod, appName);
         return new DefaultConnectionDefinition(
             executableMethod.getDeclaringType().getSimpleName() + "." + executableMethod.getMethodName(),
@@ -211,19 +211,19 @@ public final class ConnectableInterceptor implements MethodInterceptor<Object, O
     }
 
     /**
-     * Gets Oracle connection tracing info from the {@link OracleConnectionClientInfo} annotation.
+     * Gets Oracle connection tracing info from the {@link ConnectionClientInfo} annotation.
      *
-     * @param annotation The {@link OracleConnectionClientInfo} annotation value
+     * @param annotation The {@link ConnectionClientInfo} annotation value
      * @param executableMethod The method being executed
      * @param appName The micronaut application name, null if not set
      * @return The connection tracing info or null if not configured to be used
      */
-    private static @Nullable ConnectionTracingInfo getConnectionClientTracingInfo(AnnotationValue<OracleConnectionClientInfo> annotation,
+    private static @Nullable ConnectionTracingInfo getConnectionClientTracingInfo(AnnotationValue<ConnectionClientInfo> annotation,
                                                                         @Nullable InvocationContext<Object, Object> context,
                                                                         ExecutableMethod<Object, Object> executableMethod,
                                                                         String appName) {
-        boolean disableClientInfoTracing = annotation.booleanValue(DISABLE_CLIENT_INFO_TRACING_MEMBER).orElse(false);
-        if (disableClientInfoTracing) {
+        boolean connectionClientInfoEnabled = annotation.booleanValue(ENABLED).orElse(true);
+        if (!connectionClientInfoEnabled) {
             return null;
         }
         String module = annotation.stringValue(TRACING_MODULE_MEMBER).orElse(null);

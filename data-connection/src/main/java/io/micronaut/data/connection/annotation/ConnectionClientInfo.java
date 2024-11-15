@@ -28,7 +28,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.ANNOTATION_TYPE, ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Connectable
-public @interface OracleConnectionClientInfo {
+public @interface ConnectionClientInfo {
 
     /**
      * If this flag is not disabled then when connection is established {@link java.sql.Connection#setClientInfo(String, String)} will be called
@@ -36,10 +36,10 @@ public @interface OracleConnectionClientInfo {
      *
      * @return whether connection should trace/set client info
      */
-    boolean disableClientInfoTracing() default false;
+    boolean enabled() default true;
 
     /**
-     * The module name for tracing if {@link #disableClientInfoTracing()} ()} is not set to true.
+     * The module name for tracing if {@link #enabled()} is set to true.
      * If not provided, then it will fall back to the name of the class currently being intercepted in {@link io.micronaut.data.connection.interceptor.ConnectableInterceptor}.
      * Currently supported only for Oracle database connections.
      *
@@ -48,7 +48,7 @@ public @interface OracleConnectionClientInfo {
     String tracingModule() default "";
 
     /**
-     * The action name for tracing if {@link #disableClientInfoTracing()} is not set to true.
+     * The action name for tracing if {@link #enabled()} is set to true.
      * If not provided, then it will fall back to the name of the method currently being intercepted in {@link io.micronaut.data.connection.interceptor.ConnectableInterceptor}.
      * Currently supported only for Oracle database connections.
      *
