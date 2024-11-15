@@ -18,6 +18,7 @@ package io.micronaut.data.connection.interceptor;
 import io.micronaut.aop.InterceptPhase;
 import io.micronaut.aop.InterceptedMethod;
 import io.micronaut.aop.InterceptorBean;
+import io.micronaut.aop.InvocationContext;
 import io.micronaut.aop.MethodInterceptor;
 import io.micronaut.aop.MethodInvocationContext;
 import io.micronaut.core.annotation.AnnotationValue;
@@ -60,6 +61,7 @@ public final class ConnectableInterceptor implements MethodInterceptor<Object, O
     private static final String DISABLE_CLIENT_INFO_TRACING_MEMBER = "disableClientInfoTracing";
     private static final String TRACING_MODULE_MEMBER = "tracingModule";
     private static final String TRACING_ACTION_MEMBER = "tracingAction";
+    private static final String INTERCEPTED_SUFFIX = "$Intercepted";
 
     private final Map<TenantExecutableMethod, ConnectionInvocation> connectionInvocationMap = new ConcurrentHashMap<>(30);
 
@@ -109,7 +111,7 @@ public final class ConnectableInterceptor implements MethodInterceptor<Object, O
             final ConnectionInvocation connectionInvocation = connectionInvocationMap
                 .computeIfAbsent(new TenantExecutableMethod(tenantDataSourceName, executableMethod), ignore -> {
                     final String dataSource = tenantDataSourceName == null ? executableMethod.stringValue(Connectable.class).orElse(null) : tenantDataSourceName;
-                    final ConnectionDefinition connectionDefinition = getConnectionDefinition(executableMethod, appName);
+                    final ConnectionDefinition connectionDefinition = getConnectionDefinition(context, executableMethod, appName);
 
                     switch (interceptedMethod.resultType()) {
                         case PUBLISHER -> {
@@ -161,14 +163,44 @@ public final class ConnectableInterceptor implements MethodInterceptor<Object, O
         }
     }
 
+    /**
+     * Retrieves the connection definition based on the provided executable method and application name.
+     *
+     * This method is deprecated since version 4.10.4 and marked for removal in future versions.
+     *
+     * @param executableMethod the executable method to retrieve the connection definition for
+     * @param appName the application name
+     * @return the connection definition
+     * @deprecated Since 4.10.4, use {@link #getConnectionDefinition(InvocationContext, ExecutableMethod, String)} instead
+     */
     @NonNull
+    @Deprecated(since = "4.10.4", forRemoval = true)
     public static ConnectionDefinition getConnectionDefinition(ExecutableMethod<Object, Object> executableMethod, String appName) {
+        return getConnectionDefinition(null, executableMethod, appName);
+    }
+
+    /**
+     * Retrieves the connection definition based on the provided executable method and application name.
+     *
+     * This method examines the annotations present on the executable method to determine the connection definition.
+     * It looks for the presence of the {@link Connectable} annotation and uses its attributes to construct the connection definition.
+     * Additionally, it checks for the presence of the {@link OracleConnectionClientInfo} annotation to obtain connection tracing information.
+     *
+     * @param context      the invocation context, may be null
+     * @param executableMethod the executable method to retrieve the connection definition for
+     * @param appName       the application name
+     * @return the connection definition
+     */
+    @NonNull
+    public static ConnectionDefinition getConnectionDefinition(@Nullable InvocationContext<Object, Object> context,
+                                                               ExecutableMethod<Object, Object> executableMethod,
+                                                               String appName) {
         AnnotationValue<Connectable> annotation = executableMethod.getAnnotation(Connectable.class);
         if (annotation == null) {
             throw new IllegalStateException("No declared @Connectable annotation present");
         }
         AnnotationValue<OracleConnectionClientInfo> oracleConnectionClientInfoAnnotationValue = executableMethod.getAnnotation(OracleConnectionClientInfo.class);
-        ConnectionTracingInfo connectionTracingInfo = oracleConnectionClientInfoAnnotationValue == null ? null : getConnectionClientTracingInfo(oracleConnectionClientInfoAnnotationValue, executableMethod, appName);
+        ConnectionTracingInfo connectionTracingInfo = oracleConnectionClientInfoAnnotationValue == null ? null : getConnectionClientTracingInfo(oracleConnectionClientInfoAnnotationValue, context, executableMethod, appName);
         return new DefaultConnectionDefinition(
             executableMethod.getDeclaringType().getSimpleName() + "." + executableMethod.getMethodName(),
             annotation.enumValue("propagation", ConnectionDefinition.Propagation.class).orElse(ConnectionDefinition.PROPAGATION_DEFAULT),
@@ -187,6 +219,7 @@ public final class ConnectableInterceptor implements MethodInterceptor<Object, O
      * @return The connection tracing info or null if not configured to be used
      */
     private static @Nullable ConnectionTracingInfo getConnectionClientTracingInfo(AnnotationValue<OracleConnectionClientInfo> annotation,
+                                                                        @Nullable InvocationContext<Object, Object> context,
                                                                         ExecutableMethod<Object, Object> executableMethod,
                                                                         String appName) {
         boolean disableClientInfoTracing = annotation.booleanValue(DISABLE_CLIENT_INFO_TRACING_MEMBER).orElse(false);
@@ -196,7 +229,12 @@ public final class ConnectableInterceptor implements MethodInterceptor<Object, O
         String module = annotation.stringValue(TRACING_MODULE_MEMBER).orElse(null);
         String action = annotation.stringValue(TRACING_ACTION_MEMBER).orElse(null);
         if (module == null) {
-            module = executableMethod.getDeclaringType().getName();
+            if (context != null) {
+                Class<?> clazz = context.getTarget().getClass();
+                module = clazz.getName().replace(INTERCEPTED_SUFFIX, "");
+            } else {
+                module = executableMethod.getDeclaringType().getName();
+            }
         }
         if (action == null) {
             action = executableMethod.getMethodName();
