@@ -15,6 +15,7 @@
  */
 package io.micronaut.data.connection.support;
 
+import io.micronaut.core.annotation.Experimental;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.data.connection.annotation.ConnectionClientInfo;
@@ -32,6 +33,7 @@ import java.util.Map;
  *                 then by default the name of the method issuing database call)
  * @param connectionClientInfoAttributes The arbitrary connection client info attributes to be set to {@link java.sql.Connection#setClientInfo(String, String)}.
  */
+@Experimental
 public record ConnectionClientInfoDetails(@Nullable String appName, @NonNull String module, @NonNull String action,
                                           @NonNull Map<String, String> connectionClientInfoAttributes) {
 }
