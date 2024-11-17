@@ -31,11 +31,11 @@ import io.micronaut.data.connection.ConnectionOperations;
 import io.micronaut.data.connection.ConnectionOperationsRegistry;
 import io.micronaut.data.connection.DefaultConnectionDefinition;
 import io.micronaut.data.connection.annotation.Connectable;
-import io.micronaut.data.connection.annotation.ConnectionClientInfo;
+import io.micronaut.data.connection.annotation.ConnectionClientInfoAttribute;
 import io.micronaut.data.connection.async.AsyncConnectionOperations;
 import io.micronaut.data.connection.reactive.ReactiveStreamsConnectionOperations;
 import io.micronaut.data.connection.reactive.ReactorConnectionOperations;
-import io.micronaut.data.connection.support.ConnectionTracingInfo;
+import io.micronaut.data.connection.support.ConnectionClientInfoDetails;
 import io.micronaut.inject.ExecutableMethod;
 import io.micronaut.runtime.ApplicationConfiguration;
 import jakarta.inject.Singleton;
@@ -43,6 +43,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,8 +61,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class ConnectableInterceptor implements MethodInterceptor<Object, Object> {
 
     private static final String ENABLED = "enabled";
-    private static final String TRACING_MODULE_MEMBER = "tracingModule";
-    private static final String TRACING_ACTION_MEMBER = "tracingAction";
+    private static final String MODULE_MEMBER = "module";
+    private static final String ACTION_MEMBER = "action";
+    private static final String NAME_MEMBER = "name";
+    private static final String VALUE_MEMBER = "value";
+    private static final String CLIENT_INFO_ATTRIBUTES_MEMBER = "clientInfoAttributes";
     private static final String INTERCEPTED_SUFFIX = "$Intercepted";
 
     private final Map<TenantExecutableMethod, ConnectionInvocation> connectionInvocationMap = new ConcurrentHashMap<>(30);
@@ -184,7 +189,7 @@ public final class ConnectableInterceptor implements MethodInterceptor<Object, O
      *
      * This method examines the annotations present on the executable method to determine the connection definition.
      * It looks for the presence of the {@link Connectable} annotation and uses its attributes to construct the connection definition.
-     * Additionally, it checks for the presence of the {@link ConnectionClientInfo} annotation to obtain connection tracing information.
+     * Additionally, it checks for the presence of the {@link io.micronaut.data.connection.annotation.ConnectionClientInfo} annotation to obtain connection tracing information.
      *
      * @param context      the invocation context, may be null
      * @param executableMethod the executable method to retrieve the connection definition for
@@ -199,35 +204,35 @@ public final class ConnectableInterceptor implements MethodInterceptor<Object, O
         if (annotation == null) {
             throw new IllegalStateException("No declared @Connectable annotation present");
         }
-        AnnotationValue<ConnectionClientInfo> oracleConnectionClientInfoAnnotationValue = executableMethod.getAnnotation(ConnectionClientInfo.class);
-        ConnectionTracingInfo connectionTracingInfo = oracleConnectionClientInfoAnnotationValue == null ? null : getConnectionClientTracingInfo(oracleConnectionClientInfoAnnotationValue, context, executableMethod, appName);
+        AnnotationValue<io.micronaut.data.connection.annotation.ConnectionClientInfo> connectionClientInfoAnnotationValue = executableMethod.getAnnotation(io.micronaut.data.connection.annotation.ConnectionClientInfo.class);
+        ConnectionClientInfoDetails connectionClientInfoDetails = connectionClientInfoAnnotationValue == null ? null : getConnectionClientInfo(connectionClientInfoAnnotationValue, context, executableMethod, appName);
         return new DefaultConnectionDefinition(
             executableMethod.getDeclaringType().getSimpleName() + "." + executableMethod.getMethodName(),
             annotation.enumValue("propagation", ConnectionDefinition.Propagation.class).orElse(ConnectionDefinition.PROPAGATION_DEFAULT),
             annotation.longValue("timeout").stream().mapToObj(Duration::ofSeconds).findFirst().orElse(null),
             annotation.booleanValue("readOnly").orElse(null),
-            connectionTracingInfo
+            connectionClientInfoDetails
         );
     }
 
     /**
-     * Gets Oracle connection tracing info from the {@link ConnectionClientInfo} annotation.
+     * Gets connection client info from the {@link io.micronaut.data.connection.annotation.ConnectionClientInfo} annotation.
      *
-     * @param annotation The {@link ConnectionClientInfo} annotation value
+     * @param annotation The {@link io.micronaut.data.connection.annotation.ConnectionClientInfo} annotation value
      * @param executableMethod The method being executed
      * @param appName The micronaut application name, null if not set
-     * @return The connection tracing info or null if not configured to be used
+     * @return The connection client info or null if not configured to be used
      */
-    private static @Nullable ConnectionTracingInfo getConnectionClientTracingInfo(AnnotationValue<ConnectionClientInfo> annotation,
-                                                                        @Nullable InvocationContext<Object, Object> context,
-                                                                        ExecutableMethod<Object, Object> executableMethod,
-                                                                        String appName) {
+    private static @Nullable ConnectionClientInfoDetails getConnectionClientInfo(AnnotationValue<io.micronaut.data.connection.annotation.ConnectionClientInfo> annotation,
+                                                                                 @Nullable InvocationContext<Object, Object> context,
+                                                                                 ExecutableMethod<Object, Object> executableMethod,
+                                                                                 String appName) {
         boolean connectionClientInfoEnabled = annotation.booleanValue(ENABLED).orElse(true);
         if (!connectionClientInfoEnabled) {
             return null;
         }
-        String module = annotation.stringValue(TRACING_MODULE_MEMBER).orElse(null);
-        String action = annotation.stringValue(TRACING_ACTION_MEMBER).orElse(null);
+        String module = annotation.stringValue(MODULE_MEMBER).orElse(null);
+        String action = annotation.stringValue(ACTION_MEMBER).orElse(null);
         if (module == null) {
             if (context != null) {
                 Class<?> clazz = context.getTarget().getClass();
@@ -239,7 +244,14 @@ public final class ConnectableInterceptor implements MethodInterceptor<Object, O
         if (action == null) {
             action = executableMethod.getMethodName();
         }
-        return new ConnectionTracingInfo(appName, module, action);
+        List<AnnotationValue<ConnectionClientInfoAttribute>> clientInfoAttributes = annotation.getAnnotations(CLIENT_INFO_ATTRIBUTES_MEMBER, ConnectionClientInfoAttribute.class);
+        Map<String, String> additionalClientInfoAttributes = new HashMap<>(clientInfoAttributes.size());
+        for (AnnotationValue<ConnectionClientInfoAttribute> clientInfoAttribute : clientInfoAttributes) {
+            String name = clientInfoAttribute.getRequiredValue(NAME_MEMBER, String.class);
+            String value = clientInfoAttribute.getRequiredValue(VALUE_MEMBER, String.class);
+            additionalClientInfoAttributes.put(name, value);
+        }
+        return new ConnectionClientInfoDetails(appName, module, action, additionalClientInfoAttributes);
     }
 
     /**

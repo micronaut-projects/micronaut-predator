@@ -29,6 +29,8 @@ import java.sql.Connection;
  */
 public interface ConnectionCustomizer extends Ordered {
 
+    String PREFIX = "connection.customizer";
+
     /**
      * Checks whether this customizer supports the given connection and connection definition.
      *

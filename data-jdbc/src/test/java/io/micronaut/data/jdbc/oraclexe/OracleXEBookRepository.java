@@ -21,6 +21,7 @@ import io.micronaut.data.annotation.Query;
 import io.micronaut.data.annotation.TypeDef;
 import io.micronaut.data.annotation.sql.Procedure;
 import io.micronaut.data.connection.annotation.ConnectionClientInfo;
+import io.micronaut.data.connection.annotation.ConnectionClientInfoAttribute;
 import io.micronaut.data.jdbc.annotation.JdbcRepository;
 import io.micronaut.data.model.DataType;
 import io.micronaut.data.model.query.builder.sql.Dialect;
@@ -32,7 +33,7 @@ import java.util.Collection;
 import java.util.List;
 
 @JdbcRepository(dialect = Dialect.ORACLE)
-@ConnectionClientInfo(tracingModule = "BOOKS")
+@ConnectionClientInfo(module = "BOOKS")
 public abstract class OracleXEBookRepository extends BookRepository {
     public OracleXEBookRepository(OracleXEAuthorRepository authorRepository) {
         super(authorRepository);
@@ -57,7 +58,7 @@ public abstract class OracleXEBookRepository extends BookRepository {
     public abstract int add1Aliased(int input);
 
     @Override
-    @ConnectionClientInfo(tracingAction = "INSERT")
+    @ConnectionClientInfo(action = "INSERT", clientInfoAttributes = {@ConnectionClientInfoAttribute(name = "OCSID.MODULE", value = "CustomModule")})
     public abstract @NonNull Book save(@NonNull Book book);
 
     //    public abstract Book updateReturning(Book book);
