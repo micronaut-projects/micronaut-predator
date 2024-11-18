@@ -107,6 +107,7 @@ public interface ConnectionDefinition {
      * If no connection client information has been set, this method will return null.
      *
      * @return An instance of {@link ConnectionClientInfoDetails} representing the connection client information, or null if not set.
+     * @since 4.10
      */
     @Nullable ConnectionClientInfoDetails connectionClientInfo();
 

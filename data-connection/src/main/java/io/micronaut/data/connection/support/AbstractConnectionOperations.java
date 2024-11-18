@@ -66,7 +66,7 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
                     connectionListener.afterOpen(connectionStatus);
                 }
             } catch (Exception e) {
-                logger.debug("Customizer {} failed to customize connection after open.", connectionListener.getName(), e);
+                logger.debug("An error occurred when calling listener {} afterOpen.", connectionListener.getName(), e);
             }
         }
         return connectionStatus.getConnection();
@@ -101,7 +101,7 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
                     connectionListener.beforeClose(connectionStatus);
                 }
             } catch (Exception e) {
-                logger.debug("Customizer {} failed to customize connection before close.", connectionListener.getName(), e);
+                logger.debug("An error occurred when calling listener {} beforeClose.", connectionListener.getName(), e);
             }
         }
         doCloseConnection(connectionStatus);

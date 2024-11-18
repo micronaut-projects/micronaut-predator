@@ -16,7 +16,7 @@
 package io.micronaut.data.jdbc.oraclexe
 
 /**
- * The test
+ * The test for setting oracle connection client info.
  */
 class OracleRepositorySetClientInfoSpec extends OracleXERepositorySpec {
 

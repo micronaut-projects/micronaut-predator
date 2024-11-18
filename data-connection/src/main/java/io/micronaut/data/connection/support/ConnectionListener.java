@@ -20,9 +20,10 @@ import io.micronaut.core.order.Ordered;
 import io.micronaut.data.connection.ConnectionStatus;
 
 /**
- * Customizes connections based on the provided {@link ConnectionStatus}.
+ * Handles connection after open or before close events based on the provided {@link ConnectionStatus}.
  *
- * Implementations of this interface can modify the behavior of connections created by Micronaut Data.
+ * Implementations of this interface can modify the behavior of connections created by Micronaut Data
+ * or do what might be needed after connection open or before close.
  *
  * @see ConnectionStatus
  * @param <C> The connection type

@@ -130,7 +130,7 @@ final class OracleClientInfoCustomizerConnectionListener implements ConnectionLi
 
     @Override
     public String getName() {
-        return "Oracle Connection Customizer";
+        return "Oracle Connection Client Info Customizer";
     }
 
     /**
