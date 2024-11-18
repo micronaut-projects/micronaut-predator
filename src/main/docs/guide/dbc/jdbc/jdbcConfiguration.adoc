@@ -65,10 +65,11 @@ IMPORTANT: The dialect setting in configuration does *not* replace the need to e
 
 In order to trace SQL calls using `java.sql.Connection.setClientInfo(String, String)` method, you can
 annotate a repository with the @api:data.connection.annotation.ConnectionClientInfo[] annotation. If the boolean member `enabled` is set to `false`, then Micronaut will not issue `setClientInfo` calls to the JDBC connection.
-Fields in given annotation `module` and `action` can set custom module and action. If omitted, then module value will default
+The annotation members `module` and `action` can set a custom module and action. If omitted, then the name of the module will default
 to the class name (usually Micronaut Data repository class) annotated with the given annotation and action to the name of the method
-being executed. There is also property `clientInfoAttributes` allowing to set arbitrary client info attributes to be set to the connection client info.
-Annotation can be used on class or method, customizing module or action.
+being executed. In addition, the member `clientInfoAttributes` can be used to set arbitrary client info attributes to be set passed to the connection client info.
+
+Note that the @api:data.connection.annotation.ConnectionClientInfo[] annotation can be used on either the class or the method, thus allowing customizaction of the  module or action individually.
 
 For Oracle database, these values will be set to the JDBC connection using `setClientInfo("OCSID.MODULE", module)` and `setClientInfo("OCSID.ACTION", action)` respectively.
 Additionally, if `${micronaut.application.name}` is set, then it will be used to call JDBC connection `setClientInfo("OCSID.CLIENTID", appName)`.
