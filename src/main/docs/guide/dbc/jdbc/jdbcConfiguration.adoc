@@ -73,8 +73,8 @@ Note that the @api:data.connection.annotation.ConnectionClientInfo[] annotation 
 
 For Oracle database, these values will be set to the JDBC connection using `setClientInfo("OCSID.MODULE", module)` and `setClientInfo("OCSID.ACTION", action)` respectively.
 Additionally, if `${micronaut.application.name}` is set, then it will be used to call JDBC connection `setClientInfo("OCSID.CLIENTID", appName)`.
-Please make sure that if you supply `OCSID.MODULE` or `OCSID.ACTION` in `ConnectionClientInfo` property `clientInfoAttributes` these values will be ignored because
-`module` and `action` attributes are going to be mapped to  `OCSID.MODULE` and `OCSID.ACTION`.
+Note that if you supply the attributes `OCSID.MODULE` or `OCSID.ACTION` in the `clientInfoAttributes` member of the `@ConnectionClientInfo` annotation  these values will be ignored because
+`module` and `action` attributes are already mapped to  `OCSID.MODULE` and `OCSID.ACTION`.
 
 Please note this feature is currently supported only for Oracle database connections. In order to enable Oracle connection client info to be set,
 you need to specify the configuration property `datasources.default.enable-oracle-client-info=true` on a per datasource basis.
