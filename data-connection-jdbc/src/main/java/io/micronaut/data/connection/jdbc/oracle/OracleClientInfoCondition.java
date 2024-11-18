@@ -32,12 +32,12 @@ import io.micronaut.inject.BeanDefinition;
  * @since 4.10
  */
 @Internal
-final class OracleClientInfoCustomizerCondition implements Condition {
+final class OracleClientInfoCondition implements Condition {
 
     static final String DATASOURCES = "datasources";
     private static final Character DOT = '.';
     private static final String DIALECT = "dialect";
-    private static final String ORACLE_CLIENT_INFO_ENABLED = "customize-oracle-client-info";
+    private static final String ORACLE_CLIENT_INFO_ENABLED = "enable-oracle-client-info";
     private static final String ORACLE_DIALECT = "ORACLE";
 
     @Override

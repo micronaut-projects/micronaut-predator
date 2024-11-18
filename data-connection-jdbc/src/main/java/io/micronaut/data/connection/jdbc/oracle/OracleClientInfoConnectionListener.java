@@ -45,9 +45,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 4.10
  */
 @EachBean(DataSource.class)
-@Requires(condition = OracleClientInfoCustomizerCondition.class)
+@Requires(condition = OracleClientInfoCondition.class)
 @Internal
-final class OracleClientInfoCustomizerConnectionListener implements ConnectionListener<Connection> {
+final class OracleClientInfoConnectionListener implements ConnectionListener<Connection> {
 
     /**
      * Constant for the Oracle connection client info client ID property name.
@@ -67,7 +67,7 @@ final class OracleClientInfoCustomizerConnectionListener implements ConnectionLi
     private static final String ORACLE_CONNECTION_DATABASE_PRODUCT_NAME = "Oracle";
     private static final List<String> RESERVED_CLIENT_INFO_NAMES = List.of(ORACLE_CLIENT_ID, ORACLE_MODULE, ORACLE_ACTION);
 
-    private static final Logger LOG = LoggerFactory.getLogger(OracleClientInfoCustomizerConnectionListener.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OracleClientInfoConnectionListener.class);
 
     private final Map<Connection, Boolean> connectionSupportedMap = new ConcurrentHashMap<>(20);
 

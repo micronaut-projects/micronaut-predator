@@ -24,7 +24,7 @@ class OracleRepositorySetClientInfoSpec extends OracleXERepositorySpec {
     Map<String, String> getProperties() {
         return super.getProperties() + [
                 'micronaut.application.name': 'OracleRepositorySetClientInfoSpec',
-                'datasources.default.customize-oracle-client-info': 'true'
+                'datasources.default.enable-oracle-client-info': 'true'
         ]
     }
 }
