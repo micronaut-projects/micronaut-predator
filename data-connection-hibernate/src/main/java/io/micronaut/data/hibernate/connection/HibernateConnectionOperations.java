@@ -22,11 +22,15 @@ import io.micronaut.core.annotation.Order;
 import io.micronaut.data.connection.ConnectionDefinition;
 import io.micronaut.data.connection.ConnectionStatus;
 import io.micronaut.data.connection.support.AbstractConnectionOperations;
+import io.micronaut.data.connection.support.ConnectionListener;
+import io.micronaut.data.connection.support.DefaultConnectionStatus;
 import io.micronaut.data.hibernate.conf.RequiresSyncHibernate;
 import org.hibernate.Interceptor;
 import org.hibernate.Session;
 import org.hibernate.SessionBuilder;
 import org.hibernate.SessionFactory;
+
+import java.util.List;
 
 /**
  * The Hibernate connection operations.
@@ -45,18 +49,20 @@ public final class HibernateConnectionOperations extends AbstractConnectionOpera
     private final Interceptor entityInterceptor;
 
     public HibernateConnectionOperations(SessionFactory sessionFactory,
-                                         @Nullable Interceptor entityInterceptor) {
+                                         @Nullable Interceptor entityInterceptor,
+                                         List<ConnectionListener<Session>> connectionListeners) {
+        super(connectionListeners);
         this.sessionFactory = sessionFactory;
         this.entityInterceptor = entityInterceptor;
     }
 
     @Override
-    protected Session openConnection(ConnectionDefinition definition) {
+    protected ConnectionStatus<Session> doOpenConnection(ConnectionDefinition definition) {
         SessionBuilder sessionBuilder = sessionFactory.withOptions();
         if (entityInterceptor != null) {
             sessionBuilder = sessionBuilder.interceptor(entityInterceptor);
         }
-        return sessionBuilder.openSession();
+        return new DefaultConnectionStatus<>(sessionBuilder.openSession(), definition, true);
     }
 
     @Override
@@ -64,7 +70,7 @@ public final class HibernateConnectionOperations extends AbstractConnectionOpera
     }
 
     @Override
-    protected void closeConnection(ConnectionStatus<Session> connectionStatus) {
+    protected void doCloseConnection(ConnectionStatus<Session> connectionStatus) {
         connectionStatus.getConnection().close();
     }
 

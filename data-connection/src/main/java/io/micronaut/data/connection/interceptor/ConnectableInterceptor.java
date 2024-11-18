@@ -43,7 +43,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -68,6 +68,7 @@ public final class ConnectableInterceptor implements MethodInterceptor<Object, O
     private static final String CLIENT_INFO_ATTRIBUTES_MEMBER = "clientInfoAttributes";
     private static final String INTERCEPTED_SUFFIX = "$Intercepted";
 
+    private static final Map<ExecutableMethod, String> EXECUTABLE_METHOD_STRING_MAP = new ConcurrentHashMap<>(100);
     private final Map<TenantExecutableMethod, ConnectionInvocation> connectionInvocationMap = new ConcurrentHashMap<>(30);
 
     @NonNull
@@ -234,18 +235,20 @@ public final class ConnectableInterceptor implements MethodInterceptor<Object, O
         String module = annotation.stringValue(MODULE_MEMBER).orElse(null);
         String action = annotation.stringValue(ACTION_MEMBER).orElse(null);
         if (module == null) {
-            if (context != null) {
-                Class<?> clazz = context.getTarget().getClass();
-                module = clazz.getName().replace(INTERCEPTED_SUFFIX, "");
-            } else {
-                module = executableMethod.getDeclaringType().getName();
-            }
+            module = EXECUTABLE_METHOD_STRING_MAP.computeIfAbsent(executableMethod, executableMethod1 -> {
+                if (context != null) {
+                    Class<?> clazz = context.getTarget().getClass();
+                    return clazz.getName().replace(INTERCEPTED_SUFFIX, "");
+                } else {
+                    return executableMethod.getDeclaringType().getName();
+                }
+            });
         }
         if (action == null) {
             action = executableMethod.getMethodName();
         }
         List<AnnotationValue<ConnectionClientInfoAttribute>> clientInfoAttributes = annotation.getAnnotations(CLIENT_INFO_ATTRIBUTES_MEMBER, ConnectionClientInfoAttribute.class);
-        Map<String, String> additionalClientInfoAttributes = new HashMap<>(clientInfoAttributes.size());
+        Map<String, String> additionalClientInfoAttributes = new LinkedHashMap<>(clientInfoAttributes.size());
         for (AnnotationValue<ConnectionClientInfoAttribute> clientInfoAttribute : clientInfoAttributes) {
             String name = clientInfoAttribute.getRequiredValue(NAME_MEMBER, String.class);
             String value = clientInfoAttribute.getRequiredValue(VALUE_MEMBER, String.class);

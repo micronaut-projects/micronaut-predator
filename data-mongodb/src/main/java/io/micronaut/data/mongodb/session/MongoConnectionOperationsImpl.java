@@ -22,6 +22,10 @@ import io.micronaut.core.annotation.Internal;
 import io.micronaut.data.connection.ConnectionDefinition;
 import io.micronaut.data.connection.ConnectionStatus;
 import io.micronaut.data.connection.support.AbstractConnectionOperations;
+import io.micronaut.data.connection.support.ConnectionListener;
+import io.micronaut.data.connection.support.DefaultConnectionStatus;
+
+import java.util.List;
 
 @Internal
 @EachBean(MongoClient.class)
@@ -29,13 +33,15 @@ final class MongoConnectionOperationsImpl extends AbstractConnectionOperations<C
 
     private final MongoClient mongoClient;
 
-    MongoConnectionOperationsImpl(MongoClient mongoClient) {
+    MongoConnectionOperationsImpl(MongoClient mongoClient,
+                                  List<ConnectionListener<ClientSession>> connectionListeners) {
+        super(connectionListeners);
         this.mongoClient = mongoClient;
     }
 
     @Override
-    protected ClientSession openConnection(ConnectionDefinition definition) {
-        return mongoClient.startSession();
+    protected ConnectionStatus<ClientSession> doOpenConnection(ConnectionDefinition definition) {
+        return new DefaultConnectionStatus<>(mongoClient.startSession(), definition, true);
     }
 
     @Override
@@ -46,7 +52,7 @@ final class MongoConnectionOperationsImpl extends AbstractConnectionOperations<C
     }
 
     @Override
-    protected void closeConnection(ConnectionStatus<ClientSession> connectionStatus) {
+    protected void doCloseConnection(ConnectionStatus<ClientSession> connectionStatus) {
         connectionStatus.getConnection().close();
     }
 }

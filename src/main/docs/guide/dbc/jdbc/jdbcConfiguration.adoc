@@ -76,7 +76,7 @@ Please make sure that if you supply `OCSID.MODULE` or `OCSID.ACTION` in `Connect
 `module` and `action` attributes are going to be mapped to  `OCSID.MODULE` and `OCSID.ACTION`.
 
 Please note this is currently supported only for Oracle database connections. In order to enable Oracle connection client info to be set,
-need to add this property `connection.customizer.oracleclientinfo.enabled=true`.
+need to add this property `datasources.default.customize-oracle-client-info=true`.
 
 TIP: See the guide for https://guides.micronaut.io/latest/micronaut-data-jdbc-repository.html[Access a Database with Micronaut Data JDBC] to learn more.
 

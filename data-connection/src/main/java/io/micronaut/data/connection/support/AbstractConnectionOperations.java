@@ -29,6 +29,7 @@ import io.micronaut.data.connection.SynchronousConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -45,13 +46,41 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private final List<ConnectionListener<C>> connectionListeners;
+
+    protected AbstractConnectionOperations(List<ConnectionListener<C>> connectionListeners) {
+        this.connectionListeners = connectionListeners;
+    }
+
     /**
      * Opens a new connection.
      *
      * @param definition The connection definition
      * @return The connection
      */
-    protected abstract C openConnection(ConnectionDefinition definition);
+    protected final C openConnection(ConnectionDefinition definition) {
+        ConnectionStatus<C> connectionStatus = doOpenConnection(definition);
+        for (ConnectionListener<C> connectionListener : connectionListeners) {
+            try {
+                if (connectionListener.supportsConnection(connectionStatus)) {
+                    connectionListener.afterOpen(connectionStatus);
+                }
+            } catch (Exception e) {
+                logger.debug("Customizer {} failed to customize connection after open.", connectionListener.getName(), e);
+            }
+        }
+        return connectionStatus.getConnection();
+    }
+
+    /**
+     * Opens a new connection based on the provided connection definition.
+     *
+     * This method should be implemented by subclasses to provide the actual logic for opening a connection.
+     *
+     * @param definition the connection definition to use when opening the connection
+     * @return the status of the newly opened connection
+     */
+    protected abstract ConnectionStatus<C> doOpenConnection(ConnectionDefinition definition);
 
     /**
      * Setups the connection after it have been open.
@@ -65,7 +94,27 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
      *
      * @param connectionStatus The connection status
      */
-    protected abstract void closeConnection(ConnectionStatus<C> connectionStatus);
+    protected final void closeConnection(ConnectionStatus<C> connectionStatus) {
+        for (ConnectionListener<C> connectionListener : connectionListeners) {
+            try {
+                if (connectionListener.supportsConnection(connectionStatus)) {
+                    connectionListener.beforeClose(connectionStatus);
+                }
+            } catch (Exception e) {
+                logger.debug("Customizer {} failed to customize connection before close.", connectionListener.getName(), e);
+            }
+        }
+        doCloseConnection(connectionStatus);
+    }
+
+    /**
+     * Closes the connection represented by the given connection status.
+     *
+     * This method should be implemented by subclasses to provide the actual logic for closing a connection.
+     *
+     * @param connectionStatus the status of the connection to be closed
+     */
+    protected abstract void doCloseConnection(ConnectionStatus<C> connectionStatus);
 
     @Override
     public final Optional<ConnectionStatus<C>> findConnectionStatus() {

@@ -24,6 +24,8 @@ import io.micronaut.data.connection.ConnectionDefinition;
 import io.micronaut.data.connection.ConnectionStatus;
 import io.micronaut.data.connection.ConnectionSynchronization;
 import io.micronaut.data.connection.support.AbstractConnectionOperations;
+import io.micronaut.data.connection.support.ConnectionListener;
+import io.micronaut.data.connection.support.DefaultConnectionStatus;
 import io.micronaut.data.connection.support.JdbcConnectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,16 +48,15 @@ public final class DefaultDataSourceConnectionOperations extends AbstractConnect
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultDataSourceConnectionOperations.class);
     private final DataSource dataSource;
-    private final List<ConnectionCustomizer> connectionCustomizers;
 
     DefaultDataSourceConnectionOperations(DataSource dataSource,
-                                          List<ConnectionCustomizer> connectionCustomizers) {
+                                          List<ConnectionListener<Connection>> connectionListeners) {
+        super(connectionListeners);
         this.dataSource = DelegatingDataSource.unwrapDataSource(dataSource);
-        this.connectionCustomizers = connectionCustomizers;
     }
 
     @Override
-    protected Connection openConnection(ConnectionDefinition definition) {
+    protected ConnectionStatus<Connection> doOpenConnection(ConnectionDefinition definition) {
         Connection connection;
         try {
             connection = dataSource.getConnection();
@@ -63,16 +64,7 @@ public final class DefaultDataSourceConnectionOperations extends AbstractConnect
             throw new CannotGetJdbcConnectionException("Failed to obtain JDBC Connection", e);
         }
 
-        for (ConnectionCustomizer connectionCustomizer : connectionCustomizers) {
-            try {
-                if (connectionCustomizer.supportsConnection(connection, definition)) {
-                    connectionCustomizer.afterOpen(connection, definition);
-                }
-            } catch (Exception e) {
-                LOG.debug("Customizer {} failed to customize connection after open.", connectionCustomizer.getName(), e);
-            }
-        }
-        return connection;
+        return new DefaultConnectionStatus<>(connection, definition, true);
     }
 
     @Override
@@ -95,19 +87,8 @@ public final class DefaultDataSourceConnectionOperations extends AbstractConnect
     }
 
     @Override
-    protected void closeConnection(ConnectionStatus<Connection> connectionStatus) {
+    protected void doCloseConnection(ConnectionStatus<Connection> connectionStatus) {
         Connection connection = connectionStatus.getConnection();
-        ConnectionDefinition definition = connectionStatus.getDefinition();
-        for (ConnectionCustomizer connectionCustomizer : connectionCustomizers) {
-            try {
-                if (connectionCustomizer.supportsConnection(connection, definition)) {
-                    connectionCustomizer.beforeClose(connection, definition);
-                }
-            } catch (Exception e) {
-                LOG.debug("Customizer {} failed to customize connection before close.", connectionCustomizer.getName(), e);
-            }
-        }
-
         try {
             connection.close();
         } catch (SQLException e) {

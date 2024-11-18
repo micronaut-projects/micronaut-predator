@@ -13,16 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.micronaut.data.connection.jdbc.operations;
+package io.micronaut.data.connection.jdbc.oracle;
 
+import io.micronaut.context.annotation.EachBean;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.core.annotation.Internal;
+import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.data.connection.ConnectionDefinition;
+import io.micronaut.data.connection.ConnectionStatus;
 import io.micronaut.data.connection.support.ConnectionClientInfoDetails;
-import jakarta.inject.Singleton;
+import io.micronaut.data.connection.support.ConnectionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
@@ -31,16 +36,18 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * A customizer for Oracle database connections that sets and clears client information.
+ * A customizer for Oracle database connections that sets client information after opening and clears before closing.
  *
  * This customizer checks if the connection is an Oracle database connection and then sets the client information
  * (client ID, module, and action) after opening the connection. It also clears these properties before closing the connection.
  *
+ * @author radovanradic
  * @since 4.10
  */
-@Singleton
-@Requires(property = ConnectionCustomizer.PREFIX + ".oracleclientinfo.enabled", value = "true", defaultValue = "false")
-final class OracleConnectionClientInfoCustomizer implements ConnectionCustomizer {
+@EachBean(DataSource.class)
+@Requires(condition = OracleClientInfoCustomizerCondition.class)
+@Internal
+final class OracleClientInfoCustomizerConnectionListener implements ConnectionListener<Connection> {
 
     /**
      * Constant for the Oracle connection client info client ID property name.
@@ -60,20 +67,22 @@ final class OracleConnectionClientInfoCustomizer implements ConnectionCustomizer
     private static final String ORACLE_CONNECTION_DATABASE_PRODUCT_NAME = "Oracle";
     private static final List<String> RESERVED_CLIENT_INFO_NAMES = List.of(ORACLE_CLIENT_ID, ORACLE_MODULE, ORACLE_ACTION);
 
-    private static final Logger LOG = LoggerFactory.getLogger(OracleConnectionClientInfoCustomizer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OracleClientInfoCustomizerConnectionListener.class);
 
     private final Map<Connection, Boolean> connectionSupportedMap = new ConcurrentHashMap<>(20);
 
     @Override
-    public boolean supportsConnection(Connection connection, ConnectionDefinition connectionDefinition) {
-        return connectionSupportedMap.computeIfAbsent(connection, this::isOracleConnection);
+    public boolean supportsConnection(@NonNull ConnectionStatus<Connection> connectionStatus) {
+        return connectionSupportedMap.computeIfAbsent(connectionStatus.getConnection(), this::isOracleConnection);
     }
 
     @Override
-    public void afterOpen(Connection connection, ConnectionDefinition connectionDefinition) {
+    public void afterOpen(@NonNull ConnectionStatus<Connection> connectionStatus) {
+        ConnectionDefinition connectionDefinition = connectionStatus.getDefinition();
         // Set client info for connection if Oracle connection after connection is opened
         ConnectionClientInfoDetails connectionClientInfo = connectionDefinition.connectionClientInfo();
         if (connectionClientInfo != null) {
+            Connection connection = connectionStatus.getConnection();
             LOG.trace("Setting connection tracing info to the Oracle connection");
             try {
                 if (connectionClientInfo.appName() != null) {
@@ -97,11 +106,13 @@ final class OracleConnectionClientInfoCustomizer implements ConnectionCustomizer
     }
 
     @Override
-    public void beforeClose(Connection connection, ConnectionDefinition connectionDefinition) {
+    public void beforeClose(@NonNull ConnectionStatus<Connection> connectionStatus) {
         // Clear client info for connection if it was Oracle connection and client info was set previously
+        ConnectionDefinition connectionDefinition = connectionStatus.getDefinition();
         ConnectionClientInfoDetails connectionClientInfo = connectionDefinition.connectionClientInfo();
         if (connectionClientInfo != null) {
             try {
+                Connection connection = connectionStatus.getConnection();
                 connection.setClientInfo(ORACLE_CLIENT_ID, null);
                 connection.setClientInfo(ORACLE_MODULE, null);
                 connection.setClientInfo(ORACLE_ACTION, null);
