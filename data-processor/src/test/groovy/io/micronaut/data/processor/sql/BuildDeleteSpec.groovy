@@ -15,6 +15,7 @@
  */
 package io.micronaut.data.processor.sql
 
+import io.micronaut.data.intercept.DeleteAllInterceptor
 import io.micronaut.data.intercept.DeleteReturningManyInterceptor
 import io.micronaut.data.intercept.DeleteReturningOneInterceptor
 import io.micronaut.data.intercept.annotation.DataMethod
@@ -556,5 +557,34 @@ interface PersonRepository extends CrudRepository<Person, Long> {
         type                                          | interceptor
         'java.util.List<Long>'                        | DeleteReturningManyInterceptor
         'Long'                                        | DeleteReturningOneInterceptor
+    }
+
+    @Unroll
+    void "test build delete with CTE"() {
+        given:
+        def repository = buildRepository('test.PersonRepository', """
+import io.micronaut.data.jdbc.annotation.JdbcRepository;
+import io.micronaut.data.model.query.builder.sql.Dialect;
+import io.micronaut.data.tck.entities.Person;
+
+@JdbcRepository(dialect= Dialect.MYSQL)
+@io.micronaut.context.annotation.Executable
+interface PersonRepository extends CrudRepository<Person, Long> {
+
+    @Query(\"""
+            WITH ids AS (SELECT id FROM person)
+            DELETE FROM person
+            WHERE id = :id
+            \""")
+    void customDelete(Long id);
+
+}
+""")
+        def method = repository.findPossibleMethods("customDelete").findFirst().get()
+        def deleteQuery = getQuery(method)
+
+        expect:
+        deleteQuery.replace('\n', ' ') == "WITH ids AS (SELECT id FROM person) DELETE FROM person WHERE id = :id "
+        method.classValue(DataMethod, "interceptor").get() == DeleteAllInterceptor
     }
 }

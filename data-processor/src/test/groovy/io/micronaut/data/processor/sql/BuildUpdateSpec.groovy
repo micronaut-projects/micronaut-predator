@@ -198,6 +198,35 @@ interface PersonRepository extends CrudRepository<Person, Long> {
     }
 
     @Unroll
+    void "test build update with CTE"() {
+        given:
+        def repository = buildRepository('test.PersonRepository', """
+import io.micronaut.data.jdbc.annotation.JdbcRepository;
+import io.micronaut.data.model.query.builder.sql.Dialect;
+import io.micronaut.data.tck.entities.Person;
+
+@JdbcRepository(dialect= Dialect.MYSQL)
+@io.micronaut.context.annotation.Executable
+interface PersonRepository extends CrudRepository<Person, Long> {
+
+    @Query(\"""
+            WITH ids AS (SELECT id FROM person)
+            UPDATE person SET name = 'test'
+            WHERE id = :id
+            \""")
+    void customUpdate(Long id);
+
+}
+""")
+        def method = repository.findPossibleMethods("customUpdate").findFirst().get()
+        def updateQuery = getQuery(method)
+
+        expect:
+        updateQuery.replace('\n', ' ') == "WITH ids AS (SELECT id FROM person) UPDATE person SET name = 'test' WHERE id = :id "
+        method.classValue(DataMethod, "interceptor").get() == UpdateInterceptor
+    }
+
+    @Unroll
     void "test build update with datasource set"() {
         given:
             def repository = buildRepository('test.MovieRepository', """
