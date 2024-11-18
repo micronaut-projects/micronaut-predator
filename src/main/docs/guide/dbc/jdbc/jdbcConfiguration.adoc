@@ -64,7 +64,7 @@ IMPORTANT: The dialect setting in configuration does *not* replace the need to e
 === Connection client info tracing
 
 In order to trace SQL calls using `java.sql.Connection.setClientInfo(String, String)` method, you can
-annotate repository with @api:data.connection.annotation.ConnectionClientInfo[] annotation. If boolean field `enabled` is set to false, then Micronaut will not issue `setClientInfo` calls to the JDBC connection.
+annotate a repository with the @api:data.connection.annotation.ConnectionClientInfo[] annotation. If the boolean member `enabled` is set to `false`, then Micronaut will not issue `setClientInfo` calls to the JDBC connection.
 Fields in given annotation `module` and `action` can set custom module and action. If omitted, then module value will default
 to the class name (usually Micronaut Data repository class) annotated with the given annotation and action to the name of the method
 being executed. There is also property `clientInfoAttributes` allowing to set arbitrary client info attributes to be set to the connection client info.
