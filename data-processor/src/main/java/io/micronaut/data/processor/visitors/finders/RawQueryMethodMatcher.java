@@ -61,12 +61,11 @@ import java.util.regex.Pattern;
  */
 public class RawQueryMethodMatcher implements MethodMatcher {
 
-    private static final String SELECT = "select";
-    private static final String DELETE = "delete";
-    private static final String UPDATE = "update";
-    private static final String INSERT = "insert";
-
+    private static final Pattern UPDATE_PATTERN = Pattern.compile(".*\\bupdate\\b.*");
+    private static final Pattern DELETE_PATTERN = Pattern.compile(".*\\bdelete\\b.*");
+    private static final Pattern INSERT_PATTERN = Pattern.compile(".*\\binsert\\b.*");
     private static final Pattern RETURNING_PATTERN = Pattern.compile(".*\\breturning\\b.*");
+
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("([^:\\\\]*)((?<![:]):([a-zA-Z0-9]+))([^:]*)");
 
     @Override
@@ -173,14 +172,13 @@ public class RawQueryMethodMatcher implements MethodMatcher {
 
     private DataMethod.OperationType findOperationType(String methodName, String query, boolean readOnly) {
         query = query.trim().toLowerCase(Locale.ENGLISH);
-        if (query.startsWith(SELECT)) {
-            return DataMethod.OperationType.QUERY;
-        } else if (query.startsWith(DELETE)) {
+
+        if (DELETE_PATTERN.matcher(query).find()) {
             if (RETURNING_PATTERN.matcher(query).find()) {
                 return DataMethod.OperationType.DELETE_RETURNING;
             }
             return DataMethod.OperationType.DELETE;
-        } else if (query.startsWith(UPDATE)) {
+        } else if (UPDATE_PATTERN.matcher(query).find()) {
             if (RETURNING_PATTERN.matcher(query).find()) {
                 return DataMethod.OperationType.UPDATE_RETURNING;
             }
@@ -188,7 +186,7 @@ public class RawQueryMethodMatcher implements MethodMatcher {
                 return DataMethod.OperationType.DELETE;
             }
             return DataMethod.OperationType.UPDATE;
-        } else if (query.startsWith(INSERT)) {
+        } else if (INSERT_PATTERN.matcher(query).find()) {
             if (RETURNING_PATTERN.matcher(query).find()) {
                 return DataMethod.OperationType.INSERT_RETURNING;
             }
