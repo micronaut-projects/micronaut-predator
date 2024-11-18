@@ -76,8 +76,8 @@ Additionally, if `${micronaut.application.name}` is set, then it will be used to
 Please make sure that if you supply `OCSID.MODULE` or `OCSID.ACTION` in `ConnectionClientInfo` property `clientInfoAttributes` these values will be ignored because
 `module` and `action` attributes are going to be mapped to  `OCSID.MODULE` and `OCSID.ACTION`.
 
-Please note this is currently supported only for Oracle database connections. In order to enable Oracle connection client info to be set,
-need to add this property `datasources.default.customize-oracle-client-info=true`.
+Please note this feature is currently supported only for Oracle database connections. In order to enable Oracle connection client info to be set,
+you need to specify the configuration property `datasources.default.enable-oracle-client-info=true` on a per datasource basis.
 
 TIP: See the guide for https://guides.micronaut.io/latest/micronaut-data-jdbc-repository.html[Access a Database with Micronaut Data JDBC] to learn more.
 
