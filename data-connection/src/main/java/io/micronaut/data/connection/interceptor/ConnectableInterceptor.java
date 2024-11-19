@@ -21,6 +21,7 @@ import io.micronaut.aop.InterceptorBean;
 import io.micronaut.aop.InvocationContext;
 import io.micronaut.aop.MethodInterceptor;
 import io.micronaut.aop.MethodInvocationContext;
+import io.micronaut.core.annotation.AnnotationMetadata;
 import io.micronaut.core.annotation.AnnotationValue;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.NonNull;
@@ -189,7 +190,7 @@ public final class ConnectableInterceptor implements MethodInterceptor<Object, O
             annotation.enumValue("propagation", ConnectionDefinition.Propagation.class).orElse(ConnectionDefinition.PROPAGATION_DEFAULT),
             annotation.longValue("timeout").stream().mapToObj(Duration::ofSeconds).findFirst().orElse(null),
             annotation.booleanValue("readOnly").orElse(null),
-            context
+            context == null ? AnnotationMetadata.EMPTY_METADATA : context
         );
     }
 

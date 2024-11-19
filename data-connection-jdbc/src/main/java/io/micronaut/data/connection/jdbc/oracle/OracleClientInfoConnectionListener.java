@@ -25,7 +25,6 @@ import io.micronaut.core.annotation.AnnotationValue;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.annotation.Nullable;
-import io.micronaut.core.util.CollectionUtils;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.data.connection.ConnectionDefinition;
 import io.micronaut.data.connection.ConnectionStatus;
@@ -64,7 +63,6 @@ final class OracleClientInfoConnectionListener implements ConnectionListener<Con
 
     private static final String NAME_MEMBER = "name";
     private static final String VALUE_MEMBER = "value";
-    private static final String CLIENT_INFO_ATTRIBUTES_MEMBER = "clientInfoAttributes";
     private static final String INTERCEPTED_SUFFIX = "$Intercepted";
 
     /**
@@ -110,7 +108,7 @@ final class OracleClientInfoConnectionListener implements ConnectionListener<Con
         ConnectionDefinition connectionDefinition = connectionStatus.getDefinition();
         // Set client info for connection if Oracle connection after connection is opened
         Map<String, String> connectionClientInfo = getConnectionClientInfo(connectionDefinition);
-        if (CollectionUtils.isNotEmpty(connectionClientInfo)) {
+        if (connectionClientInfo != null && !connectionClientInfo.isEmpty()) {
             Connection connection = connectionStatus.getConnection();
             LOG.trace("Setting connection tracing info to the Oracle connection");
             try {
@@ -130,7 +128,7 @@ final class OracleClientInfoConnectionListener implements ConnectionListener<Con
         // Clear client info for connection if it was Oracle connection and client info was set previously
         ConnectionDefinition connectionDefinition = connectionStatus.getDefinition();
         Map<String, String> connectionClientInfo = getConnectionClientInfo(connectionDefinition);
-        if (CollectionUtils.isNotEmpty(connectionClientInfo)) {
+        if (connectionClientInfo != null && !connectionClientInfo.isEmpty()) {
             try {
                 Connection connection = connectionStatus.getConnection();
                 for (String key : connectionClientInfo.keySet()) {
