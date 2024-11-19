@@ -17,6 +17,8 @@ package io.micronaut.data.jdbc.config;
 
 import io.micronaut.context.BeanLocator;
 import io.micronaut.context.annotation.Context;
+import io.micronaut.context.env.Environment;
+import io.micronaut.context.env.PropertyPlaceholderResolver;
 import io.micronaut.context.exceptions.ConfigurationException;
 import io.micronaut.context.exceptions.NoSuchBeanException;
 import io.micronaut.core.annotation.Internal;
@@ -61,16 +63,21 @@ public class SchemaGenerator {
 
     private final List<DataJdbcConfiguration> configurations;
     private final JdbcSchemaHandler schemaHandler;
+    private final PropertyPlaceholderResolver propertyPlaceholderResolver;
 
     /**
      * Constructors a schema generator for the given configurations.
      *
      * @param configurations The configurations
      * @param schemaHandler  The schema handler
+     * @param environment    The environment
      */
-    public SchemaGenerator(List<DataJdbcConfiguration> configurations, JdbcSchemaHandler schemaHandler) {
+    public SchemaGenerator(List<DataJdbcConfiguration> configurations,
+                           JdbcSchemaHandler schemaHandler,
+                           Environment environment) {
         this.configurations = configurations == null ? Collections.emptyList() : configurations;
         this.schemaHandler = schemaHandler;
+        this.propertyPlaceholderResolver = environment.getPlaceholderResolver();
     }
 
     /**
@@ -115,14 +122,14 @@ public class SchemaGenerator {
                             for (String schemaName : configuration.getSchemaGenerateNames()) {
                                 schemaHandler.createSchema(connection, dialect, schemaName);
                                 schemaHandler.useSchema(connection, dialect, schemaName);
-                                generate(connection, configuration, entities);
+                                generate(connection, configuration, propertyPlaceholderResolver, entities);
                             }
                         } else {
                             if (configuration.getSchemaGenerateName() != null) {
                                 schemaHandler.createSchema(connection, dialect, configuration.getSchemaGenerateName());
                                 schemaHandler.useSchema(connection, dialect, configuration.getSchemaGenerateName());
                             }
-                            generate(connection, configuration, entities);
+                            generate(connection, configuration, propertyPlaceholderResolver, entities);
                         }
                     } catch (SQLException e) {
                         throw new DataAccessException("Unable to create database schema: " + e.getMessage(), e);
@@ -136,6 +143,7 @@ public class SchemaGenerator {
 
     private static void generate(Connection connection,
                                  DataJdbcConfiguration configuration,
+                                 PropertyPlaceholderResolver propertyPlaceholderResolver,
                                  PersistentEntity[] entities) throws SQLException {
         Dialect dialect = configuration.getDialect();
         SqlQueryBuilder2 builder = new SqlQueryBuilder2(dialect);
@@ -143,7 +151,7 @@ public class SchemaGenerator {
             switch (configuration.getSchemaGenerate()) {
                 case CREATE_DROP:
                     try {
-                        String sql = builder.buildBatchDropTableStatement(entities);
+                        String sql = resolveSql(propertyPlaceholderResolver, builder.buildBatchDropTableStatement(entities));
                         if (DataSettings.QUERY_LOG.isDebugEnabled()) {
                             DataSettings.QUERY_LOG.debug("Dropping Tables: \n{}", sql);
                         }
@@ -156,7 +164,7 @@ public class SchemaGenerator {
                         }
                     }
                 case CREATE:
-                    String sql = builder.buildBatchCreateTableStatement(entities);
+                    String sql = resolveSql(propertyPlaceholderResolver, builder.buildBatchCreateTableStatement(entities));
                     if (DataSettings.QUERY_LOG.isDebugEnabled()) {
                         DataSettings.QUERY_LOG.debug("Creating Tables: \n{}", sql);
                     }
@@ -174,6 +182,7 @@ public class SchemaGenerator {
                         try {
                             String[] statements = builder.buildDropTableStatements(entity);
                             for (String sql : statements) {
+                                sql = resolveSql(propertyPlaceholderResolver, sql);
                                 if (DataSettings.QUERY_LOG.isDebugEnabled()) {
                                     DataSettings.QUERY_LOG.debug("Dropping Table: \n{}", sql);
                                 }
@@ -192,6 +201,7 @@ public class SchemaGenerator {
 
                         String[] sql = builder.buildCreateTableStatements(entity);
                         for (String stmt : sql) {
+                            stmt = resolveSql(propertyPlaceholderResolver, stmt);
                             if (DataSettings.QUERY_LOG.isDebugEnabled()) {
                                 DataSettings.QUERY_LOG.debug("Executing CREATE statement: \n{}", stmt);
                             }
@@ -214,5 +224,19 @@ public class SchemaGenerator {
                     // do nothing
             }
         }
+    }
+
+    /**
+     * Resolves property placeholder values if there are any.
+     *
+     * @param propertyPlaceholderResolver The property placeholder resolver
+     * @param sql The SQL to resolve placeholder properties if there are any
+     * @return The resulting SQL with resolved properties if there were any
+     */
+    private static String resolveSql(PropertyPlaceholderResolver propertyPlaceholderResolver, String sql) {
+        if (sql.contains(propertyPlaceholderResolver.getPrefix())) {
+            return propertyPlaceholderResolver.resolveRequiredPlaceholders(sql);
+        }
+        return sql;
     }
 }
