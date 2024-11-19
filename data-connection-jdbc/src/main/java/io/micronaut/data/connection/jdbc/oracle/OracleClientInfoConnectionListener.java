@@ -29,6 +29,7 @@ import io.micronaut.core.util.CollectionUtils;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.data.connection.ConnectionDefinition;
 import io.micronaut.data.connection.ConnectionStatus;
+import io.micronaut.data.connection.annotation.ConnectionClientInfoAttribute;
 import io.micronaut.data.connection.annotation.ConnectionClientInfo;
 import io.micronaut.data.connection.jdbc.advice.DelegatingDataSource;
 import io.micronaut.data.connection.support.AbstractConnectionOperations;
@@ -61,7 +62,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Internal
 final class OracleClientInfoConnectionListener implements ConnectionListener<Connection> {
 
-    private static final String ENABLED = "enabled";
     private static final String NAME_MEMBER = "name";
     private static final String VALUE_MEMBER = "value";
     private static final String CLIENT_INFO_ATTRIBUTES_MEMBER = "clientInfoAttributes";
@@ -164,24 +164,20 @@ final class OracleClientInfoConnectionListener implements ConnectionListener<Con
     }
 
     /**
-     * Gets connection client info from the {@link ConnectionClientInfo} annotation.
+     * Gets connection client info from the {@link ConnectionClientInfoAttribute} annotation.
      *
      * @param connectionDefinition The connection definition
      * @return The connection client info or null if not configured to be used
      */
     private @Nullable Map<String, String> getConnectionClientInfo(@NonNull ConnectionDefinition connectionDefinition) {
         AnnotationMetadata annotationMetadata = connectionDefinition.getAnnotationMetadata();
-        AnnotationValue<ConnectionClientInfo> annotation = annotationMetadata.getAnnotation(io.micronaut.data.connection.annotation.ConnectionClientInfo.class);
+        AnnotationValue<ConnectionClientInfo> annotation = annotationMetadata.getAnnotation(ConnectionClientInfo.class);
         if (annotation == null) {
             return null;
         }
-        boolean connectionClientInfoEnabled = annotation.booleanValue(ENABLED).orElse(true);
-        if (!connectionClientInfoEnabled) {
-            return null;
-        }
-        List<AnnotationValue<ConnectionClientInfo.ConnectionClientInfoAttribute>> clientInfoAttributes = annotation.getAnnotations(CLIENT_INFO_ATTRIBUTES_MEMBER, ConnectionClientInfo.ConnectionClientInfoAttribute.class);
+        List<AnnotationValue<ConnectionClientInfoAttribute>> clientInfoAttributes = annotation.getAnnotations(VALUE_MEMBER);
         Map<String, String> additionalClientInfoAttributes = new LinkedHashMap<>(clientInfoAttributes.size());
-        for (AnnotationValue<ConnectionClientInfo.ConnectionClientInfoAttribute> clientInfoAttribute : clientInfoAttributes) {
+        for (AnnotationValue<ConnectionClientInfoAttribute> clientInfoAttribute : clientInfoAttributes) {
             String name = clientInfoAttribute.getRequiredValue(NAME_MEMBER, String.class);
             String value = clientInfoAttribute.getRequiredValue(VALUE_MEMBER, String.class);
             additionalClientInfoAttributes.put(name, value);
