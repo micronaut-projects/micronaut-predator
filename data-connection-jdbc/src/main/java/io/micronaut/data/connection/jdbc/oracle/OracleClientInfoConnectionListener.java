@@ -86,7 +86,7 @@ final class OracleClientInfoConnectionListener implements ConnectionListener<Con
 
     private static final Logger LOG = LoggerFactory.getLogger(OracleClientInfoConnectionListener.class);
 
-    private static final Map<MethodInvocationContext, String> METHOD_INVOCATION_CONTEXT_STRING_MAP = new ConcurrentHashMap<>(100);
+    private static final Map<Class<?>, String> MODULE_CLASS_MAP = new ConcurrentHashMap<>(100);
 
     @Nullable
     private final String applicationName;
@@ -191,10 +191,8 @@ final class OracleClientInfoConnectionListener implements ConnectionListener<Con
         }
         if (annotationMetadata instanceof MethodInvocationContext methodInvocationContext) {
             additionalClientInfoAttributes.putIfAbsent(ORACLE_MODULE,
-                METHOD_INVOCATION_CONTEXT_STRING_MAP.computeIfAbsent(methodInvocationContext, ctx -> {
-                    Class<?> clazz = ctx.getTarget().getClass();
-                    return clazz.getName().replace(INTERCEPTED_SUFFIX, "");
-                })
+                MODULE_CLASS_MAP.computeIfAbsent(methodInvocationContext.getTarget().getClass(),
+                    clazz -> clazz.getName().replace(INTERCEPTED_SUFFIX, ""))
             );
             additionalClientInfoAttributes.putIfAbsent(ORACLE_ACTION, methodInvocationContext.getName());
         }
