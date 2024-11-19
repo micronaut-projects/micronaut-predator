@@ -15,6 +15,5 @@ import java.lang.annotation.RetentionPolicy
 @Property(name = "datasources.default.url", value = "jdbc:h2:mem:mydb;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE")
 @Property(name = "datasources.default.username", value = "")
 @Property(name = "datasources.default.password", value = "")
-@Property(name = "entity-prefix", value = "my_entity_")
 @interface H2DBProperties {
 }
