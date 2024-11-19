@@ -33,7 +33,7 @@ import java.util.Collection;
 import java.util.List;
 
 @JdbcRepository(dialect = Dialect.ORACLE)
-@ConnectionClientInfo(module = "BOOKS")
+@ConnectionClientInfo(clientInfoAttributes = {@ConnectionClientInfoAttribute(name = "OCSID.MODULE", value = "BOOKS")})
 public abstract class OracleXEBookRepository extends BookRepository {
     public OracleXEBookRepository(OracleXEAuthorRepository authorRepository) {
         super(authorRepository);
@@ -58,7 +58,8 @@ public abstract class OracleXEBookRepository extends BookRepository {
     public abstract int add1Aliased(int input);
 
     @Override
-    @ConnectionClientInfo(action = "INSERT", clientInfoAttributes = {@ConnectionClientInfoAttribute(name = "OCSID.MODULE", value = "CustomModule")})
+    @ConnectionClientInfo(clientInfoAttributes = {@ConnectionClientInfoAttribute(name = "OCSID.MODULE", value = "CustomModule"),
+        @ConnectionClientInfoAttribute(name = "OCSID.ACTION", value = "INSERT")})
     public abstract @NonNull Book save(@NonNull Book book);
 
     //    public abstract Book updateReturning(Book book);

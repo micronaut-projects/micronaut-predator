@@ -15,15 +15,25 @@
  */
 package io.micronaut.data.connection.jdbc.oracle;
 
+import io.micronaut.aop.MethodInvocationContext;
+import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.EachBean;
+import io.micronaut.context.annotation.Parameter;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.core.annotation.AnnotationMetadata;
+import io.micronaut.core.annotation.AnnotationValue;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.NonNull;
+import io.micronaut.core.annotation.Nullable;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.data.connection.ConnectionDefinition;
 import io.micronaut.data.connection.ConnectionStatus;
-import io.micronaut.data.connection.support.ConnectionClientInfoDetails;
+import io.micronaut.data.connection.annotation.ConnectionClientInfo;
+import io.micronaut.data.connection.annotation.ConnectionClientInfoAttribute;
+import io.micronaut.data.connection.jdbc.advice.DelegatingDataSource;
+import io.micronaut.data.connection.support.AbstractConnectionOperations;
 import io.micronaut.data.connection.support.ConnectionListener;
+import io.micronaut.runtime.ApplicationConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +41,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,8 +57,15 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @EachBean(DataSource.class)
 @Requires(condition = OracleClientInfoCondition.class)
+@Context
 @Internal
 final class OracleClientInfoConnectionListener implements ConnectionListener<Connection> {
+
+    private static final String ENABLED = "enabled";
+    private static final String NAME_MEMBER = "name";
+    private static final String VALUE_MEMBER = "value";
+    private static final String CLIENT_INFO_ATTRIBUTES_MEMBER = "clientInfoAttributes";
+    private static final String INTERCEPTED_SUFFIX = "$Intercepted";
 
     /**
      * Constant for the Oracle connection client info client ID property name.
@@ -65,39 +83,40 @@ final class OracleClientInfoConnectionListener implements ConnectionListener<Con
      * Constant for the Oracle connection database product name.
      */
     private static final String ORACLE_CONNECTION_DATABASE_PRODUCT_NAME = "Oracle";
-    private static final List<String> RESERVED_CLIENT_INFO_NAMES = List.of(ORACLE_CLIENT_ID, ORACLE_MODULE, ORACLE_ACTION);
 
     private static final Logger LOG = LoggerFactory.getLogger(OracleClientInfoConnectionListener.class);
+    private static final Map<MethodInvocationContext, String> METHOD_INVOCATION_CONTEXT_STRING_MAP = new ConcurrentHashMap<>(100);
 
-    private final Map<Connection, Boolean> connectionSupportedMap = new ConcurrentHashMap<>(20);
+    @Nullable
+    private final String applicationName;
 
-    @Override
-    public boolean supportsConnection(@NonNull ConnectionStatus<Connection> connectionStatus) {
-        return connectionSupportedMap.computeIfAbsent(connectionStatus.getConnection(), this::isOracleConnection);
+    OracleClientInfoConnectionListener(@NonNull DataSource dataSource,
+                                       @NonNull @Parameter AbstractConnectionOperations<Connection> connectionOperations,
+                                       @Nullable ApplicationConfiguration applicationConfiguration) {
+        this.applicationName = applicationConfiguration.getName().orElse(null);
+        try {
+            Connection connection = DelegatingDataSource.unwrapDataSource(dataSource).getConnection();
+            if (isOracleConnection(connection)) {
+                connectionOperations.addConnectionListener(this);
+            }
+        } catch (SQLException e) {
+            LOG.error("Failed to get connection for oracle connection listener", e);
+        }
     }
 
     @Override
     public void afterOpen(@NonNull ConnectionStatus<Connection> connectionStatus) {
         ConnectionDefinition connectionDefinition = connectionStatus.getDefinition();
         // Set client info for connection if Oracle connection after connection is opened
-        ConnectionClientInfoDetails connectionClientInfo = connectionDefinition.connectionClientInfo();
+        Map<String, String> connectionClientInfo = getConnectionClientInfo(connectionDefinition);
         if (connectionClientInfo != null) {
             Connection connection = connectionStatus.getConnection();
             LOG.trace("Setting connection tracing info to the Oracle connection");
             try {
-                if (connectionClientInfo.appName() != null) {
-                    connection.setClientInfo(ORACLE_CLIENT_ID, connectionClientInfo.appName());
-                }
-                connection.setClientInfo(ORACLE_MODULE, connectionClientInfo.module());
-                connection.setClientInfo(ORACLE_ACTION, connectionClientInfo.action());
-                for (Map.Entry<String, String> additionalInfo : connectionClientInfo.connectionClientInfoAttributes().entrySet()) {
+                for (Map.Entry<String, String> additionalInfo : connectionClientInfo.entrySet()) {
                     String name = additionalInfo.getKey();
-                    if (RESERVED_CLIENT_INFO_NAMES.contains(name)) {
-                        LOG.debug("Connection client info attribute {} already set. Skip setting value from the arbitrary attributes.", name);
-                    } else {
-                        String value = additionalInfo.getValue();
-                        connection.setClientInfo(name, value);
-                    }
+                    String value = additionalInfo.getValue();
+                    connection.setClientInfo(name, value);
                 }
             } catch (SQLClientInfoException e) {
                 LOG.debug("Failed to set connection tracing info", e);
@@ -109,18 +128,12 @@ final class OracleClientInfoConnectionListener implements ConnectionListener<Con
     public void beforeClose(@NonNull ConnectionStatus<Connection> connectionStatus) {
         // Clear client info for connection if it was Oracle connection and client info was set previously
         ConnectionDefinition connectionDefinition = connectionStatus.getDefinition();
-        ConnectionClientInfoDetails connectionClientInfo = connectionDefinition.connectionClientInfo();
+        Map<String, String> connectionClientInfo = getConnectionClientInfo(connectionDefinition);
         if (connectionClientInfo != null) {
             try {
                 Connection connection = connectionStatus.getConnection();
-                connection.setClientInfo(ORACLE_CLIENT_ID, null);
-                connection.setClientInfo(ORACLE_MODULE, null);
-                connection.setClientInfo(ORACLE_ACTION, null);
-                for (Map.Entry<String, String> additionalInfo : connectionClientInfo.connectionClientInfoAttributes().entrySet()) {
-                    String name = additionalInfo.getKey();
-                    if (!RESERVED_CLIENT_INFO_NAMES.contains(name)) {
-                        connection.setClientInfo(name, null);
-                    }
+                for (String key : connectionClientInfo.keySet()) {
+                    connection.setClientInfo(key, null);
                 }
             } catch (SQLClientInfoException e) {
                 LOG.debug("Failed to clear connection tracing info", e);
@@ -147,5 +160,48 @@ final class OracleClientInfoConnectionListener implements ConnectionListener<Con
             LOG.debug("Failed to get database product name from the connection", e);
             return false;
         }
+    }
+
+    /**
+     * Gets connection client info from the {@link ConnectionClientInfo} annotation.
+     *
+     * @param connectionDefinition The connection definition
+     * @return The connection client info or null if not configured to be used
+     */
+    private @Nullable Map<String, String> getConnectionClientInfo(@NonNull ConnectionDefinition connectionDefinition) {
+        AnnotationMetadata annotationMetadata = connectionDefinition.getAnnotationMetadata();
+        AnnotationValue<ConnectionClientInfo> annotation = annotationMetadata.getAnnotation(io.micronaut.data.connection.annotation.ConnectionClientInfo.class);
+        if (annotation == null) {
+            return null;
+        }
+        boolean connectionClientInfoEnabled = annotation.booleanValue(ENABLED).orElse(true);
+        if (!connectionClientInfoEnabled) {
+            return null;
+        }
+        if (annotationMetadata instanceof MethodInvocationContext methodInvocationContext) {
+            List<AnnotationValue<ConnectionClientInfoAttribute>> clientInfoAttributes = annotation.getAnnotations(CLIENT_INFO_ATTRIBUTES_MEMBER, ConnectionClientInfoAttribute.class);
+            Map<String, String> additionalClientInfoAttributes = new LinkedHashMap<>(clientInfoAttributes.size());
+            for (AnnotationValue<ConnectionClientInfoAttribute> clientInfoAttribute : clientInfoAttributes) {
+                String name = clientInfoAttribute.getRequiredValue(NAME_MEMBER, String.class);
+                String value = clientInfoAttribute.getRequiredValue(VALUE_MEMBER, String.class);
+                additionalClientInfoAttributes.put(name, value);
+            }
+            if (StringUtils.isNotEmpty(applicationName) && !additionalClientInfoAttributes.containsKey(ORACLE_CLIENT_ID)) {
+                additionalClientInfoAttributes.put(ORACLE_CLIENT_ID, applicationName);
+            }
+            if (!additionalClientInfoAttributes.containsKey(ORACLE_MODULE)) {
+                String module = METHOD_INVOCATION_CONTEXT_STRING_MAP.computeIfAbsent(methodInvocationContext, ctx -> {
+                    Class<?> clazz = ctx.getTarget().getClass();
+                    return clazz.getName().replace(INTERCEPTED_SUFFIX, "");
+                });
+                additionalClientInfoAttributes.put(ORACLE_MODULE, module);
+            }
+            if (!additionalClientInfoAttributes.containsKey(ORACLE_ACTION)) {
+                String action = methodInvocationContext.getName();
+                additionalClientInfoAttributes.put(ORACLE_ACTION, action);
+            }
+            return additionalClientInfoAttributes;
+        }
+        return null;
     }
 }

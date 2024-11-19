@@ -24,8 +24,6 @@ import io.micronaut.data.connection.ConnectionDefinition;
 import io.micronaut.data.connection.ConnectionStatus;
 import io.micronaut.data.connection.ConnectionSynchronization;
 import io.micronaut.data.connection.support.AbstractConnectionOperations;
-import io.micronaut.data.connection.support.ConnectionListener;
-import io.micronaut.data.connection.support.DefaultConnectionStatus;
 import io.micronaut.data.connection.support.JdbcConnectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,28 +47,22 @@ public final class DefaultDataSourceConnectionOperations extends AbstractConnect
     private static final Logger LOG = LoggerFactory.getLogger(DefaultDataSourceConnectionOperations.class);
     private final DataSource dataSource;
 
-    DefaultDataSourceConnectionOperations(DataSource dataSource,
-                                          List<ConnectionListener<Connection>> connectionListeners) {
-        super(connectionListeners);
+    DefaultDataSourceConnectionOperations(DataSource dataSource) {
         this.dataSource = DelegatingDataSource.unwrapDataSource(dataSource);
     }
 
     @Override
-    protected ConnectionStatus<Connection> doOpenConnection(ConnectionDefinition definition) {
-        Connection connection;
+    protected Connection openConnection(ConnectionDefinition definition) {
         try {
-            connection = dataSource.getConnection();
+            return dataSource.getConnection();
         } catch (SQLException e) {
             throw new CannotGetJdbcConnectionException("Failed to obtain JDBC Connection", e);
         }
-
-        return new DefaultConnectionStatus<>(connection, definition, true);
     }
 
     @Override
     protected void setupConnection(ConnectionStatus<Connection> connectionStatus) {
-        ConnectionDefinition connectionDefinition = connectionStatus.getDefinition();
-        connectionDefinition.isReadOnly().ifPresent(readOnly -> {
+        connectionStatus.getDefinition().isReadOnly().ifPresent(readOnly -> {
             List<Runnable> onCompleteCallbacks = new ArrayList<>(1);
             JdbcConnectionUtils.applyReadOnly(LOG, connectionStatus.getConnection(), readOnly, onCompleteCallbacks);
             if (!onCompleteCallbacks.isEmpty()) {
@@ -87,10 +79,9 @@ public final class DefaultDataSourceConnectionOperations extends AbstractConnect
     }
 
     @Override
-    protected void doCloseConnection(ConnectionStatus<Connection> connectionStatus) {
-        Connection connection = connectionStatus.getConnection();
+    protected void closeConnection(ConnectionStatus<Connection> connectionStatus) {
         try {
-            connection.close();
+            connectionStatus.getConnection().close();
         } catch (SQLException e) {
             throw new ConnectionException("Failed to close the connection: " + e.getMessage(), e);
         }

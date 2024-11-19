@@ -82,4 +82,5 @@ public @interface Connectable {
      * @return Whether is read-only connection
      */
     boolean readOnly() default false;
+
 }

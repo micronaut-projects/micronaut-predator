@@ -13,6 +13,7 @@ dependencies {
     api projects.micronautDataConnection
     implementation mnSql.micronaut.jdbc
     implementation mn.micronaut.aop
+    implementation mn.micronaut.runtime
 
     testAnnotationProcessor mn.micronaut.inject.java
 

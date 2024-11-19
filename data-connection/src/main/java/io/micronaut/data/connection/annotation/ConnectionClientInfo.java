@@ -16,8 +16,6 @@
 package io.micronaut.data.connection.annotation;
 
 
-import io.micronaut.data.connection.ConnectionDefinition;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -35,30 +33,9 @@ import java.lang.annotation.Target;
 public @interface ConnectionClientInfo {
 
     /**
-     * If this flag is not disabled then when connection is established {@link io.micronaut.data.connection.support.ConnectionClientInfoDetails}
-     * will be populated in {@link ConnectionDefinition#connectionClientInfo()} using values from this annotation
-     * or calculate default module and action from the class name and method name issuing the call.
-     * Then this information can be used for example to {@link java.sql.Connection#setClientInfo(String, String)}.
-     *
      * @return whether connection should set client info
      */
     boolean enabled() default true;
-
-    /**
-     * The module name for connection client info if {@link #enabled()} is set to true.
-     * If not provided, then it will fall back to the name of the class currently being intercepted in {@link io.micronaut.data.connection.interceptor.ConnectableInterceptor}.
-     *
-     * @return the custom module name for connection client info
-     */
-    String module() default "";
-
-    /**
-     * The action name for connection client info if {@link #enabled()} is set to true.
-     * If not provided, then it will fall back to the name of the method currently being intercepted in {@link io.micronaut.data.connection.interceptor.ConnectableInterceptor}.
-     *
-     * @return the custom action name for tracing
-     */
-    String action() default "";
 
     /**
      * Returns an array of additional attributes that will be included in the connection client info.

@@ -16,6 +16,7 @@
 package io.micronaut.data.connection.support;
 
 import io.micronaut.core.annotation.NonNull;
+import io.micronaut.core.naming.Named;
 import io.micronaut.core.order.Ordered;
 import io.micronaut.data.connection.ConnectionStatus;
 
@@ -31,15 +32,7 @@ import io.micronaut.data.connection.ConnectionStatus;
  * @author radovanradic
  * @since 4.10
  */
-public interface ConnectionListener<C> extends Ordered {
-
-    /**
-     * Checks whether this connection listener supports the given connection status.
-     *
-     * @param connectionStatus            The connection status
-     * @return true if this listener supports the given connection status, false otherwise
-     */
-    boolean supportsConnection(@NonNull ConnectionStatus<C> connectionStatus);
+public interface ConnectionListener<C> extends Named, Ordered {
 
     /**
      * Called after a connection is opened.
@@ -60,9 +53,13 @@ public interface ConnectionListener<C> extends Ordered {
     void beforeClose(@NonNull ConnectionStatus<C> connectionStatus);
 
     /**
-     * Returns the name of this listener. Used for logging purposes.
+     * Returns the name of this listener. Used for logging purposes. By default, returns class simple name.
      *
      * @return the name of this listener
      */
-    String getName();
+    @Override
+    @NonNull
+    default String getName() {
+        return getClass().getSimpleName();
+    }
 }

@@ -17,6 +17,7 @@ package io.micronaut.data.connection.support;
 
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.NonNull;
+import io.micronaut.core.order.OrderUtil;
 import io.micronaut.core.propagation.PropagatedContext;
 import io.micronaut.core.propagation.PropagatedContextElement;
 import io.micronaut.data.connection.exceptions.ConnectionException;
@@ -29,6 +30,7 @@ import io.micronaut.data.connection.SynchronousConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -46,10 +48,18 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final List<ConnectionListener<C>> connectionListeners;
+    private final List<ConnectionListener<C>> connectionListeners = new ArrayList<>(10);
 
-    protected AbstractConnectionOperations(List<ConnectionListener<C>> connectionListeners) {
-        this.connectionListeners = connectionListeners;
+    /**
+     * Adds a connection listener to the list of listeners that will be notified when a connection is opened or closed.
+     *
+     * The added listener will be sorted according to its order using the {@link OrderUtil#sort(List)} method.
+     *
+     * @param connectionListener the listener to add
+     */
+    public void addConnectionListener(@NonNull ConnectionListener<C> connectionListener) {
+        connectionListeners.add(connectionListener);
+        OrderUtil.sort(connectionListeners);
     }
 
     /**
@@ -58,29 +68,7 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
      * @param definition The connection definition
      * @return The connection
      */
-    protected final C openConnection(ConnectionDefinition definition) {
-        ConnectionStatus<C> connectionStatus = doOpenConnection(definition);
-        for (ConnectionListener<C> connectionListener : connectionListeners) {
-            try {
-                if (connectionListener.supportsConnection(connectionStatus)) {
-                    connectionListener.afterOpen(connectionStatus);
-                }
-            } catch (Exception e) {
-                logger.debug("An error occurred when calling listener {} afterOpen.", connectionListener.getName(), e);
-            }
-        }
-        return connectionStatus.getConnection();
-    }
-
-    /**
-     * Opens a new connection based on the provided connection definition.
-     *
-     * This method should be implemented by subclasses to provide the actual logic for opening a connection.
-     *
-     * @param definition the connection definition to use when opening the connection
-     * @return the status of the newly opened connection
-     */
-    protected abstract ConnectionStatus<C> doOpenConnection(ConnectionDefinition definition);
+    protected abstract C openConnection(ConnectionDefinition definition);
 
     /**
      * Setups the connection after it have been open.
@@ -94,27 +82,7 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
      *
      * @param connectionStatus The connection status
      */
-    protected final void closeConnection(ConnectionStatus<C> connectionStatus) {
-        for (ConnectionListener<C> connectionListener : connectionListeners) {
-            try {
-                if (connectionListener.supportsConnection(connectionStatus)) {
-                    connectionListener.beforeClose(connectionStatus);
-                }
-            } catch (Exception e) {
-                logger.debug("An error occurred when calling listener {} beforeClose.", connectionListener.getName(), e);
-            }
-        }
-        doCloseConnection(connectionStatus);
-    }
-
-    /**
-     * Closes the connection represented by the given connection status.
-     *
-     * This method should be implemented by subclasses to provide the actual logic for closing a connection.
-     *
-     * @param connectionStatus the status of the connection to be closed
-     */
-    protected abstract void doCloseConnection(ConnectionStatus<C> connectionStatus);
+    protected abstract void closeConnection(ConnectionStatus<C> connectionStatus);
 
     @Override
     public final Optional<ConnectionStatus<C>> findConnectionStatus() {
@@ -185,6 +153,9 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
                                            @NonNull Function<ConnectionStatus<C>, R> callback) {
         C connection = openConnection(definition);
         DefaultConnectionStatus<C> status = new DefaultConnectionStatus<>(connection, definition, true);
+
+        afterOpen(status);
+
         try (PropagatedContext.Scope ignore = PropagatedContext.getOrEmpty()
             .plus(new ConnectionPropagatedContextElement<>(this, status))
             .propagate()) {
@@ -233,7 +204,7 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
                 connectionStatus.beforeClosed();
             } finally {
                 if (connectionStatus.isNew()) {
-                    closeConnection(status);
+                    closeNewConnectionInternal(status);
                 }
                 connectionStatus.afterClosed();
             }
@@ -243,6 +214,9 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
     private DefaultConnectionStatus<C> openNewConnectionInternal(@NonNull ConnectionDefinition definition) {
         C connection = openConnection(definition);
         DefaultConnectionStatus<C> status = new DefaultConnectionStatus<>(connection, definition, true);
+
+        afterOpen(status);
+
         PropagatedContext propagatedContext = PropagatedContext.getOrEmpty().plus(new ConnectionPropagatedContextElement<>(this, status));
         PropagatedContext.Scope scope = propagatedContext.propagate();
         status.registerSynchronization(new ConnectionSynchronization() {
@@ -251,7 +225,29 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
                 scope.close();
             }
         });
+
         return status;
+    }
+
+    private void afterOpen(ConnectionStatus<C> connectionStatus) {
+        for (ConnectionListener<C> connectionListener : connectionListeners) {
+            try {
+                connectionListener.afterOpen(connectionStatus);
+            } catch (Exception e) {
+                logger.debug("An error occurred when calling listener {} afterOpen.", connectionListener.getName(), e);
+            }
+        }
+    }
+
+    private void closeNewConnectionInternal(@NonNull ConnectionStatus<C> connectionStatus) {
+        for (ConnectionListener<C> connectionListener : connectionListeners) {
+            try {
+                connectionListener.beforeClose(connectionStatus);
+            } catch (Exception e) {
+                logger.debug("An error occurred when calling listener {} beforeClose.", connectionListener.getName(), e);
+            }
+        }
+        closeConnection(connectionStatus);
     }
 
     private DefaultConnectionStatus<C> reuseExistingConnectionInternal(@NonNull ConnectionPropagatedContextElement<C> existingContextElement) {
@@ -284,7 +280,6 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
         });
         return newStatus;
     }
-
 
     private record ConnectionPropagatedContextElement<C>(
         ConnectionOperations<C> connectionOperations,
