@@ -24,6 +24,7 @@ import static org.junit.Assert.assertEquals
 @Property(name = "datasources.default.driver-class-name", value = "org.h2.Driver")
 @Property(name = "micronaut.multitenancy.tenantresolver.httpheader.enabled", value = StringUtils.TRUE)
 @Property(name = "spec.name", value = "TenancyBookControllerSpec")
+@Property(name = "entity-prefix", value = "my_entity_")
 @MicronautTest(transactional = false)
 // <2>
 class TenancyBookControllerSpec extends Specification {
