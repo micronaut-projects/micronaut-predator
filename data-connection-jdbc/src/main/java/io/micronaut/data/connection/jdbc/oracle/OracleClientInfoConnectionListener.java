@@ -25,11 +25,11 @@ import io.micronaut.core.annotation.AnnotationValue;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.annotation.Nullable;
+import io.micronaut.core.util.CollectionUtils;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.data.connection.ConnectionDefinition;
 import io.micronaut.data.connection.ConnectionStatus;
 import io.micronaut.data.connection.annotation.ConnectionClientInfo;
-import io.micronaut.data.connection.annotation.ConnectionClientInfoAttribute;
 import io.micronaut.data.connection.jdbc.advice.DelegatingDataSource;
 import io.micronaut.data.connection.support.AbstractConnectionOperations;
 import io.micronaut.data.connection.support.ConnectionListener;
@@ -85,6 +85,7 @@ final class OracleClientInfoConnectionListener implements ConnectionListener<Con
     private static final String ORACLE_CONNECTION_DATABASE_PRODUCT_NAME = "Oracle";
 
     private static final Logger LOG = LoggerFactory.getLogger(OracleClientInfoConnectionListener.class);
+
     private static final Map<MethodInvocationContext, String> METHOD_INVOCATION_CONTEXT_STRING_MAP = new ConcurrentHashMap<>(100);
 
     @Nullable
@@ -93,7 +94,7 @@ final class OracleClientInfoConnectionListener implements ConnectionListener<Con
     OracleClientInfoConnectionListener(@NonNull DataSource dataSource,
                                        @NonNull @Parameter AbstractConnectionOperations<Connection> connectionOperations,
                                        @Nullable ApplicationConfiguration applicationConfiguration) {
-        this.applicationName = applicationConfiguration.getName().orElse(null);
+        this.applicationName = applicationConfiguration != null ? applicationConfiguration.getName().orElse(null) : null;
         try {
             Connection connection = DelegatingDataSource.unwrapDataSource(dataSource).getConnection();
             if (isOracleConnection(connection)) {
@@ -109,7 +110,7 @@ final class OracleClientInfoConnectionListener implements ConnectionListener<Con
         ConnectionDefinition connectionDefinition = connectionStatus.getDefinition();
         // Set client info for connection if Oracle connection after connection is opened
         Map<String, String> connectionClientInfo = getConnectionClientInfo(connectionDefinition);
-        if (connectionClientInfo != null) {
+        if (CollectionUtils.isNotEmpty(connectionClientInfo)) {
             Connection connection = connectionStatus.getConnection();
             LOG.trace("Setting connection tracing info to the Oracle connection");
             try {
@@ -129,7 +130,7 @@ final class OracleClientInfoConnectionListener implements ConnectionListener<Con
         // Clear client info for connection if it was Oracle connection and client info was set previously
         ConnectionDefinition connectionDefinition = connectionStatus.getDefinition();
         Map<String, String> connectionClientInfo = getConnectionClientInfo(connectionDefinition);
-        if (connectionClientInfo != null) {
+        if (CollectionUtils.isNotEmpty(connectionClientInfo)) {
             try {
                 Connection connection = connectionStatus.getConnection();
                 for (String key : connectionClientInfo.keySet()) {
@@ -178,30 +179,25 @@ final class OracleClientInfoConnectionListener implements ConnectionListener<Con
         if (!connectionClientInfoEnabled) {
             return null;
         }
+        List<AnnotationValue<ConnectionClientInfo.ConnectionClientInfoAttribute>> clientInfoAttributes = annotation.getAnnotations(CLIENT_INFO_ATTRIBUTES_MEMBER, ConnectionClientInfo.ConnectionClientInfoAttribute.class);
+        Map<String, String> additionalClientInfoAttributes = new LinkedHashMap<>(clientInfoAttributes.size());
+        for (AnnotationValue<ConnectionClientInfo.ConnectionClientInfoAttribute> clientInfoAttribute : clientInfoAttributes) {
+            String name = clientInfoAttribute.getRequiredValue(NAME_MEMBER, String.class);
+            String value = clientInfoAttribute.getRequiredValue(VALUE_MEMBER, String.class);
+            additionalClientInfoAttributes.put(name, value);
+        }
+        if (StringUtils.isNotEmpty(applicationName)) {
+            additionalClientInfoAttributes.putIfAbsent(ORACLE_CLIENT_ID, applicationName);
+        }
         if (annotationMetadata instanceof MethodInvocationContext methodInvocationContext) {
-            List<AnnotationValue<ConnectionClientInfoAttribute>> clientInfoAttributes = annotation.getAnnotations(CLIENT_INFO_ATTRIBUTES_MEMBER, ConnectionClientInfoAttribute.class);
-            Map<String, String> additionalClientInfoAttributes = new LinkedHashMap<>(clientInfoAttributes.size());
-            for (AnnotationValue<ConnectionClientInfoAttribute> clientInfoAttribute : clientInfoAttributes) {
-                String name = clientInfoAttribute.getRequiredValue(NAME_MEMBER, String.class);
-                String value = clientInfoAttribute.getRequiredValue(VALUE_MEMBER, String.class);
-                additionalClientInfoAttributes.put(name, value);
-            }
-            if (StringUtils.isNotEmpty(applicationName) && !additionalClientInfoAttributes.containsKey(ORACLE_CLIENT_ID)) {
-                additionalClientInfoAttributes.put(ORACLE_CLIENT_ID, applicationName);
-            }
-            if (!additionalClientInfoAttributes.containsKey(ORACLE_MODULE)) {
-                String module = METHOD_INVOCATION_CONTEXT_STRING_MAP.computeIfAbsent(methodInvocationContext, ctx -> {
+            additionalClientInfoAttributes.putIfAbsent(ORACLE_MODULE,
+                METHOD_INVOCATION_CONTEXT_STRING_MAP.computeIfAbsent(methodInvocationContext, ctx -> {
                     Class<?> clazz = ctx.getTarget().getClass();
                     return clazz.getName().replace(INTERCEPTED_SUFFIX, "");
-                });
-                additionalClientInfoAttributes.put(ORACLE_MODULE, module);
-            }
-            if (!additionalClientInfoAttributes.containsKey(ORACLE_ACTION)) {
-                String action = methodInvocationContext.getName();
-                additionalClientInfoAttributes.put(ORACLE_ACTION, action);
-            }
-            return additionalClientInfoAttributes;
+                })
+            );
+            additionalClientInfoAttributes.putIfAbsent(ORACLE_ACTION, methodInvocationContext.getName());
         }
-        return null;
+        return additionalClientInfoAttributes;
     }
 }

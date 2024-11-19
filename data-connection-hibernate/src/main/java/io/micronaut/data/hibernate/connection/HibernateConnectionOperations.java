@@ -28,7 +28,6 @@ import org.hibernate.Session;
 import org.hibernate.SessionBuilder;
 import org.hibernate.SessionFactory;
 
-
 /**
  * The Hibernate connection operations.
  *

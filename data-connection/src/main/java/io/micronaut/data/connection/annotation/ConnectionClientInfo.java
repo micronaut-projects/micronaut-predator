@@ -44,4 +44,30 @@ public @interface ConnectionClientInfo {
      * @return an array of ConnectionClientInfoAttribute instances
      */
     ConnectionClientInfoAttribute[] clientInfoAttributes() default {};
+
+    /**
+     * Annotation used to specify client information attributes that can be set on a JDBC connection.
+     *
+     * This annotation allows developers to define custom attributes that provide additional context about the client,
+     * such as application name or version. These attributes can then be retrieved by the database server and used
+     * for auditing, logging, or other purposes.
+     *
+     * @since 4.10
+     */
+    @interface ConnectionClientInfoAttribute {
+
+        /**
+         * Returns the name of the client information attribute.
+         *
+         * @return the attribute name
+         */
+        String name();
+
+        /**
+         * Returns the value of the client information attribute.
+         *
+         * @return the attribute value
+         */
+        String value();
+    }
 }

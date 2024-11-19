@@ -86,4 +86,5 @@ public final class DefaultDataSourceConnectionOperations extends AbstractConnect
             throw new ConnectionException("Failed to close the connection: " + e.getMessage(), e);
         }
     }
+
 }
