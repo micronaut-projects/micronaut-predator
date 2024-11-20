@@ -15,6 +15,7 @@
  */
 package io.micronaut.data.processor.sql
 
+import io.micronaut.data.intercept.SaveEntityInterceptor
 import io.micronaut.data.intercept.annotation.DataMethod
 import io.micronaut.data.model.DataType
 import io.micronaut.data.model.entities.Person
@@ -588,5 +589,34 @@ interface AccountRepository extends CrudRepository<Account, Long> {
             getDataInterceptor(saveMethod) == "io.micronaut.data.intercept.SaveEntityInterceptor"
             getResultDataType(saveMethod) == DataType.ENTITY
             getOperationType(saveMethod) == DataMethod.OperationType.INSERT
+    }
+
+    @Unroll
+    void "test build insert with CTE"() {
+        given:
+        def repository = buildRepository('test.PersonRepository', """
+import io.micronaut.data.jdbc.annotation.JdbcRepository;
+import io.micronaut.data.model.query.builder.sql.Dialect;
+import io.micronaut.data.tck.entities.Person;
+
+@JdbcRepository(dialect= Dialect.MYSQL)
+@io.micronaut.context.annotation.Executable
+interface PersonRepository extends CrudRepository<Person, Long> {
+
+    @Query(\"""
+            WITH ids AS (SELECT id FROM person)
+            INSERT INTO person(name, age, enabled)
+            VALUES (:name, :age, TRUE)
+            \""")
+    void customInsert(Person person);
+
+}
+""")
+        def method = repository.findPossibleMethods("customInsert").findFirst().get()
+        def insertQuery = getQuery(method)
+
+        expect:
+        insertQuery.replace('\n', ' ') == "WITH ids AS (SELECT id FROM person) INSERT INTO person(name, age, enabled) VALUES (:name, :age, TRUE) "
+        method.classValue(DataMethod, "interceptor").get() == SaveEntityInterceptor
     }
 }
