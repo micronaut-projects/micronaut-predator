@@ -1,5 +1,7 @@
 package example;
 
+import io.micronaut.data.model.Pageable;
+import io.micronaut.data.model.Slice;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Assertions;
@@ -19,6 +21,12 @@ class CustomEntityRepositorySpec {
         Assertions.assertEquals(entity.name(), found.name());
         Assertions.assertEquals(1, repository.count());
         Assertions.assertFalse(repository.findAll().isEmpty());
+
+        repository.save(new CustomEntity(null, "Entity2"));
+        repository.save(new CustomEntity(null, "Entity3"));
+        Slice<CustomEntity> slice = repository.findAll(Pageable.from(0, 2));
+        Assertions.assertEquals(2, slice.getSize());
+
         repository.deleteAll();
     }
 }

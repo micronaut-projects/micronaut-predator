@@ -15,6 +15,9 @@
  */
 package io.micronaut.data.runtime.query.internal;
 
+import io.micronaut.context.ApplicationContextProvider;
+import io.micronaut.context.env.Environment;
+import io.micronaut.context.env.PropertyPlaceholderResolver;
 import io.micronaut.core.annotation.AnnotationMetadata;
 import io.micronaut.core.annotation.AnnotationValue;
 import io.micronaut.core.annotation.Internal;
@@ -39,6 +42,7 @@ import io.micronaut.inject.ExecutableMethod;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +50,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static io.micronaut.data.intercept.annotation.DataMethod.META_MEMBER_LIMIT;
@@ -88,6 +93,7 @@ public final class DefaultStoredQuery<E, RT> extends DefaultStoredDataOperation<
     private final Map<String, AnnotationValue<?>> parameterExpressions;
     private final int limit;
     private final int offset;
+    private final Function<Object, Object> stringsEnvResolverValueMapper;
 
     /**
      * The default constructor.
@@ -132,6 +138,13 @@ public final class DefaultStoredQuery<E, RT> extends DefaultStoredDataOperation<
         HintsCapableRepository repositoryOperations) {
         super(method);
 
+        if (repositoryOperations instanceof ApplicationContextProvider applicationContextProvider) {
+            Environment environment = applicationContextProvider.getApplicationContext().getEnvironment();
+            stringsEnvResolverValueMapper = createEnvResolverValueMapper(environment);
+        } else {
+            stringsEnvResolverValueMapper = null;
+        }
+
         this.rootEntity = getRequiredRootEntity(method);
         this.annotationMetadata = method.getAnnotationMetadata();
         this.isProcedure = dataMethodQuery.isTrue(DataMethodQuery.META_MEMBER_PROCEDURE);
@@ -153,12 +166,12 @@ public final class DefaultStoredQuery<E, RT> extends DefaultStoredDataOperation<
             Optional<String> rawCountQueryString = method.stringValue(Query.class, DataMethod.META_MEMBER_RAW_COUNT_QUERY);
             this.rawQuery = rawCountQueryString.isPresent();
             this.query = rawCountQueryString.orElse(query);
-            String[] countQueryParts = method.stringValues(DataMethod.class, DataMethod.META_MEMBER_EXPANDABLE_COUNT_QUERY);
+            String[] countQueryParts = method.stringValues(DataMethod.META_MEMBER_EXPANDABLE_COUNT_QUERY);
             // for countBy queries this is empty, and we should use DataMethod.META_MEMBER_EXPANDABLE_QUERY value
             if (ArrayUtils.isNotEmpty(countQueryParts)) {
                 this.queryParts = countQueryParts;
             } else {
-                this.queryParts = method.stringValues(DataMethodQuery.class, DataMethodQuery.META_MEMBER_EXPANDABLE_QUERY);
+                this.queryParts = method.stringValues(DataMethodQuery.META_MEMBER_EXPANDABLE_QUERY);
             }
             this.isNative = queryAnnotation.isTrue(DataMethodQuery.META_MEMBER_NATIVE);
             //noinspection unchecked
@@ -183,7 +196,7 @@ public final class DefaultStoredQuery<E, RT> extends DefaultStoredDataOperation<
                 this.query = rawQueryString.orElse(query);
             }
             this.resultDataType = dataMethodQuery.enumValue(DataMethodQuery.META_MEMBER_RESULT_DATA_TYPE, DataType.class).orElse(DataType.OBJECT);
-            this.queryParts = dataMethodQuery.stringValues(DataMethodQuery.META_MEMBER_EXPANDABLE_QUERY);
+            this.queryParts = getQueryParts(dataMethodQuery, DataMethodQuery.META_MEMBER_EXPANDABLE_QUERY);
             //noinspection unchecked
             this.resultType = dataMethodQuery.classValue(DataMethodQuery.META_MEMBER_RESULT_TYPE)
                 .map(type -> (Class<RT>) ReflectionUtils.getWrapperType(type))
@@ -479,5 +492,30 @@ public final class DefaultStoredQuery<E, RT> extends DefaultStoredDataOperation<
     @Override
     public int hashCode() {
         return Objects.hash(resultType, method);
+    }
+
+    private String[] getQueryParts(@NonNull AnnotationValue annotationValue, @NonNull String member) {
+        if (stringsEnvResolverValueMapper != null) {
+            return annotationValue.stringValues(member, stringsEnvResolverValueMapper);
+        }
+        return annotationValue.stringValues(member);
+    }
+
+    private static Function<Object, Object> createEnvResolverValueMapper(Environment environment) {
+        return o -> {
+            PropertyPlaceholderResolver resolver = environment.getPlaceholderResolver();
+            if (o instanceof String[] values) {
+                String[] resolvedValues = Arrays.copyOf(values, values.length);
+                for (int i = 0; i < values.length; i++) {
+                    String value = values[i];
+                    if (value.contains(resolver.getPrefix())) {
+                        value = resolver.resolveRequiredPlaceholders(value);
+                    }
+                    resolvedValues[i] = value;
+                }
+               return resolvedValues;
+            }
+            return o;
+        };
     }
 }
