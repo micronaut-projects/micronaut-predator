@@ -56,6 +56,8 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
      * The added listener will be sorted according to its order using the {@link OrderUtil#sort(List)} method.
      *
      * @param connectionListener the listener to add
+     *
+     * @since 4.11
      */
     public void addConnectionListener(@NonNull ConnectionListener<C> connectionListener) {
         connectionListeners.add(connectionListener);

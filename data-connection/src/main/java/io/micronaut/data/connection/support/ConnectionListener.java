@@ -30,7 +30,7 @@ import io.micronaut.data.connection.ConnectionStatus;
  * @param <C> The connection type
  *
  * @author radovanradic
- * @since 4.10
+ * @since 4.11
  */
 public interface ConnectionListener<C> extends Named, Ordered {
 

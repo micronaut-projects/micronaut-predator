@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
  * An annotation used to set client info for the connection.
  *
  * @author radovanradic
- * @since 4.10
+ * @since 4.11
  */
 @Target({ElementType.ANNOTATION_TYPE, ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)

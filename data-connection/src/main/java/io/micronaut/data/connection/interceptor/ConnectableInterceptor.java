@@ -162,7 +162,7 @@ public final class ConnectableInterceptor implements MethodInterceptor<Object, O
      * @deprecated Since 4.10.4, use {@link #getConnectionDefinition(InvocationContext, ExecutableMethod)} instead
      */
     @NonNull
-    @Deprecated(since = "4.10.4", forRemoval = true)
+    @Deprecated(since = "4.11.0", forRemoval = true)
     public static ConnectionDefinition getConnectionDefinition(ExecutableMethod<Object, Object> executableMethod) {
         return getConnectionDefinition(null, executableMethod);
     }

@@ -29,7 +29,7 @@ import io.micronaut.inject.BeanDefinition;
  * This condition checks if the data source dialect is set to Oracle and if the 'customize-oracle-client-info' property is enabled.
  *
  * @author radovanradic
- * @since 4.10
+ * @since 4.11
  */
 @Internal
 final class OracleClientInfoCondition implements Condition {

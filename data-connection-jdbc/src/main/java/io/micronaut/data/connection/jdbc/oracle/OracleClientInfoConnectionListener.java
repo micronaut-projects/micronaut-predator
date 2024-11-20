@@ -53,7 +53,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * (client ID, module, and action) after opening the connection. It also clears these properties before closing the connection.
  *
  * @author radovanradic
- * @since 4.10
+ * @since 4.11
  */
 @EachBean(DataSource.class)
 @Requires(condition = OracleClientInfoCondition.class)
