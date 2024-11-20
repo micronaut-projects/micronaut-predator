@@ -17,6 +17,8 @@ package io.micronaut.data.processor.sql
 
 import io.micronaut.core.annotation.AnnotationMetadata
 import io.micronaut.data.annotation.Join
+import io.micronaut.data.intercept.FindAllInterceptor
+import io.micronaut.data.intercept.FindOneInterceptor
 import io.micronaut.data.intercept.annotation.DataMethod
 import io.micronaut.data.model.CursoredPageable
 import io.micronaut.data.model.DataType
@@ -2076,5 +2078,38 @@ interface OtherRepository extends GenericRepository<BookEntity, Long> {
 """)
         then:
         noExceptionThrown()
+    }
+
+    @Unroll
+    void "test build select with CTE for type #type"() {
+        given:
+        def repository = buildRepository('test.PersonRepository', """
+import io.micronaut.data.jdbc.annotation.JdbcRepository;
+import io.micronaut.data.model.query.builder.sql.Dialect;
+import io.micronaut.data.tck.entities.Person;
+
+@JdbcRepository(dialect= Dialect.MYSQL)
+@io.micronaut.context.annotation.Executable
+interface PersonRepository extends CrudRepository<Person, Long> {
+
+    @Query(\"""
+            WITH ids AS (SELECT id FROM person)
+            SELECT * FROM person
+            \""")
+    $type customSelect(Long id);
+
+}
+""")
+        def method = repository.findPossibleMethods("customSelect").findFirst().get()
+        def selectQuery = getQuery(method)
+
+        expect:
+        selectQuery.replace('\n', ' ') == "WITH ids AS (SELECT id FROM person) SELECT * FROM person "
+        method.classValue(DataMethod, "interceptor").get() == interceptor
+
+        where:
+        type                                          | interceptor
+        'java.util.List<Person>'                      | FindAllInterceptor
+        'Person'                                      | FindOneInterceptor
     }
 }
