@@ -449,6 +449,8 @@ public class RepositoryTypeElementVisitor implements TypeElementVisitor<Reposito
                 }
 
                 builder.member(AnnotationMetadata.VALUE_MEMBER, query);
+                builder.member(DataMethodQuery.META_MEMBER_NATIVE, element.booleanValue(Query.class,
+                    DataMethodQuery.META_MEMBER_NATIVE).orElse(false));
 
                 addQueryDefinition(methodMatchContext,
                     builder,
