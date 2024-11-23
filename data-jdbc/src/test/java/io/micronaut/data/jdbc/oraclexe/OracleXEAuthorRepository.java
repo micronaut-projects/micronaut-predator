@@ -16,18 +16,18 @@
 package io.micronaut.data.jdbc.oraclexe;
 
 import io.micronaut.data.annotation.Join;
-import io.micronaut.data.connection.annotation.ConnectionClientInfoAttribute;
-import io.micronaut.data.connection.annotation.ConnectionClientInfo;
+import io.micronaut.data.connection.annotation.ConnClientInfoAttr;
+import io.micronaut.data.connection.annotation.ConnClientInfo;
 import io.micronaut.data.jdbc.annotation.JdbcRepository;
 import io.micronaut.data.model.query.builder.sql.Dialect;
 import io.micronaut.data.tck.entities.Author;
 import io.micronaut.data.tck.repositories.AuthorRepository;
 
 @JdbcRepository(dialect = Dialect.ORACLE)
-@ConnectionClientInfo
+@ConnClientInfo
 public interface OracleXEAuthorRepository extends AuthorRepository {
     @Override
     @Join(value = "books", type = Join.Type.LEFT_FETCH)
-    @ConnectionClientInfoAttribute(name = "OCSID.ACTION", value = "QueryAuthorByName")
+    @ConnClientInfoAttr(name = "OCSID.ACTION", value = "QueryAuthorByName")
     Author queryByName(String name);
 }

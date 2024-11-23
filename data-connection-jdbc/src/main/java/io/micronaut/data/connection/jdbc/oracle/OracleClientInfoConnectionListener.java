@@ -28,8 +28,8 @@ import io.micronaut.core.annotation.Nullable;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.data.connection.ConnectionDefinition;
 import io.micronaut.data.connection.ConnectionStatus;
-import io.micronaut.data.connection.annotation.ConnectionClientInfoAttribute;
-import io.micronaut.data.connection.annotation.ConnectionClientInfo;
+import io.micronaut.data.connection.annotation.ConnClientInfoAttr;
+import io.micronaut.data.connection.annotation.ConnClientInfo;
 import io.micronaut.data.connection.jdbc.advice.DelegatingDataSource;
 import io.micronaut.data.connection.support.AbstractConnectionOperations;
 import io.micronaut.data.connection.support.ConnectionListener;
@@ -162,20 +162,20 @@ final class OracleClientInfoConnectionListener implements ConnectionListener<Con
     }
 
     /**
-     * Gets connection client info from the {@link ConnectionClientInfoAttribute} annotation.
+     * Gets connection client info from the {@link ConnClientInfoAttr} annotation.
      *
      * @param connectionDefinition The connection definition
      * @return The connection client info or null if not configured to be used
      */
     private @Nullable Map<String, String> getConnectionClientInfo(@NonNull ConnectionDefinition connectionDefinition) {
         AnnotationMetadata annotationMetadata = connectionDefinition.getAnnotationMetadata();
-        AnnotationValue<ConnectionClientInfo> annotation = annotationMetadata.getAnnotation(ConnectionClientInfo.class);
+        AnnotationValue<ConnClientInfo> annotation = annotationMetadata.getAnnotation(ConnClientInfo.class);
         if (annotation == null) {
             return null;
         }
-        List<AnnotationValue<ConnectionClientInfoAttribute>> clientInfoAttributes = annotation.getAnnotations(VALUE_MEMBER);
+        List<AnnotationValue<ConnClientInfoAttr>> clientInfoAttributes = annotation.getAnnotations(VALUE_MEMBER);
         Map<String, String> additionalClientInfoAttributes = new LinkedHashMap<>(clientInfoAttributes.size());
-        for (AnnotationValue<ConnectionClientInfoAttribute> clientInfoAttribute : clientInfoAttributes) {
+        for (AnnotationValue<ConnClientInfoAttr> clientInfoAttribute : clientInfoAttributes) {
             String name = clientInfoAttribute.getRequiredValue(NAME_MEMBER, String.class);
             String value = clientInfoAttribute.getRequiredValue(VALUE_MEMBER, String.class);
             additionalClientInfoAttributes.put(name, value);

@@ -71,8 +71,8 @@ Note that the @api:data.connection.annotation.ConnectionClientInfo[] annotation 
 For Oracle database, following attributes can be set to the connection client info: `OCSID.MODULE`, `OCSID.ACTION` and `OCSID.CLIENTID` and provided in @api:data.connection.annotation.ConnectionClientInfoAttribute[].
 If some of these attributes are not provided then Micronaut Data Jdbc is going to populate values automatically for Oracle connections:
 
-*** `OCSID.MODULE` will get the value of the class name where annotation `@ConnectionClientInfoAttribute` is added (usually Micronaut Data repository class)
-*** `OCSID.ACTION` will get the value of the method name which is annotated with `@ConnectionClientInfoAttribute` annotation
+*** `OCSID.MODULE` will get the value of the class name where annotation `@ConnClientInfoAttr` is added (usually Micronaut Data repository class)
+*** `OCSID.ACTION` will get the value of the method name which is annotated with `@ConnClientInfoAttr` annotation
 *** `OCSID.CLIENTID` will get the value of the Micronaut application name, if configured
 
 Please note this feature is currently supported only for Oracle database connections. In order to enable Oracle connection client info to be set,

@@ -32,7 +32,7 @@ import io.micronaut.data.connection.ConnectionOperations;
 import io.micronaut.data.connection.ConnectionOperationsRegistry;
 import io.micronaut.data.connection.DefaultConnectionDefinition;
 import io.micronaut.data.connection.annotation.Connectable;
-import io.micronaut.data.connection.annotation.ConnectionClientInfoAttribute;
+import io.micronaut.data.connection.annotation.ConnClientInfoAttr;
 import io.micronaut.data.connection.async.AsyncConnectionOperations;
 import io.micronaut.data.connection.reactive.ReactiveStreamsConnectionOperations;
 import io.micronaut.data.connection.reactive.ReactorConnectionOperations;
@@ -172,7 +172,7 @@ public final class ConnectableInterceptor implements MethodInterceptor<Object, O
      *
      * This method examines the annotations present on the executable method to determine the connection definition.
      * It looks for the presence of the {@link Connectable} annotation and uses its attributes to construct the connection definition.
-     * Additionally, it checks for the presence of the {@link ConnectionClientInfoAttribute} annotation to obtain connection tracing information.
+     * Additionally, it checks for the presence of the {@link ConnClientInfoAttr} annotation to obtain connection tracing information.
      *
      * @param context      the invocation context, may be null
      * @param executableMethod the executable method to retrieve the connection definition for
