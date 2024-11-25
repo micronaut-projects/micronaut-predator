@@ -3382,6 +3382,7 @@ abstract class AbstractRepositorySpec extends Specification {
         retrievedEntity.uri == entity.uri
         retrievedEntity.url == entity.url
         retrievedEntity.instant == entity.instant
+        retrievedEntity.localDate == entity.localDate
         retrievedEntity.localDateTime == entity.localDateTime
         retrievedEntity.zonedDateTime == entity.zonedDateTime
         retrievedEntity.offsetDateTime == entity.offsetDateTime
