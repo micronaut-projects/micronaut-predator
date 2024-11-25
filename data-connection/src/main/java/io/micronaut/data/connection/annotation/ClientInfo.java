@@ -17,12 +17,13 @@ package io.micronaut.data.connection.annotation;
 
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Repeatable annotation for {@link ConnClientInfoAttr}.
+ * Repeatable annotation for {@link ClientInfo.Attribute}.
  *
  * @author radovanradic
  * @since 4.11
@@ -30,12 +31,39 @@ import java.lang.annotation.Target;
 @Target({ElementType.ANNOTATION_TYPE, ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Connectable
-public @interface ConnClientInfo {
+public @interface ClientInfo {
 
     /**
      * Returns the list of the client information attributes.
      *
      * @return the attribute collection
      */
-    ConnClientInfoAttr[] value() default {};
+    Attribute[] value() default {};
+
+    /**
+     * An annotation used to set client info for the connection.
+     *
+     * @author radovanradic
+     * @since 4.11
+     */
+    @Target({ElementType.ANNOTATION_TYPE, ElementType.METHOD, ElementType.TYPE})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Repeatable(ClientInfo.class)
+    @Connectable
+    @interface Attribute {
+
+        /**
+         * Returns the name of the client information attribute.
+         *
+         * @return the attribute name
+         */
+        String name();
+
+        /**
+         * Returns the value of the client information attribute.
+         *
+         * @return the attribute value
+         */
+        String value();
+    }
 }
