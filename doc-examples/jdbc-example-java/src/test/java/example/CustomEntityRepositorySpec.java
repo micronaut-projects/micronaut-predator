@@ -1,11 +1,14 @@
 package example;
 
+import io.micronaut.data.model.Page;
 import io.micronaut.data.model.Pageable;
 import io.micronaut.data.model.Slice;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 @MicronautTest
 class CustomEntityRepositorySpec {
@@ -26,6 +29,18 @@ class CustomEntityRepositorySpec {
         repository.save(new CustomEntity(null, "Entity3"));
         Slice<CustomEntity> slice = repository.findAll(Pageable.from(0, 2));
         Assertions.assertEquals(2, slice.getSize());
+
+        Page<CustomEntity> page = repository.findByNameIn(List.of("Entity1", "Entity2", "Entity3"),
+            Pageable.from(0, 2));
+        Assertions.assertEquals(2, page.getSize());
+        Assertions.assertEquals(2, page.getTotalPages());
+        Assertions.assertEquals(3, page.getTotalSize());
+
+        page = repository.findByNameIn(List.of("Entity1", "Entity2"),
+            Pageable.from(0, 2));
+        Assertions.assertEquals(2, page.getSize());
+        Assertions.assertEquals(1, page.getTotalPages());
+        Assertions.assertEquals(2, page.getTotalSize());
 
         repository.deleteAll();
     }
