@@ -8,6 +8,5 @@ import io.micronaut.data.repository.CrudRepository;
 
 @JdbcRepository(dialect = Dialect.H2)
 public interface CustomEntityRepository extends CrudRepository<CustomEntity, Long> {
-
     Slice<CustomEntity> findAll(Pageable pageable);
 }
