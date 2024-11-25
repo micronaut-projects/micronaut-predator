@@ -486,6 +486,7 @@ abstract class AbstractRepositorySpec extends Specification {
         retrievedBook.offsetDateTime == book.offsetDateTime
         retrievedBook.dateCreated == book.dateCreated
         retrievedBook.dateUpdated == book.dateUpdated
+        retrievedBook.localDate == book.localDate
 
         // stored as a DATE type without time
 //        retrievedBookProj.date == book.date
@@ -3382,7 +3383,6 @@ abstract class AbstractRepositorySpec extends Specification {
         retrievedEntity.uri == entity.uri
         retrievedEntity.url == entity.url
         retrievedEntity.instant == entity.instant
-        retrievedEntity.localDate == entity.localDate
         retrievedEntity.localDateTime == entity.localDateTime
         retrievedEntity.zonedDateTime == entity.zonedDateTime
         retrievedEntity.offsetDateTime == entity.offsetDateTime
