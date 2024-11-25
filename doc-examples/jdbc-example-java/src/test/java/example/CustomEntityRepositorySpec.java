@@ -31,10 +31,11 @@ class CustomEntityRepositorySpec {
 
         CustomEntity entity2 = repository.save(new CustomEntity(null, "Entity2"));
         CustomEntity entity3 = repository.save(new CustomEntity(null, "Entity3"));
-        Slice<CustomEntity> slice = repository.findAll(Pageable.from(0, 2));
-        Assertions.assertEquals(2, slice.getSize());
+        Page<CustomEntity> page = repository.findAll(Pageable.from(0, 2));
+        Assertions.assertEquals(2, page.getSize());
+        Assertions.assertEquals(3, page.getTotalSize());
 
-        Page<CustomEntity> page = repository.findByNameIn(List.of("Entity1", "Entity2", "Entity3"),
+        page = repository.findByNameIn(List.of("Entity1", "Entity2", "Entity3"),
             Pageable.from(0, 2));
         Assertions.assertEquals(2, page.getSize());
         Assertions.assertEquals(2, page.getTotalPages());
@@ -49,6 +50,8 @@ class CustomEntityRepositorySpec {
         List<CustomEntity> customEntities = repository.findDataByEnvPropertyValue();
         Assertions.assertEquals(1, customEntities.size());
         Assertions.assertEquals(entityName, customEntities.get(0).name());
+
+        Assertions.assertEquals(1, repository.countDataByEnvPropertyValue());
 
         customEntities = repository.findDataById(List.of(entity.id(), entity2.id(), entity3.id()));
         Assertions.assertEquals(3, customEntities.size());
