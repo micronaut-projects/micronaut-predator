@@ -62,6 +62,7 @@ import java.util.regex.Pattern;
 public class RawQueryMethodMatcher implements MethodMatcher {
 
     private static final Pattern UPDATE_PATTERN = Pattern.compile(".*\\bupdate\\b.*");
+    private static final Pattern FOR_UPDATE_PATTERN = Pattern.compile(".*\\bfor.*\\bupdate\\b.*");
     private static final Pattern DELETE_PATTERN = Pattern.compile(".*\\bdelete\\b.*");
     private static final Pattern INSERT_PATTERN = Pattern.compile(".*\\binsert\\b.*");
     private static final Pattern RETURNING_PATTERN = Pattern.compile(".*\\breturning\\b.*");
@@ -185,7 +186,9 @@ public class RawQueryMethodMatcher implements MethodMatcher {
             if (DeleteMethodMatcher.METHOD_PATTERN.matcher(methodName.toLowerCase(Locale.ENGLISH)).matches()) {
                 return DataMethod.OperationType.DELETE;
             }
-            return DataMethod.OperationType.UPDATE;
+            if (!FOR_UPDATE_PATTERN.matcher(query).find()) {
+                return DataMethod.OperationType.UPDATE;
+            }
         } else if (INSERT_PATTERN.matcher(query).find()) {
             if (RETURNING_PATTERN.matcher(query).find()) {
                 return DataMethod.OperationType.INSERT_RETURNING;
