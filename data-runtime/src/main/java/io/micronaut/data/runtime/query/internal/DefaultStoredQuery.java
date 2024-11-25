@@ -166,12 +166,12 @@ public final class DefaultStoredQuery<E, RT> extends DefaultStoredDataOperation<
             Optional<String> rawCountQueryString = method.stringValue(Query.class, DataMethod.META_MEMBER_RAW_COUNT_QUERY);
             this.rawQuery = rawCountQueryString.isPresent();
             this.query = rawCountQueryString.orElse(query);
-            String[] countQueryParts = method.stringValues(DataMethod.META_MEMBER_EXPANDABLE_COUNT_QUERY);
+            String[] countQueryParts = method.stringValues(DataMethod.class, DataMethod.META_MEMBER_EXPANDABLE_COUNT_QUERY);
             // for countBy queries this is empty, and we should use DataMethod.META_MEMBER_EXPANDABLE_QUERY value
             if (ArrayUtils.isNotEmpty(countQueryParts)) {
                 this.queryParts = countQueryParts;
             } else {
-                this.queryParts = method.stringValues(DataMethodQuery.META_MEMBER_EXPANDABLE_QUERY);
+                this.queryParts = method.stringValues(DataMethodQuery.class, DataMethodQuery.META_MEMBER_EXPANDABLE_QUERY);
             }
             this.isNative = queryAnnotation.isTrue(DataMethodQuery.META_MEMBER_NATIVE);
             //noinspection unchecked
