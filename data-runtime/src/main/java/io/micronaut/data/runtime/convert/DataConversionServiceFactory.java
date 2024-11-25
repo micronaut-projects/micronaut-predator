@@ -635,7 +635,7 @@ final class DataConversionServiceFactory {
         addZonedConvertorsConvertors(conversionService, ZonedDateTime.class, Function.identity());
 
         // LocalDate
-        conversionService.addConverter(LocalDate.class, java.sql.Date.class, ld -> java.sql.Date.valueOf(ld));
+        conversionService.addConverter(LocalDate.class, java.sql.Date.class, java.sql.Date::valueOf);
 
         // LocalTime
         conversionService.addConverter(LocalTime.class, Timestamp.class, localTime -> Timestamp.valueOf(localTime.atDate(LocalDate.now())));
