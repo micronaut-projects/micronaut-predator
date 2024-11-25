@@ -26,4 +26,6 @@ public interface CustomEntityRepository extends CrudRepository<CustomEntity, Lon
 
     @Query(value = "SELECT COUNT(*) FROM ${entity.prefix}entity WHERE name IN ('${entity.name}')", nativeQuery = true)
     long countDataByEnvPropertyValue();
+
+    long countByIdIn(List<Long> ids);
 }

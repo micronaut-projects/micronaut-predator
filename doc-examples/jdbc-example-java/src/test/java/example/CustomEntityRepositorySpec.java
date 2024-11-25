@@ -3,7 +3,6 @@ package example;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.data.model.Page;
 import io.micronaut.data.model.Pageable;
-import io.micronaut.data.model.Slice;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Assertions;
@@ -31,15 +30,20 @@ class CustomEntityRepositorySpec {
 
         CustomEntity entity2 = repository.save(new CustomEntity(null, "Entity2"));
         CustomEntity entity3 = repository.save(new CustomEntity(null, "Entity3"));
+
+        List<String> allNames = List.of("Entity1", "Entity2", "Entity3");
+        List<Long> allIds = List.of(entity.id(), entity2.id(), entity3.id());
+
         Page<CustomEntity> page = repository.findAll(Pageable.from(0, 2));
         Assertions.assertEquals(2, page.getSize());
         Assertions.assertEquals(3, page.getTotalSize());
 
-        page = repository.findByNameIn(List.of("Entity1", "Entity2", "Entity3"),
-            Pageable.from(0, 2));
+        page = repository.findByNameIn(allNames, Pageable.from(0, 2));
         Assertions.assertEquals(2, page.getSize());
         Assertions.assertEquals(2, page.getTotalPages());
         Assertions.assertEquals(3, page.getTotalSize());
+
+        Assertions.assertEquals(3, repository.countByIdIn(allIds));
 
         page = repository.findByNameIn(List.of("Entity1", "Entity2"),
             Pageable.from(0, 2));
@@ -53,7 +57,7 @@ class CustomEntityRepositorySpec {
 
         Assertions.assertEquals(1, repository.countDataByEnvPropertyValue());
 
-        customEntities = repository.findDataById(List.of(entity.id(), entity2.id(), entity3.id()));
+        customEntities = repository.findDataById(allIds);
         Assertions.assertEquals(3, customEntities.size());
         for (CustomEntity customEntity : customEntities) {
             Assertions.assertEquals(entityName, customEntity.name());
