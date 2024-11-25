@@ -2099,7 +2099,8 @@ interface PersonRepository extends CrudRepository<Person, Long> {
     $type customSelect(Long id);
 
     @Query(\"""
-           SELECT * FROM person WHERE id = :id FOR UPDATE
+           SELECT * FROM person WHERE id = :id FOR
+           UPDATE
            \""")
     $type selectForUpdate(Long id);
 
