@@ -1,5 +1,6 @@
 package example;
 
+import io.micronaut.context.annotation.Value;
 import io.micronaut.data.model.Page;
 import io.micronaut.data.model.Pageable;
 import io.micronaut.data.model.Slice;
@@ -16,6 +17,9 @@ class CustomEntityRepositorySpec {
     @Inject
     CustomEntityRepository repository;
 
+    @Value("${entity.name}")
+    String entityName;
+
     @Test
     void testSaveAndFind() {
         CustomEntity entity = repository.save(new CustomEntity(null, "Entity1"));
@@ -25,8 +29,8 @@ class CustomEntityRepositorySpec {
         Assertions.assertEquals(1, repository.count());
         Assertions.assertFalse(repository.findAll().isEmpty());
 
-        repository.save(new CustomEntity(null, "Entity2"));
-        repository.save(new CustomEntity(null, "Entity3"));
+        CustomEntity entity2 = repository.save(new CustomEntity(null, "Entity2"));
+        CustomEntity entity3 = repository.save(new CustomEntity(null, "Entity3"));
         Slice<CustomEntity> slice = repository.findAll(Pageable.from(0, 2));
         Assertions.assertEquals(2, slice.getSize());
 
@@ -41,6 +45,16 @@ class CustomEntityRepositorySpec {
         Assertions.assertEquals(2, page.getSize());
         Assertions.assertEquals(1, page.getTotalPages());
         Assertions.assertEquals(2, page.getTotalSize());
+
+        List<CustomEntity> customEntities = repository.findDataByEnvPropertyValue();
+        Assertions.assertEquals(1, customEntities.size());
+        Assertions.assertEquals(entityName, customEntities.get(0).name());
+
+        customEntities = repository.findDataById(List.of(entity.id(), entity2.id(), entity3.id()));
+        Assertions.assertEquals(3, customEntities.size());
+        for (CustomEntity customEntity : customEntities) {
+            Assertions.assertEquals(entityName, customEntity.name());
+        }
 
         repository.deleteAll();
     }

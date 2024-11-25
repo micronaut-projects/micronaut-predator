@@ -8,3 +8,4 @@ datasources:
     dialect: H2
 entity:
   prefix: demo_
+  name: Entity1
