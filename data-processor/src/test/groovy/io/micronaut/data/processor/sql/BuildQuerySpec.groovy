@@ -2088,7 +2088,7 @@ import io.micronaut.data.jdbc.annotation.JdbcRepository;
 import io.micronaut.data.model.query.builder.sql.Dialect;
 import io.micronaut.data.tck.entities.Person;
 
-@JdbcRepository(dialect= Dialect.MYSQL)
+@JdbcRepository(dialect = Dialect.MYSQL)
 @io.micronaut.context.annotation.Executable
 interface PersonRepository extends CrudRepository<Person, Long> {
 
@@ -2098,14 +2098,24 @@ interface PersonRepository extends CrudRepository<Person, Long> {
             \""")
     $type customSelect(Long id);
 
+    @Query(\"""
+           SELECT * FROM person WHERE id = :id FOR UPDATE
+           \""")
+    $type selectForUpdate(Long id);
+
 }
 """)
-        def method = repository.findPossibleMethods("customSelect").findFirst().get()
-        def selectQuery = getQuery(method)
+        def customSelectMethod = repository.findPossibleMethods("customSelect").findFirst().get()
+        def customSelectQuery = getQuery(customSelectMethod)
+        def selectForUpdateMethod = repository.findPossibleMethods("selectForUpdate").findFirst().get()
+        def selectForUpdateQuery = getQuery(selectForUpdateMethod)
 
         expect:
-        selectQuery.replace('\n', ' ') == "WITH ids AS (SELECT id FROM person) SELECT * FROM person "
-        method.classValue(DataMethod, "interceptor").get() == interceptor
+        customSelectQuery.replace('\n', ' ') == "WITH ids AS (SELECT id FROM person) SELECT * FROM person "
+        customSelectMethod.classValue(DataMethod, "interceptor").get() == interceptor
+
+        selectForUpdateQuery.replace('\n', ' ') == "SELECT * FROM person WHERE id = :id FOR UPDATE "
+        selectForUpdateMethod.classValue(DataMethod, "interceptor").get() == interceptor
 
         where:
         type                                          | interceptor
