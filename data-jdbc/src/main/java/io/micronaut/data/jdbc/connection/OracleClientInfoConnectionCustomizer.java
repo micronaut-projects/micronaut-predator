@@ -20,6 +20,7 @@ import io.micronaut.context.annotation.EachBean;
 import io.micronaut.context.annotation.Parameter;
 import io.micronaut.core.annotation.AnnotationMetadata;
 import io.micronaut.core.annotation.AnnotationValue;
+import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.core.util.CollectionUtils;
@@ -53,7 +54,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 4.11
  */
 @EachBean(DataSource.class)
-//@Requires(condition = OracleClientInfoCondition.class)
+@Internal
 final class OracleClientInfoConnectionCustomizer implements ConnectionCustomizer {
 
     private static final String NAME_MEMBER = "name";
@@ -88,8 +89,8 @@ final class OracleClientInfoConnectionCustomizer implements ConnectionCustomizer
 
     private final boolean enabled;
 
-    OracleClientInfoConnectionCustomizer(@Nullable DataSource dataSource,
-                                         @Parameter DataJdbcConfiguration jdbcConfiguration,
+    OracleClientInfoConnectionCustomizer(@Parameter DataJdbcConfiguration jdbcConfiguration,
+                                         @Nullable DataSource dataSource,
                                          ApplicationContext applicationContext,
                                          @Nullable ApplicationConfiguration applicationConfiguration) {
         this.applicationName = applicationConfiguration != null ? applicationConfiguration.getName().orElse(null) : null;
