@@ -88,7 +88,7 @@ final class OracleClientInfoConnectionCustomizer implements ConnectionCustomizer
 
     private final boolean enabled;
 
-    OracleClientInfoConnectionCustomizer(@NonNull DataSource dataSource,
+    OracleClientInfoConnectionCustomizer(@Nullable DataSource dataSource,
                                          @Parameter DataJdbcConfiguration jdbcConfiguration,
                                          ApplicationContext applicationContext,
                                          @Nullable ApplicationConfiguration applicationConfiguration) {
@@ -98,6 +98,9 @@ final class OracleClientInfoConnectionCustomizer implements ConnectionCustomizer
     }
 
     private boolean isEnabled(DataJdbcConfiguration dataJdbcConfiguration, ApplicationContext applicationContext, DataSource dataSource) {
+        if (dataSource == null || !dataJdbcConfiguration.isEnabled()) {
+            return false;
+        }
         if (dataJdbcConfiguration.getDialect() != Dialect.ORACLE) {
             return false;
         }
