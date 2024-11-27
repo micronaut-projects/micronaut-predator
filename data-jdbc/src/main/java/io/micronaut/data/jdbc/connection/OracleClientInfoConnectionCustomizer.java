@@ -120,7 +120,7 @@ final class OracleClientInfoConnectionCustomizer implements ConnectionCustomizer
     public void beforeCall(@NonNull Connection connection, @NonNull MethodInfo methodInfo) {
         // Set client info for the connection if Oracle connection before JDBC call
         Map<String, String> connectionClientInfo = getConnectionClientInfo(methodInfo);
-        if (connectionClientInfo != null && !connectionClientInfo.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(connectionClientInfo)) {
             LOG.trace("Setting connection tracing info to the Oracle connection");
             try {
                 for (Map.Entry<String, String> additionalInfo : connectionClientInfo.entrySet()) {
@@ -191,10 +191,10 @@ final class OracleClientInfoConnectionCustomizer implements ConnectionCustomizer
      * @param methodInfo The method info
      * @return The connection client info or null if not configured to be used
      */
-    private @Nullable Map<String, String> getConnectionClientInfo(@NonNull MethodInfo methodInfo) {
+    private @NonNull Map<String, String> getConnectionClientInfo(@NonNull MethodInfo methodInfo) {
         AnnotationMetadata annotationMetadata = methodInfo.annotationMetadata();
         AnnotationValue<ClientInfo> annotation = annotationMetadata.getAnnotation(ClientInfo.class);
-        List<AnnotationValue<ClientInfo.Attribute>> clientInfoValues = annotation != null ? annotation.getAnnotations(VALUE_MEMBER) : Collections.EMPTY_LIST;
+        List<AnnotationValue<ClientInfo.Attribute>> clientInfoValues = annotation != null ? annotation.getAnnotations(VALUE_MEMBER) : Collections.emptyList();
         Map<String, String> clientInfoAttributes = new LinkedHashMap<>(clientInfoValues.size());
         if (CollectionUtils.isNotEmpty(clientInfoValues)) {
             for (AnnotationValue<ClientInfo.Attribute> clientInfoValue : clientInfoValues) {
@@ -212,7 +212,6 @@ final class OracleClientInfoConnectionCustomizer implements ConnectionCustomizer
                 clazz -> clazz.getName().replace(INTERCEPTED_SUFFIX, ""))
         );
         clientInfoAttributes.putIfAbsent(ORACLE_ACTION, methodInfo.methodName());
-
         return clientInfoAttributes;
     }
 }
