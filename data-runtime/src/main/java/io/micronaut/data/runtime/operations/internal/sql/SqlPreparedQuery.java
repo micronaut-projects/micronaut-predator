@@ -62,5 +62,6 @@ public interface SqlPreparedQuery<E, R> extends BindableParametersPreparedQuery<
      * @return the invocation context
      */
     @Nullable
+    @SuppressWarnings("java:S1452")
     InvocationContext<?, ?> getInvocationContext();
 }
