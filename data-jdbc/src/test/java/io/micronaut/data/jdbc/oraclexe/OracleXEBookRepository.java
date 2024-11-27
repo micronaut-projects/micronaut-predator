@@ -15,12 +15,14 @@
  */
 package io.micronaut.data.jdbc.oraclexe;
 
+import io.micronaut.core.annotation.NonNull;
 import io.micronaut.data.annotation.Expandable;
 import io.micronaut.data.annotation.Id;
 import io.micronaut.data.annotation.Query;
 import io.micronaut.data.annotation.TypeDef;
 import io.micronaut.data.annotation.sql.Procedure;
 import io.micronaut.data.jdbc.annotation.JdbcRepository;
+import io.micronaut.data.jdbc.connection.annotation.ClientInfo;
 import io.micronaut.data.model.DataType;
 import io.micronaut.data.model.query.builder.sql.Dialect;
 import io.micronaut.data.tck.entities.Book;
@@ -31,6 +33,7 @@ import java.util.Collection;
 import java.util.List;
 
 @JdbcRepository(dialect = Dialect.ORACLE)
+@ClientInfo.Attribute(name = "OCSID.MODULE", value = "BOOKS")
 public abstract class OracleXEBookRepository extends BookRepository {
     public OracleXEBookRepository(OracleXEAuthorRepository authorRepository) {
         super(authorRepository);
@@ -52,6 +55,11 @@ public abstract class OracleXEBookRepository extends BookRepository {
 
     @Procedure("add1")
     public abstract int add1Aliased(int input);
+
+    @Override
+    @ClientInfo(value = {@ClientInfo.Attribute(name = "OCSID.MODULE", value = "CustomModule"),
+        @ClientInfo.Attribute(name = "OCSID.ACTION", value = "INSERT")})
+    public abstract @NonNull Book save(@NonNull Book book);
 
 //    public abstract Book updateReturning(Book book);
 //
