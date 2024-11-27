@@ -61,5 +61,6 @@ public interface SqlPreparedQuery<E, R> extends BindableParametersPreparedQuery<
      *
      * @return the invocation context
      */
+    @Nullable
     InvocationContext<?, ?> getInvocationContext();
 }

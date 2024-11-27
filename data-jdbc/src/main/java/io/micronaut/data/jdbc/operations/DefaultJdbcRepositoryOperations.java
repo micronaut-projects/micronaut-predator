@@ -434,7 +434,7 @@ public final class DefaultJdbcRepositoryOperations extends AbstractSqlRepository
         return result;
     }
 
-    private @NonNull MethodInfo getMethodInfo(SqlPreparedQuery<?, ?> sqlPreparedQuery) {
+    private @Nullable MethodInfo getMethodInfo(SqlPreparedQuery<?, ?> sqlPreparedQuery) {
         if (sqlPreparedQuery.getInvocationContext() instanceof MethodInvocationContext<?, ?> methodInvocationContext) {
             return new MethodInfo(methodInvocationContext.getTarget().getClass(), methodInvocationContext.getMethodName(),
                 sqlPreparedQuery.getAnnotationMetadata());
