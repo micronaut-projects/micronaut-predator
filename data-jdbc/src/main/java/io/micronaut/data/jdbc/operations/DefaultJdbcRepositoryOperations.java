@@ -125,6 +125,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -167,6 +168,7 @@ public final class DefaultJdbcRepositoryOperations extends AbstractSqlRepository
     private final ColumnIndexCallableResultReader columnIndexCallableResultReader;
     private final Map<Dialect, List<SqlExceptionMapper>> sqlExceptionMappers = new EnumMap<>(Dialect.class);
     private final List<ConnectionCustomizer> connectionCustomizers;
+    private final Map<MethodInvocationContext<?, ?>, MethodInfo> contextMethodInfoMap = new ConcurrentHashMap<>(30);
 
     /**
      * Default constructor.
@@ -436,16 +438,17 @@ public final class DefaultJdbcRepositoryOperations extends AbstractSqlRepository
 
     private @Nullable MethodInfo getMethodInfo(SqlPreparedQuery<?, ?> sqlPreparedQuery) {
         if (sqlPreparedQuery.getInvocationContext() instanceof MethodInvocationContext<?, ?> methodInvocationContext) {
-            return new MethodInfo(methodInvocationContext.getTarget().getClass(), methodInvocationContext.getMethodName(),
-                sqlPreparedQuery.getAnnotationMetadata());
+            return contextMethodInfoMap.computeIfAbsent(methodInvocationContext, context ->
+                new MethodInfo(context.getTarget().getClass(), context.getMethodName(), sqlPreparedQuery.getAnnotationMetadata()));
         }
         return null;
     }
 
     private @Nullable MethodInfo getMethodInfo(EntityOperation<?> operation) {
         if (operation.getInvocationContext() instanceof MethodInvocationContext<?, ?> methodInvocationContext) {
-            return new MethodInfo(methodInvocationContext.getTarget().getClass(), methodInvocationContext.getMethodName(),
-                operation.getAnnotationMetadata());
+            return contextMethodInfoMap.computeIfAbsent(methodInvocationContext, context ->
+                new MethodInfo(context.getTarget().getClass(), context.getMethodName(),
+                    operation.getAnnotationMetadata()));
         }
         return null;
     }
