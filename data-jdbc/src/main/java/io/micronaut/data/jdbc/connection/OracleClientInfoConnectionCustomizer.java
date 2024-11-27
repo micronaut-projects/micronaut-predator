@@ -25,15 +25,14 @@ import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.core.util.CollectionUtils;
 import io.micronaut.core.util.StringUtils;
-import io.micronaut.data.connection.jdbc.advice.DelegatingDataSource;
 import io.micronaut.data.jdbc.config.DataJdbcConfiguration;
 import io.micronaut.data.jdbc.connection.annotation.ClientInfo;
 import io.micronaut.data.model.query.builder.sql.Dialect;
+import io.micronaut.jdbc.BasicJdbcConfiguration;
 import io.micronaut.runtime.ApplicationConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
@@ -53,7 +52,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author radovanradic
  * @since 4.11
  */
-@EachBean(DataSource.class)
+@EachBean(BasicJdbcConfiguration.class)
 @Internal
 final class OracleClientInfoConnectionCustomizer implements ConnectionCustomizer {
 
@@ -90,34 +89,22 @@ final class OracleClientInfoConnectionCustomizer implements ConnectionCustomizer
     private final boolean enabled;
 
     OracleClientInfoConnectionCustomizer(@Parameter DataJdbcConfiguration jdbcConfiguration,
-                                         @Nullable DataSource dataSource,
                                          ApplicationContext applicationContext,
                                          @Nullable ApplicationConfiguration applicationConfiguration) {
         this.applicationName = applicationConfiguration != null ? applicationConfiguration.getName().orElse(null) : null;
-        this.enabled = isEnabled(jdbcConfiguration, applicationContext, dataSource);
+        this.enabled = isEnabled(jdbcConfiguration, applicationContext);
         this.dataSourceName = jdbcConfiguration.getName();
     }
 
-    private boolean isEnabled(DataJdbcConfiguration dataJdbcConfiguration, ApplicationContext applicationContext, DataSource dataSource) {
-        if (dataSource == null || !dataJdbcConfiguration.isEnabled()) {
+    private boolean isEnabled(DataJdbcConfiguration dataJdbcConfiguration, ApplicationContext applicationContext) {
+        if (!dataJdbcConfiguration.isEnabled()) {
             return false;
         }
         if (dataJdbcConfiguration.getDialect() != Dialect.ORACLE) {
             return false;
         }
         String property = "datasources." + dataJdbcConfiguration.getName() + "." + ORACLE_CLIENT_INFO_ENABLED;
-        if (!applicationContext.getProperty(property, Boolean.class).orElse(false)) {
-            return false;
-        }
-        boolean customizerEnabled;
-        try {
-            Connection connection = DelegatingDataSource.unwrapDataSource(dataSource).getConnection();
-            customizerEnabled = isOracleConnection(connection);
-        } catch (SQLException e) {
-            LOG.error("Failed to get connection for oracle connection customizer", e);
-            customizerEnabled = false;
-        }
-        return customizerEnabled;
+        return applicationContext.getProperty(property, Boolean.class).orElse(false);
     }
 
     @Override
