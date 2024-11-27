@@ -33,7 +33,7 @@ import java.sql.Connection;
 public interface ConnectionCustomizer extends Named, Ordered {
 
     /**
-     * Called before JDBC call is issues for given connection.
+     * Called before JDBC call is issued for given connection.
      *
      * This method allows implementations to perform additional setup or configuration on the connection.
      *

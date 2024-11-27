@@ -452,11 +452,11 @@ public final class DefaultJdbcRepositoryOperations extends AbstractSqlRepository
 
     @Override
     public <T> boolean exists(@NonNull PreparedQuery<T, Boolean> pq) {
-        SqlPreparedQuery<T, Boolean> sqlPreparedQuery = getSqlPreparedQuery(pq);
-        return executeRead(getMethodInfo(sqlPreparedQuery), connection -> {
+        SqlPreparedQuery<T, Boolean> preparedQuery = getSqlPreparedQuery(pq);
+        return executeRead(getMethodInfo(preparedQuery), connection -> {
             try {
-                try (PreparedStatement ps = prepareStatement(connection::prepareStatement, sqlPreparedQuery, false, true)) {
-                    sqlPreparedQuery.bindParameters(new JdbcParameterBinder(connection, ps, sqlPreparedQuery));
+                try (PreparedStatement ps = prepareStatement(connection::prepareStatement, preparedQuery, false, true)) {
+                    preparedQuery.bindParameters(new JdbcParameterBinder(connection, ps, preparedQuery));
                     try (ResultSet rs = ps.executeQuery()) {
                         return rs.next();
                     }
@@ -805,7 +805,7 @@ public final class DefaultJdbcRepositoryOperations extends AbstractSqlRepository
         });
     }
 
-    private <I> I executeRead(MethodInfo methodInfo, Function<Connection, I> fn) {
+    private <I> I executeRead(@Nullable MethodInfo methodInfo, Function<Connection, I> fn) {
         if (!jdbcConfiguration.isAllowConnectionPerOperation() && connectionOperations.findConnectionStatus().isEmpty()) {
             throw connectionNotFoundAndNewNotAllowed();
         }
@@ -841,7 +841,7 @@ public final class DefaultJdbcRepositoryOperations extends AbstractSqlRepository
             try {
                 connectionCustomizer.beforeCall(connection, methodInfo);
             } catch (Exception e) {
-                LOG.debug("An error occurred when calling listener {} beforeCall.", connectionCustomizer.getName(), e);
+                LOG.debug("An error occurred when calling connection customizer {} beforeCall.", connectionCustomizer.getName(), e);
             }
         }
     }
@@ -854,7 +854,7 @@ public final class DefaultJdbcRepositoryOperations extends AbstractSqlRepository
             try {
                 connectionCustomizer.afterCall(connection);
             } catch (Exception e) {
-                LOG.debug("An error occurred when calling listener {} afterCall.", connectionCustomizer.getName(), e);
+                LOG.debug("An error occurred when calling connection customizer {} afterCall.", connectionCustomizer.getName(), e);
             }
         }
     }
