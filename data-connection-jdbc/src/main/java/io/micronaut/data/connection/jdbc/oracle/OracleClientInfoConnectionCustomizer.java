@@ -109,43 +109,46 @@ final class OracleClientInfoConnectionCustomizer implements ConnectionCustomizer
     public <R> Function<ConnectionStatus<Connection>, R> intercept(Function<ConnectionStatus<Connection>, R> operation) {
         return connectionStatus -> {
             ConnectionDefinition connectionDefinition = connectionStatus.getDefinition();
-            // Set client info for connection if Oracle connection after connection is opened
+            // Set client info for connection if Oracle before issue JDBC call
             Map<String, String> connectionClientInfo = getConnectionClientInfo(connectionDefinition);
-            if (CollectionUtils.isNotEmpty(connectionClientInfo)) {
-                Connection connection = connectionStatus.getConnection();
-                LOG.trace("Setting connection tracing info to the Oracle connection");
-                try {
-                    for (Map.Entry<String, String> additionalInfo : connectionClientInfo.entrySet()) {
-                        String name = additionalInfo.getKey();
-                        String value = additionalInfo.getValue();
-                        connection.setClientInfo(name, value);
-                    }
-                } catch (SQLClientInfoException e) {
-                    LOG.debug("Failed to set connection tracing info", e);
-                }
-            }
+            applyClientInfo(connectionStatus, connectionClientInfo);
             try {
                 return operation.apply(connectionStatus);
             } finally {
                 // Clear client info for connection if it was Oracle connection and client info was set previously
-                if (CollectionUtils.isNotEmpty(connectionClientInfo)) {
-                    try {
-                        Connection connection = connectionStatus.getConnection();
-                        for (String key : connectionClientInfo.keySet()) {
-                            connection.setClientInfo(key, null);
-                        }
-                    } catch (SQLClientInfoException e) {
-                        LOG.debug("Failed to clear connection tracing info", e);
-                    }
-                }
+                clearClientInfo(connectionStatus, connectionClientInfo);
             }
 
         };
     }
 
-    @Override
-    public String getName() {
-        return "Oracle Connection Client Info Customizer";
+    private void applyClientInfo(@NonNull ConnectionStatus<Connection> connectionStatus, @NonNull Map<String, String> connectionClientInfo) {
+        if (CollectionUtils.isNotEmpty(connectionClientInfo)) {
+            Connection connection = connectionStatus.getConnection();
+            LOG.trace("Setting connection tracing info to the Oracle connection");
+            try {
+                for (Map.Entry<String, String> additionalInfo : connectionClientInfo.entrySet()) {
+                    String name = additionalInfo.getKey();
+                    String value = additionalInfo.getValue();
+                    connection.setClientInfo(name, value);
+                }
+            } catch (SQLClientInfoException e) {
+                LOG.debug("Failed to set connection tracing info", e);
+            }
+        }
+    }
+
+    private void clearClientInfo(@NonNull ConnectionStatus<Connection> connectionStatus, @NonNull Map<String, String> connectionClientInfo) {
+        if (CollectionUtils.isNotEmpty(connectionClientInfo)) {
+            try {
+                Connection connection = connectionStatus.getConnection();
+                for (String key : connectionClientInfo.keySet()) {
+                    connection.setClientInfo(key, null);
+                }
+            } catch (SQLClientInfoException e) {
+                LOG.debug("Failed to clear connection tracing info", e);
+            }
+        }
     }
 
     /**
@@ -186,7 +189,7 @@ final class OracleClientInfoConnectionCustomizer implements ConnectionCustomizer
         if (StringUtils.isNotEmpty(applicationName)) {
             clientInfoAttributes.putIfAbsent(ORACLE_CLIENT_ID, applicationName);
         }
-        if (annotationMetadata instanceof MethodInvocationContext methodInvocationContext) {
+        if (annotationMetadata instanceof MethodInvocationContext<?, ?> methodInvocationContext) {
             clientInfoAttributes.putIfAbsent(ORACLE_MODULE,
                 MODULE_CLASS_MAP.computeIfAbsent(methodInvocationContext.getTarget().getClass(),
                     clazz -> clazz.getName().replace(INTERCEPTED_SUFFIX, ""))

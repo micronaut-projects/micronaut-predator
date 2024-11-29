@@ -160,7 +160,6 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
                                            @NonNull Function<ConnectionStatus<C>, R> callback) {
         C connection = openConnection(definition);
         DefaultConnectionStatus<C> status = new DefaultConnectionStatus<>(connection, definition, true);
-
         try (PropagatedContext.Scope ignore = PropagatedContext.getOrEmpty()
             .plus(new ConnectionPropagatedContextElement<>(this, status))
             .propagate()) {

@@ -16,8 +16,6 @@
 package io.micronaut.data.connection.support;
 
 import io.micronaut.core.annotation.Experimental;
-import io.micronaut.core.annotation.NonNull;
-import io.micronaut.core.naming.Named;
 import io.micronaut.core.order.Ordered;
 import io.micronaut.data.connection.ConnectionStatus;
 
@@ -36,7 +34,7 @@ import java.util.function.Function;
  * @since 4.11
  */
 @Experimental
-public interface ConnectionCustomizer<C> extends Named, Ordered {
+public interface ConnectionCustomizer<C> extends Ordered {
 
     /**
      * Intercept the connection operation.
@@ -45,15 +43,4 @@ public interface ConnectionCustomizer<C> extends Named, Ordered {
      * @return the operation callback
      */
     <R> Function<ConnectionStatus<C>, R> intercept(Function<ConnectionStatus<C>, R> operation);
-
-    /**
-     * Returns the name of this listener. Used for logging purposes. By default, returns class simple name.
-     *
-     * @return the name of this listener
-     */
-    @Override
-    @NonNull
-    default String getName() {
-        return getClass().getSimpleName();
-    }
 }
