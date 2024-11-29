@@ -155,6 +155,7 @@ public final class ConnectableInterceptor implements MethodInterceptor<Object, O
         if (annotation == null) {
             throw new IllegalStateException("No declared @Connectable annotation present");
         }
+
         return new DefaultConnectionDefinition(
             executableMethod.getDeclaringType().getSimpleName() + "." + executableMethod.getMethodName(),
             annotation.enumValue("propagation", ConnectionDefinition.Propagation.class).orElse(ConnectionDefinition.PROPAGATION_DEFAULT),
