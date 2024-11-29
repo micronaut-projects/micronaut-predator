@@ -55,6 +55,11 @@ public record DefaultConnectionDefinition(
         this(name, PROPAGATION_DEFAULT, null, readOnly, AnnotationMetadata.EMPTY_METADATA);
     }
 
+    public DefaultConnectionDefinition(String name, Propagation propagationBehavior, Duration timeout,
+                                       Boolean readOnlyValue) {
+        this(name, propagationBehavior, timeout, readOnlyValue, AnnotationMetadata.EMPTY_METADATA);
+    }
+
     @Override
     public Optional<Boolean> isReadOnly() {
         return Optional.ofNullable(readOnlyValue);

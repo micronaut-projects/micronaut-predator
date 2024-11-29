@@ -18,10 +18,8 @@ package io.micronaut.data.connection.interceptor;
 import io.micronaut.aop.InterceptPhase;
 import io.micronaut.aop.InterceptedMethod;
 import io.micronaut.aop.InterceptorBean;
-import io.micronaut.aop.InvocationContext;
 import io.micronaut.aop.MethodInterceptor;
 import io.micronaut.aop.MethodInvocationContext;
-import io.micronaut.core.annotation.AnnotationMetadata;
 import io.micronaut.core.annotation.AnnotationValue;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.NonNull;
@@ -31,7 +29,6 @@ import io.micronaut.data.connection.ConnectionDefinition;
 import io.micronaut.data.connection.ConnectionOperations;
 import io.micronaut.data.connection.ConnectionOperationsRegistry;
 import io.micronaut.data.connection.DefaultConnectionDefinition;
-import io.micronaut.data.connection.annotation.ClientInfo;
 import io.micronaut.data.connection.annotation.Connectable;
 import io.micronaut.data.connection.async.AsyncConnectionOperations;
 import io.micronaut.data.connection.reactive.ReactiveStreamsConnectionOperations;
@@ -100,7 +97,7 @@ public final class ConnectableInterceptor implements MethodInterceptor<Object, O
             final ConnectionInvocation connectionInvocation = connectionInvocationMap
                 .computeIfAbsent(new TenantExecutableMethod(tenantDataSourceName, executableMethod), ignore -> {
                     final String dataSource = tenantDataSourceName == null ? executableMethod.stringValue(Connectable.class).orElse(null) : tenantDataSourceName;
-                    final ConnectionDefinition connectionDefinition = getConnectionDefinition(context, executableMethod);
+                    final ConnectionDefinition connectionDefinition = getConnectionDefinition(executableMethod);
 
                     switch (interceptedMethod.resultType()) {
                         case PUBLISHER -> {
@@ -152,35 +149,8 @@ public final class ConnectableInterceptor implements MethodInterceptor<Object, O
         }
     }
 
-    /**
-     * Retrieves the connection definition based on the provided executable method and application name.
-     *
-     * This method is deprecated since version 4.10.4 and marked for removal in future versions.
-     *
-     * @param executableMethod the executable method to retrieve the connection definition for
-     * @return the connection definition
-     * @deprecated Since 4.10.4, use {@link #getConnectionDefinition(InvocationContext, ExecutableMethod)} instead
-     */
     @NonNull
-    @Deprecated(since = "4.11.0", forRemoval = true)
     public static ConnectionDefinition getConnectionDefinition(ExecutableMethod<Object, Object> executableMethod) {
-        return getConnectionDefinition(null, executableMethod);
-    }
-
-    /**
-     * Retrieves the connection definition based on the provided executable method and application name.
-     *
-     * This method examines the annotations present on the executable method to determine the connection definition.
-     * It looks for the presence of the {@link Connectable} annotation and uses its attributes to construct the connection definition.
-     * Additionally, it checks for the presence of the {@link ClientInfo.Attribute} annotation to obtain connection tracing information.
-     *
-     * @param context      the invocation context, may be null
-     * @param executableMethod the executable method to retrieve the connection definition for
-     * @return the connection definition
-     */
-    @NonNull
-    public static ConnectionDefinition getConnectionDefinition(@Nullable InvocationContext<Object, Object> context,
-                                                               ExecutableMethod<Object, Object> executableMethod) {
         AnnotationValue<Connectable> annotation = executableMethod.getAnnotation(Connectable.class);
         if (annotation == null) {
             throw new IllegalStateException("No declared @Connectable annotation present");
@@ -189,8 +159,7 @@ public final class ConnectableInterceptor implements MethodInterceptor<Object, O
             executableMethod.getDeclaringType().getSimpleName() + "." + executableMethod.getMethodName(),
             annotation.enumValue("propagation", ConnectionDefinition.Propagation.class).orElse(ConnectionDefinition.PROPAGATION_DEFAULT),
             annotation.longValue("timeout").stream().mapToObj(Duration::ofSeconds).findFirst().orElse(null),
-            annotation.booleanValue("readOnly").orElse(null),
-            context == null ? AnnotationMetadata.EMPTY_METADATA : context
+            annotation.booleanValue("readOnly").orElse(null)
         );
     }
 
