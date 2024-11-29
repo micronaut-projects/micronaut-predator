@@ -24,10 +24,10 @@ import io.micronaut.data.connection.ConnectionStatus;
 import java.util.function.Function;
 
 /**
- * Handles connection after open or before close events based on the provided {@link ConnectionStatus}.
+ * Customizes connection before or after data repository call based on the provided {@link ConnectionStatus}.
  *
  * Implementations of this interface can modify the behavior of connections created by Micronaut Data
- * or do what might be needed after connection open or before close.
+ * or do what might be needed before or after call to the data repository (for example JDBC statement call).
  *
  * @see ConnectionStatus
  * @param <C> The connection type
@@ -36,7 +36,7 @@ import java.util.function.Function;
  * @since 4.11
  */
 @Experimental
-public interface ConnectionListener<C> extends Named, Ordered {
+public interface ConnectionCustomizer<C> extends Named, Ordered {
 
     /**
      * Intercept the connection operation.
@@ -45,24 +45,6 @@ public interface ConnectionListener<C> extends Named, Ordered {
      * @return the operation callback
      */
     <R> Function<ConnectionStatus<C>, R> intercept(Function<ConnectionStatus<C>, R> operation);
-
-    /**
-     * Called after a connection is opened.
-     * This method allows implementations to perform additional setup or configuration on the connection.
-     *
-     * @param connectionStatus            The newly opened connection
-     */
-    default void afterOpen(@NonNull ConnectionStatus<C> connectionStatus) {
-    }
-
-    /**
-     * Called before a connection is closed.
-     * This method allows implementations to release any resources or perform cleanup tasks related to the connection.
-     *
-     * @param connectionStatus            The connection status about to be closed
-     */
-    default void beforeClose(@NonNull ConnectionStatus<C> connectionStatus) {
-    }
 
     /**
      * Returns the name of this listener. Used for logging purposes. By default, returns class simple name.

@@ -30,7 +30,6 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.ANNOTATION_TYPE, ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Connectable
 public @interface ClientInfo {
 
     /**
@@ -49,7 +48,6 @@ public @interface ClientInfo {
     @Target({ElementType.ANNOTATION_TYPE, ElementType.METHOD, ElementType.TYPE})
     @Retention(RetentionPolicy.RUNTIME)
     @Repeatable(ClientInfo.class)
-    @Connectable
     @interface Attribute {
 
         /**

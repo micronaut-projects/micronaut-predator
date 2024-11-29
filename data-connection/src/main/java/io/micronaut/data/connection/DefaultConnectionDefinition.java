@@ -88,6 +88,11 @@ public record DefaultConnectionDefinition(
     }
 
     @Override
+    public ConnectionDefinition withAnnotationMetadata(AnnotationMetadata newAnnotationMetadata) {
+        return new DefaultConnectionDefinition(name, propagationBehavior, timeout, readOnlyValue, newAnnotationMetadata);
+    }
+
+    @Override
     public @NonNull AnnotationMetadata getAnnotationMetadata() {
         return annotationMetadata;
     }

@@ -16,6 +16,7 @@
 package io.micronaut.data.connection;
 
 
+import io.micronaut.core.annotation.AnnotationMetadata;
 import io.micronaut.core.annotation.AnnotationMetadataProvider;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.annotation.Nullable;
@@ -117,6 +118,15 @@ public interface ConnectionDefinition extends AnnotationMetadataProvider {
      */
     @NonNull
     ConnectionDefinition withName(String name);
+
+    /**
+     * Connection definition with new annotation metadata.
+     *
+     * @param annotationMetadata The new annotation metadata
+     * @return A new connection definition with specified annotation metadata
+     */
+    @NonNull
+    ConnectionDefinition withAnnotationMetadata(AnnotationMetadata annotationMetadata);
 
     /**
      * Create a new {@link ConnectionDefinition} for the given behaviour.

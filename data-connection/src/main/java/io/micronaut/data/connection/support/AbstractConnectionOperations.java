@@ -48,20 +48,21 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final List<ConnectionListener<C>> connectionListeners = new ArrayList<>(10);
+    private final List<ConnectionCustomizer<C>> connectionCustomizers = new ArrayList<>(10);
 
     /**
-     * Adds a connection listener to the list of listeners that will be notified when a connection is opened or closed.
+     * Adds a connection customizer to the list of customizers that will be notified before or after a call to the underlying data repository
+     * is issues.
      *
-     * The added listener will be sorted according to its order using the {@link OrderUtil#sort(List)} method.
+     * The added customizer will be sorted according to its order using the {@link OrderUtil#sort(List)} method.
      *
-     * @param connectionListener the listener to add
+     * @param connectionCustomizer the connection customizer to add
      *
      * @since 4.11
      */
-    public void addConnectionListener(@NonNull ConnectionListener<C> connectionListener) {
-        connectionListeners.add(connectionListener);
-        OrderUtil.sort(connectionListeners);
+    public void addConnectionCustomizer(@NonNull ConnectionCustomizer<C> connectionCustomizer) {
+        connectionCustomizers.add(connectionCustomizer);
+        OrderUtil.sort(connectionCustomizers);
     }
 
     /**
@@ -103,8 +104,8 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
     @Override
     public final <R> R execute(@NonNull ConnectionDefinition definition, @NonNull Function<ConnectionStatus<C>, R> callback) {
         ConnectionPropagatedContextElement<C> existingConnection = findContextElement().orElse(null);
-        for (ConnectionListener<C> connectionListener : connectionListeners) {
-            callback = connectionListener.intercept(callback);
+        for (ConnectionCustomizer<C> connectionCustomizer : connectionCustomizers) {
+            callback = connectionCustomizer.intercept(callback);
         }
         @NonNull Function<ConnectionStatus<C>, R> finalCallback = callback;
         return switch (definition.getPropagationBehavior()) {
@@ -160,8 +161,6 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
         C connection = openConnection(definition);
         DefaultConnectionStatus<C> status = new DefaultConnectionStatus<>(connection, definition, true);
 
-        afterOpen(status);
-
         try (PropagatedContext.Scope ignore = PropagatedContext.getOrEmpty()
             .plus(new ConnectionPropagatedContextElement<>(this, status))
             .propagate()) {
@@ -210,7 +209,7 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
                 connectionStatus.beforeClosed();
             } finally {
                 if (connectionStatus.isNew()) {
-                    closeNewConnectionInternal(status);
+                    closeConnection(status);
                 }
                 connectionStatus.afterClosed();
             }
@@ -220,9 +219,6 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
     private DefaultConnectionStatus<C> openNewConnectionInternal(@NonNull ConnectionDefinition definition) {
         C connection = openConnection(definition);
         DefaultConnectionStatus<C> status = new DefaultConnectionStatus<>(connection, definition, true);
-
-        afterOpen(status);
-
         PropagatedContext propagatedContext = PropagatedContext.getOrEmpty().plus(new ConnectionPropagatedContextElement<>(this, status));
         PropagatedContext.Scope scope = propagatedContext.propagate();
         status.registerSynchronization(new ConnectionSynchronization() {
@@ -231,29 +227,7 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
                 scope.close();
             }
         });
-
         return status;
-    }
-
-    private void afterOpen(ConnectionStatus<C> connectionStatus) {
-        for (ConnectionListener<C> connectionListener : connectionListeners) {
-            try {
-                connectionListener.afterOpen(connectionStatus);
-            } catch (Exception e) {
-                logger.debug("An error occurred when calling listener {} afterOpen.", connectionListener.getName(), e);
-            }
-        }
-    }
-
-    private void closeNewConnectionInternal(@NonNull ConnectionStatus<C> connectionStatus) {
-        for (ConnectionListener<C> connectionListener : connectionListeners) {
-            try {
-                connectionListener.beforeClose(connectionStatus);
-            } catch (Exception e) {
-                logger.debug("An error occurred when calling listener {} beforeClose.", connectionListener.getName(), e);
-            }
-        }
-        closeConnection(connectionStatus);
     }
 
     private DefaultConnectionStatus<C> reuseExistingConnectionInternal(@NonNull ConnectionPropagatedContextElement<C> existingContextElement) {

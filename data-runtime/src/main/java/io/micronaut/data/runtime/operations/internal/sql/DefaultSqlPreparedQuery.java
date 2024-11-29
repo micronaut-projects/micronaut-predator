@@ -15,6 +15,7 @@
  */
 package io.micronaut.data.runtime.operations.internal.sql;
 
+import io.micronaut.aop.InvocationContext;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.annotation.Nullable;
@@ -443,6 +444,11 @@ public class DefaultSqlPreparedQuery<E, R> extends DefaultBindableParametersPrep
     @Override
     public QueryResultInfo getQueryResultInfo() {
         return sqlStoredQuery.getQueryResultInfo();
+    }
+
+    @Override
+    public InvocationContext<?, ?> getInvocationContext() {
+        return invocationContext;
     }
 
     /**
