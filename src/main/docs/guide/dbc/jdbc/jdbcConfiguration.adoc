@@ -75,11 +75,8 @@ If some of these attributes are not provided then Micronaut Data Jdbc is going t
 *** `OCSID.ACTION` will get the value of the method name which is annotated with `@ClientInfo.Attribute` annotation
 *** `OCSID.CLIENTID` will get the value of the Micronaut application name, if configured
 
-Please note this feature is currently supported only for Oracle database connections. In order to enable Oracle connection client info to be set,
-you need to specify the configuration property `datasources.default.enable-oracle-client-info=true` on a per datasource basis.
-
-For other databases, new implementation of api:io.micronaut.data.connection.support.ConnectionListener[] can be added and
-needs to be registered as a listener to the api:io.micronaut.data.connection.support.AbstractConnectionOperations[] by calling `addConnectionListener` method.
+Please note this feature is currently supported only for Oracle database connections. In order to enable Oracle JDBC connection client info to be set,
+you need to specify the configuration property `datasources.<datasource-name>.enable-oracle-client-info=true` on a per datasource basis.
 
 TIP: See the guide for https://guides.micronaut.io/latest/micronaut-data-jdbc-repository.html[Access a Database with Micronaut Data JDBC] to learn more.
 
