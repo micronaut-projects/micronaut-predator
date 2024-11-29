@@ -15,10 +15,13 @@
  */
 package io.micronaut.data.connection.support;
 
+import io.micronaut.core.annotation.Experimental;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.naming.Named;
 import io.micronaut.core.order.Ordered;
 import io.micronaut.data.connection.ConnectionStatus;
+
+import java.util.function.Function;
 
 /**
  * Handles connection after open or before close events based on the provided {@link ConnectionStatus}.
@@ -32,25 +35,34 @@ import io.micronaut.data.connection.ConnectionStatus;
  * @author radovanradic
  * @since 4.11
  */
+@Experimental
 public interface ConnectionListener<C> extends Named, Ordered {
 
     /**
+     * Intercept the connection operation.
+     * @param operation The operation
+     * @param <R> The result
+     * @return the operation callback
+     */
+    <R> Function<ConnectionStatus<C>, R> intercept(Function<ConnectionStatus<C>, R> operation);
+
+    /**
      * Called after a connection is opened.
-     *
      * This method allows implementations to perform additional setup or configuration on the connection.
      *
      * @param connectionStatus            The newly opened connection
      */
-    void afterOpen(@NonNull ConnectionStatus<C> connectionStatus);
+    default void afterOpen(@NonNull ConnectionStatus<C> connectionStatus) {
+    }
 
     /**
      * Called before a connection is closed.
-     *
      * This method allows implementations to release any resources or perform cleanup tasks related to the connection.
      *
-     * @param connectionStatus            The connection statucs about to be closed
+     * @param connectionStatus            The connection status about to be closed
      */
-    void beforeClose(@NonNull ConnectionStatus<C> connectionStatus);
+    default void beforeClose(@NonNull ConnectionStatus<C> connectionStatus) {
+    }
 
     /**
      * Returns the name of this listener. Used for logging purposes. By default, returns class simple name.

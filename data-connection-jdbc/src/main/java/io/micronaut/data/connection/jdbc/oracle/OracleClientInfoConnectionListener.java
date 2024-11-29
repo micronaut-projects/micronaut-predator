@@ -44,6 +44,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * A customizer for Oracle database connections that sets client information after opening and clears before closing.
@@ -103,40 +104,41 @@ final class OracleClientInfoConnectionListener implements ConnectionListener<Con
     }
 
     @Override
-    public void afterOpen(@NonNull ConnectionStatus<Connection> connectionStatus) {
-        ConnectionDefinition connectionDefinition = connectionStatus.getDefinition();
-        // Set client info for connection if Oracle connection after connection is opened
-        Map<String, String> connectionClientInfo = getConnectionClientInfo(connectionDefinition);
-        if (connectionClientInfo != null && !connectionClientInfo.isEmpty()) {
-            Connection connection = connectionStatus.getConnection();
-            LOG.trace("Setting connection tracing info to the Oracle connection");
-            try {
-                for (Map.Entry<String, String> additionalInfo : connectionClientInfo.entrySet()) {
-                    String name = additionalInfo.getKey();
-                    String value = additionalInfo.getValue();
-                    connection.setClientInfo(name, value);
-                }
-            } catch (SQLClientInfoException e) {
-                LOG.debug("Failed to set connection tracing info", e);
-            }
-        }
-    }
-
-    @Override
-    public void beforeClose(@NonNull ConnectionStatus<Connection> connectionStatus) {
-        // Clear client info for connection if it was Oracle connection and client info was set previously
-        ConnectionDefinition connectionDefinition = connectionStatus.getDefinition();
-        Map<String, String> connectionClientInfo = getConnectionClientInfo(connectionDefinition);
-        if (connectionClientInfo != null && !connectionClientInfo.isEmpty()) {
-            try {
+    public <R> Function<ConnectionStatus<Connection>, R> intercept(Function<ConnectionStatus<Connection>, R> operation) {
+        return connectionStatus -> {
+            ConnectionDefinition connectionDefinition = connectionStatus.getDefinition();
+            // Set client info for connection if Oracle connection after connection is opened
+            Map<String, String> connectionClientInfo = getConnectionClientInfo(connectionDefinition);
+            if (connectionClientInfo != null && !connectionClientInfo.isEmpty()) {
                 Connection connection = connectionStatus.getConnection();
-                for (String key : connectionClientInfo.keySet()) {
-                    connection.setClientInfo(key, null);
+                LOG.trace("Setting connection tracing info to the Oracle connection");
+                try {
+                    for (Map.Entry<String, String> additionalInfo : connectionClientInfo.entrySet()) {
+                        String name = additionalInfo.getKey();
+                        String value = additionalInfo.getValue();
+                        connection.setClientInfo(name, value);
+                    }
+                } catch (SQLClientInfoException e) {
+                    LOG.debug("Failed to set connection tracing info", e);
                 }
-            } catch (SQLClientInfoException e) {
-                LOG.debug("Failed to clear connection tracing info", e);
             }
-        }
+            try {
+                return operation.apply(connectionStatus);
+            } finally {
+                // Clear client info for connection if it was Oracle connection and client info was set previously
+                if (connectionClientInfo != null && !connectionClientInfo.isEmpty()) {
+                    try {
+                        Connection connection = connectionStatus.getConnection();
+                        for (String key : connectionClientInfo.keySet()) {
+                            connection.setClientInfo(key, null);
+                        }
+                    } catch (SQLClientInfoException e) {
+                        LOG.debug("Failed to clear connection tracing info", e);
+                    }
+                }
+            }
+
+        };
     }
 
     @Override

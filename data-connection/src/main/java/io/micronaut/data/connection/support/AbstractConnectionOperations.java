@@ -103,6 +103,10 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
     @Override
     public final <R> R execute(@NonNull ConnectionDefinition definition, @NonNull Function<ConnectionStatus<C>, R> callback) {
         ConnectionPropagatedContextElement<C> existingConnection = findContextElement().orElse(null);
+        for (ConnectionListener<C> connectionListener : connectionListeners) {
+            callback = connectionListener.intercept(callback);
+        }
+        @NonNull Function<ConnectionStatus<C>, R> finalCallback = callback;
         return switch (definition.getPropagationBehavior()) {
             case REQUIRED -> {
                 if (existingConnection == null) {
@@ -120,7 +124,7 @@ public abstract class AbstractConnectionOperations<C> implements ConnectionOpera
                 if (existingConnection == null) {
                     yield executeWithNewConnection(definition, callback);
                 }
-                yield suspend(existingConnection, () -> executeWithNewConnection(definition, callback));
+                yield suspend(existingConnection, () -> executeWithNewConnection(definition, finalCallback));
             }
         };
     }
