@@ -345,7 +345,7 @@
         <h1>Micronaut Data</h1>
         <p></p>
         <p>Data Repository Support for Micronaut</p>
-        <p><strong>Version:</strong> 4.10.4 </p>
+        <p><strong>Version:</strong> 4.10.5 </p>
     </div>
     
 <h1 id="introduction"><a class="anchor" href="#introduction"></a>1 Introduction</h1>
@@ -7747,7 +7747,9 @@ datasources.default.driverClassName=org.h2.Driver
 datasources.default.username=sa
 datasources.default.password=
 datasources.default.schema-generate=CREATE_DROP
-datasources.default.dialect=H2</code></pre>
+datasources.default.dialect=H2
+entity.prefix=demo_
+entity.name=Entity1</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -7759,7 +7761,10 @@ datasources.default.dialect=H2</code></pre>
     username: sa
     password: ''
     schema-generate: CREATE_DROP
-    dialect: H2</code></pre>
+    dialect: H2
+entity:
+  prefix: demo_
+  name: Entity1</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -7771,7 +7776,10 @@ datasources.default.dialect=H2</code></pre>
     username="sa"
     password=""
     schema-generate="CREATE_DROP"
-    dialect="H2"</code></pre>
+    dialect="H2"
+[entity]
+  prefix="demo_"
+  name="Entity1"</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -7785,6 +7793,10 @@ datasources.default.dialect=H2</code></pre>
     schemaGenerate = "CREATE_DROP"
     dialect = "H2"
   }
+}
+entity {
+  prefix = "demo_"
+  name = "Entity1"
 }</code></pre>
 </div>
 </div>
@@ -7801,6 +7813,10 @@ datasources.default.dialect=H2</code></pre>
       dialect = "H2"
     }
   }
+  entity {
+    prefix = "demo_"
+    name = "Entity1"
+  }
 }</code></pre>
 </div>
 </div>
@@ -7816,6 +7832,10 @@ datasources.default.dialect=H2</code></pre>
       "schema-generate": "CREATE_DROP",
       "dialect": "H2"
     }
+  },
+  "entity": {
+    "prefix": "demo_",
+    "name": "Entity1"
   }
 }</code></pre>
 </div>
@@ -8299,7 +8319,9 @@ datasources.default.driverClassName=org.h2.Driver
 datasources.default.username=sa
 datasources.default.password=
 datasources.default.schema-generate=CREATE_DROP
-datasources.default.dialect=H2</code></pre>
+datasources.default.dialect=H2
+entity.prefix=demo_
+entity.name=Entity1</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -8311,7 +8333,10 @@ datasources.default.dialect=H2</code></pre>
     username: sa
     password: ''
     schema-generate: CREATE_DROP
-    dialect: H2</code></pre>
+    dialect: H2
+entity:
+  prefix: demo_
+  name: Entity1</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -8323,7 +8348,10 @@ datasources.default.dialect=H2</code></pre>
     username="sa"
     password=""
     schema-generate="CREATE_DROP"
-    dialect="H2"</code></pre>
+    dialect="H2"
+[entity]
+  prefix="demo_"
+  name="Entity1"</code></pre>
 </div>
 </div>
 <div class="listingblock multi-language-sample">
@@ -8337,6 +8365,10 @@ datasources.default.dialect=H2</code></pre>
     schemaGenerate = "CREATE_DROP"
     dialect = "H2"
   }
+}
+entity {
+  prefix = "demo_"
+  name = "Entity1"
 }</code></pre>
 </div>
 </div>
@@ -8353,6 +8385,10 @@ datasources.default.dialect=H2</code></pre>
       dialect = "H2"
     }
   }
+  entity {
+    prefix = "demo_"
+    name = "Entity1"
+  }
 }</code></pre>
 </div>
 </div>
@@ -8368,6 +8404,10 @@ datasources.default.dialect=H2</code></pre>
       "schema-generate": "CREATE_DROP",
       "dialect": "H2"
     }
+  },
+  "entity": {
+    "prefix": "demo_",
+    "name": "Entity1"
   }
 }</code></pre>
 </div>
