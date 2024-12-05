@@ -1240,6 +1240,7 @@ loadScripts(document, 'script');</script>
 <li class="circle">io.micronaut.data.runtime.convert.<a href="io/micronaut/data/runtime/convert/RuntimePersistentPropertyConversionContext.html" class="type-name-link" title="interface in io.micronaut.data.runtime.convert">RuntimePersistentPropertyConversionContext</a></li>
 </ul>
 </li>
+<li class="circle">io.micronaut.data.connection.<a href="io/micronaut/data/connection/ConnectionDefinition.html" class="type-name-link" title="interface in io.micronaut.data.connection">ConnectionDefinition</a></li>
 <li class="circle">io.micronaut.core.convert.ConversionContext (also extends io.micronaut.core.convert.ErrorsContext, io.micronaut.core.type.TypeVariableResolver)
 <ul>
 <li class="circle">io.micronaut.core.convert.ArgumentConversionContext&lt;T&gt; (also extends io.micronaut.core.annotation.AnnotationMetadataProvider)
@@ -1605,7 +1606,6 @@ loadScripts(document, 'script');</script>
 </li>
 <li class="circle">io.micronaut.data.jdbc.runtime.<a href="io/micronaut/data/jdbc/runtime/ConnectionCallback.html" class="type-name-link" title="interface in io.micronaut.data.jdbc.runtime">ConnectionCallback</a>&lt;R&gt;</li>
 <li class="circle">io.micronaut.data.connection.interceptor.<a href="io/micronaut/data/connection/interceptor/ConnectionDataSourceTenantResolver.html" class="type-name-link" title="interface in io.micronaut.data.connection.interceptor">ConnectionDataSourceTenantResolver</a></li>
-<li class="circle">io.micronaut.data.connection.<a href="io/micronaut/data/connection/ConnectionDefinition.html" class="type-name-link" title="interface in io.micronaut.data.connection">ConnectionDefinition</a></li>
 <li class="circle">io.micronaut.data.connection.<a href="io/micronaut/data/connection/ConnectionOperations.html" class="type-name-link" title="interface in io.micronaut.data.connection">ConnectionOperations</a>&lt;C&gt;
 <ul>
 <li class="circle">io.micronaut.data.connection.jdbc.operations.<a href="io/micronaut/data/connection/jdbc/operations/DataSourceConnectionOperations.html" class="type-name-link" title="interface in io.micronaut.data.connection.jdbc.operations">DataSourceConnectionOperations</a></li>
@@ -2142,6 +2142,7 @@ loadScripts(document, 'script');</script>
 <li class="circle">io.micronaut.data.model.naming.<a href="io/micronaut/data/model/naming/NamingStrategy.html" class="type-name-link" title="interface in io.micronaut.data.model.naming">NamingStrategy</a></li>
 <li class="circle">io.micronaut.core.order.Ordered
 <ul>
+<li class="circle">io.micronaut.data.connection.support.<a href="io/micronaut/data/connection/support/ConnectionCustomizer.html" class="type-name-link" title="interface in io.micronaut.data.connection.support">ConnectionCustomizer</a>&lt;C&gt;</li>
 <li class="circle">io.micronaut.data.connection.<a href="io/micronaut/data/connection/ConnectionSynchronization.html" class="type-name-link" title="interface in io.micronaut.data.connection">ConnectionSynchronization</a></li>
 <li class="circle">io.micronaut.data.event.<a href="io/micronaut/data/event/EntityEventListener.html" class="type-name-link" title="interface in io.micronaut.data.event">EntityEventListener</a>&lt;T&gt; (also extends java.util.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/EventListener.html" title="class or interface in java.util" class="external-link">EventListener</a>)
 <ul>
@@ -2651,6 +2652,8 @@ loadScripts(document, 'script');</script>
 <h2 title="Annotation Interface Hierarchy">Annotation Interface Hierarchy</h2>
 <ul>
 <li class="circle">io.micronaut.data.annotation.<a href="io/micronaut/data/annotation/AutoPopulated.html" class="type-name-link" title="annotation interface in io.micronaut.data.annotation">AutoPopulated</a> (implements java.lang.annotation.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/annotation/Annotation.html" title="class or interface in java.lang.annotation" class="external-link">Annotation</a>)</li>
+<li class="circle">io.micronaut.data.connection.annotation.<a href="io/micronaut/data/connection/annotation/ClientInfo.html" class="type-name-link" title="annotation interface in io.micronaut.data.connection.annotation">ClientInfo</a> (implements java.lang.annotation.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/annotation/Annotation.html" title="class or interface in java.lang.annotation" class="external-link">Annotation</a>)</li>
+<li class="circle">io.micronaut.data.connection.annotation.<a href="io/micronaut/data/connection/annotation/ClientInfo.Attribute.html" class="type-name-link" title="annotation interface in io.micronaut.data.connection.annotation">ClientInfo.Attribute</a> (implements java.lang.annotation.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/annotation/Annotation.html" title="class or interface in java.lang.annotation" class="external-link">Annotation</a>)</li>
 <li class="circle">io.micronaut.data.annotation.sql.<a href="io/micronaut/data/annotation/sql/ColumnTransformer.html" class="type-name-link" title="annotation interface in io.micronaut.data.annotation.sql">ColumnTransformer</a> (implements java.lang.annotation.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/annotation/Annotation.html" title="class or interface in java.lang.annotation" class="external-link">Annotation</a>)</li>
 <li class="circle">io.micronaut.data.connection.annotation.<a href="io/micronaut/data/connection/annotation/Connectable.html" class="type-name-link" title="annotation interface in io.micronaut.data.connection.annotation">Connectable</a> (implements java.lang.annotation.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/annotation/Annotation.html" title="class or interface in java.lang.annotation" class="external-link">Annotation</a>)</li>
 <li class="circle">io.micronaut.data.cosmos.annotation.<a href="io/micronaut/data/cosmos/annotation/CosmosRepository.html" class="type-name-link" title="annotation interface in io.micronaut.data.cosmos.annotation">CosmosRepository</a> (implements java.lang.annotation.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/annotation/Annotation.html" title="class or interface in java.lang.annotation" class="external-link">Annotation</a>)</li>

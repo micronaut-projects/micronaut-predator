@@ -73,11 +73,16 @@ loadScripts(document, 'script');</script>
 </div>
 <section class="class-description" id="class-description">
 <dl class="notes">
+<dt>All Superinterfaces:</dt>
+<dd><code>io.micronaut.core.annotation.AnnotationMetadataProvider</code>, <code>io.micronaut.core.annotation.AnnotationSource</code></dd>
+</dl>
+<dl class="notes">
 <dt>All Known Implementing Classes:</dt>
 <dd><code><a href="DefaultConnectionDefinition.html" title="class in io.micronaut.data.connection">DefaultConnectionDefinition</a></code></dd>
 </dl>
 <hr>
-<div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">ConnectionDefinition</span></div>
+<div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">ConnectionDefinition</span><span class="extends-implements">
+extends io.micronaut.core.annotation.AnnotationMetadataProvider</span></div>
 <div class="block">The connection definition.</div>
 <dl class="notes">
 <dt>Since:</dt>
@@ -135,6 +140,9 @@ loadScripts(document, 'script');</script>
 <div class="block">A requires new definition.</div>
 </div>
 </div>
+<div class="inherited-list">
+<h3 id="fields-inherited-from-class-io.micronaut.core.annotation.AnnotationSource">Fields inherited from interface&nbsp;io.micronaut.core.annotation.AnnotationSource</h3>
+<code>EMPTY</code></div>
 </section>
 </li>
 <!-- ========== METHOD SUMMARY =========== -->
@@ -179,18 +187,29 @@ loadScripts(document, 'script');</script>
 <div class="block">Create a new <a href="ConnectionDefinition.html" title="interface in io.micronaut.data.connection"><code>ConnectionDefinition</code></a> for the given behaviour.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>@NonNull <a href="ConnectionDefinition.html" title="interface in io.micronaut.data.connection">ConnectionDefinition</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#withName(java.lang.String)" class="member-name-link">withName</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#withAnnotationMetadata(io.micronaut.core.annotation.AnnotationMetadata)" class="member-name-link">withAnnotationMetadata</a><wbr>(io.micronaut.core.annotation.AnnotationMetadata&nbsp;annotationMetadata)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
-<div class="block">Connection definition with specific name.</div>
+<div class="block">Connection definition with new annotation metadata.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>@NonNull <a href="ConnectionDefinition.html" title="interface in io.micronaut.data.connection">ConnectionDefinition</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#withPropagation(io.micronaut.data.connection.ConnectionDefinition.Propagation)" class="member-name-link">withPropagation</a><wbr>(<a href="ConnectionDefinition.Propagation.html" title="enum class in io.micronaut.data.connection">ConnectionDefinition.Propagation</a>&nbsp;propagation)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#withName(java.lang.String)" class="member-name-link">withName</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Connection definition with specific name.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>@NonNull <a href="ConnectionDefinition.html" title="interface in io.micronaut.data.connection">ConnectionDefinition</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#withPropagation(io.micronaut.data.connection.ConnectionDefinition.Propagation)" class="member-name-link">withPropagation</a><wbr>(<a href="ConnectionDefinition.Propagation.html" title="enum class in io.micronaut.data.connection">ConnectionDefinition.Propagation</a>&nbsp;propagation)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Connection definition with specific propagation.</div>
 </div>
 </div>
 </div>
 </div>
+<div class="inherited-list">
+<h3 id="methods-inherited-from-class-io.micronaut.core.annotation.AnnotationMetadataProvider">Methods inherited from interface&nbsp;io.micronaut.core.annotation.AnnotationMetadataProvider</h3>
+<code>findAnnotation, findAnnotation, findDeclaredAnnotation, findDeclaredAnnotation, getAnnotationMetadata, getTargetAnnotationMetadata, isAnnotationPresent, isDeclaredAnnotationPresent, synthesize, synthesizeAll, synthesizeAnnotationsByType, synthesizeDeclared, synthesizeDeclared, synthesizeDeclaredAnnotationsByType</code></div>
+<div class="inherited-list">
+<h3 id="methods-inherited-from-class-io.micronaut.core.annotation.AnnotationSource">Methods inherited from interface&nbsp;io.micronaut.core.annotation.AnnotationSource</h3>
+<code>getAnnotation, getAnnotation, getDeclaredAnnotation, getDeclaredAnnotation, isAnnotationPresent, isDeclaredAnnotationPresent, synthesize, synthesizeDeclared</code></div>
 </section>
 </li>
 </ul>
@@ -309,6 +328,20 @@ loadScripts(document, 'script');</script>
 <dd><code>name</code> - The new name</dd>
 <dt>Returns:</dt>
 <dd>A new connection definition with specified name</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="withAnnotationMetadata(io.micronaut.core.annotation.AnnotationMetadata)">
+<h3>withAnnotationMetadata</h3>
+<div class="member-signature"><span class="annotations">@NonNull
+</span><span class="return-type">@NonNull <a href="ConnectionDefinition.html" title="interface in io.micronaut.data.connection">ConnectionDefinition</a></span>&nbsp;<span class="element-name">withAnnotationMetadata</span><wbr><span class="parameters">(io.micronaut.core.annotation.AnnotationMetadata&nbsp;annotationMetadata)</span></div>
+<div class="block">Connection definition with new annotation metadata.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>annotationMetadata</code> - The new annotation metadata</dd>
+<dt>Returns:</dt>
+<dd>A new connection definition with specified annotation metadata</dd>
 </dl>
 </section>
 </li>

@@ -8468,6 +8468,37 @@ The dialect setting in configuration does <strong>not</strong> replace the need 
 </tr>
 </table>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_connection_client_info_tracing">Connection client info tracing</h3>
+<div class="paragraph">
+<p>In order to trace SQL calls using <code>java.sql.Connection.setClientInfo(String, String)</code> method, you can
+annotate a repository with the <a href="../api/io/micronaut/data/connection/annotation/ClientInfo.html">@ClientInfo</a> annotation or <a href="../api/io/micronaut/data/connection/annotation/ClientInfo.Attribute.html">@Attribute</a> for individual client info.</p>
+</div>
+<div class="paragraph">
+<p>Note that the <a href="../api/io/micronaut/data/connection/annotation/ClientInfo.Attribute.html">@Attribute</a> annotation can be used on either the class or the method, thus allowing customization of the  module or action individually.</p>
+</div>
+<div class="paragraph">
+<p>For Oracle database, following attributes can be set to the connection client info: <code>OCSID.MODULE</code>, <code>OCSID.ACTION</code> and <code>OCSID.CLIENTID</code> and provided in <a href="../api/io/micronaut/data/connection/annotation/ClientInfo.Attribute.html">@Attribute</a>.
+If some of these attributes are not provided then Micronaut Data Jdbc is going to populate values automatically for Oracle connections:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>OCSID.MODULE</code> will get the value of the class name where annotation <code>@ClientInfo.Attribute</code> is added (usually Micronaut Data repository class)</p>
+</li>
+<li>
+<p><code>OCSID.ACTION</code> will get the value of the method name which is annotated with <code>@ClientInfo.Attribute</code> annotation</p>
+</li>
+<li>
+<p><code>OCSID.CLIENTID</code> will get the value of the Micronaut application name, if configured</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Please note this feature is currently supported only for Oracle database connections. In order to enable Oracle JDBC connection client info to be set,
+you need to specify the configuration property <code>datasources.&lt;datasource-name&gt;.enable-oracle-client-info=true</code> on a per datasource basis.</p>
+</div>
 <div class="admonitionblock tip">
 <table>
 <tr>

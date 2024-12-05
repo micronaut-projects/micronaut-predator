@@ -83,14 +83,15 @@ loadScripts(document, 'script');</script>
 <dd><code><span id="param-propagationBehavior">propagationBehavior</span></code> - The propagation behaviour</dd>
 <dd><code><span id="param-timeout">timeout</span></code> - The timeout</dd>
 <dd><code><span id="param-readOnlyValue">readOnlyValue</span></code> - The read only</dd>
+<dd><code><span id="param-annotationMetadata">annotationMetadata</span></code> - The annotation metadata</dd>
 </dl>
 <dl class="notes">
 <dt>All Implemented Interfaces:</dt>
-<dd><code><a href="ConnectionDefinition.html" title="interface in io.micronaut.data.connection">ConnectionDefinition</a></code></dd>
+<dd><code>io.micronaut.core.annotation.AnnotationMetadataProvider</code>, <code>io.micronaut.core.annotation.AnnotationSource</code>, <code><a href="ConnectionDefinition.html" title="interface in io.micronaut.data.connection">ConnectionDefinition</a></code></dd>
 </dl>
 <hr>
 <div class="type-signature"><span class="annotations">@Internal
-</span><span class="modifiers">public record </span><span class="element-name type-name-label">DefaultConnectionDefinition</span>(@Nullable <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name, <a href="ConnectionDefinition.Propagation.html" title="enum class in io.micronaut.data.connection">ConnectionDefinition.Propagation</a>&nbsp;propagationBehavior, @Nullable <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/Duration.html" title="class or interface in java.time" class="external-link">Duration</a>&nbsp;timeout, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Boolean.html" title="class or interface in java.lang" class="external-link">Boolean</a>&nbsp;readOnlyValue)
+</span><span class="modifiers">public record </span><span class="element-name type-name-label">DefaultConnectionDefinition</span>(@Nullable <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name, <a href="ConnectionDefinition.Propagation.html" title="enum class in io.micronaut.data.connection">ConnectionDefinition.Propagation</a>&nbsp;propagationBehavior, @Nullable <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/Duration.html" title="class or interface in java.time" class="external-link">Duration</a>&nbsp;timeout, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Boolean.html" title="class or interface in java.lang" class="external-link">Boolean</a>&nbsp;readOnlyValue, @NonNull io.micronaut.core.annotation.AnnotationMetadata&nbsp;annotationMetadata)
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Record.html" title="class or interface in java.lang" class="external-link">Record</a>
 implements <a href="ConnectionDefinition.html" title="interface in io.micronaut.data.connection">ConnectionDefinition</a></span></div>
 <div class="block">Default implementation of the <a href="ConnectionDefinition.html" title="interface in io.micronaut.data.connection"><code>ConnectionDefinition</code></a> interface.</div>
@@ -117,6 +118,9 @@ implements <a href="ConnectionDefinition.html" title="interface in io.micronaut.
 <section class="field-summary" id="field-summary">
 <h2>Field Summary</h2>
 <div class="inherited-list">
+<h3 id="fields-inherited-from-class-io.micronaut.core.annotation.AnnotationSource">Fields inherited from interface&nbsp;io.micronaut.core.annotation.AnnotationSource</h3>
+<code>EMPTY</code></div>
+<div class="inherited-list">
 <h3 id="fields-inherited-from-class-io.micronaut.data.connection.ConnectionDefinition">Fields inherited from interface&nbsp;io.micronaut.data.connection.<a href="ConnectionDefinition.html" title="interface in io.micronaut.data.connection">ConnectionDefinition</a></h3>
 <code><a href="ConnectionDefinition.html#DEFAULT">DEFAULT</a>, <a href="ConnectionDefinition.html#PROPAGATION_DEFAULT">PROPAGATION_DEFAULT</a>, <a href="ConnectionDefinition.html#READ_ONLY">READ_ONLY</a>, <a href="ConnectionDefinition.html#REQUIRES_NEW">REQUIRES_NEW</a></code></div>
 </section>
@@ -129,10 +133,11 @@ implements <a href="ConnectionDefinition.html" title="interface in io.micronaut.
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(java.lang.String,io.micronaut.data.connection.ConnectionDefinition.Propagation,java.time.Duration,java.lang.Boolean)" class="member-name-link">DefaultConnectionDefinition</a><wbr>(@Nullable <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(java.lang.String,io.micronaut.data.connection.ConnectionDefinition.Propagation,java.time.Duration,java.lang.Boolean,io.micronaut.core.annotation.AnnotationMetadata)" class="member-name-link">DefaultConnectionDefinition</a><wbr>(@Nullable <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
  <a href="ConnectionDefinition.Propagation.html" title="enum class in io.micronaut.data.connection">ConnectionDefinition.Propagation</a>&nbsp;propagationBehavior,
  @Nullable <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/Duration.html" title="class or interface in java.time" class="external-link">Duration</a>&nbsp;timeout,
- <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Boolean.html" title="class or interface in java.lang" class="external-link">Boolean</a>&nbsp;readOnlyValue)</code></div>
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Boolean.html" title="class or interface in java.lang" class="external-link">Boolean</a>&nbsp;readOnlyValue,
+ @NonNull io.micronaut.core.annotation.AnnotationMetadata&nbsp;annotationMetadata)</code></div>
 <div class="col-last even-row-color">
 <div class="block">Creates an instance of a <code>DefaultConnectionDefinition</code> record class.</div>
 </div>
@@ -141,6 +146,11 @@ implements <a href="ConnectionDefinition.html" title="interface in io.micronaut.
 <div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(java.lang.String,boolean)" class="member-name-link">DefaultConnectionDefinition</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
  boolean&nbsp;readOnly)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
+<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(java.lang.String,io.micronaut.data.connection.ConnectionDefinition.Propagation,java.time.Duration,java.lang.Boolean)" class="member-name-link">DefaultConnectionDefinition</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
+ <a href="ConnectionDefinition.Propagation.html" title="enum class in io.micronaut.data.connection">ConnectionDefinition.Propagation</a>&nbsp;propagationBehavior,
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/Duration.html" title="class or interface in java.time" class="external-link">Duration</a>&nbsp;timeout,
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Boolean.html" title="class or interface in java.lang" class="external-link">Boolean</a>&nbsp;readOnlyValue)</code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
 </div>
 </section>
 </li>
@@ -155,11 +165,19 @@ implements <a href="ConnectionDefinition.html" title="interface in io.micronaut.
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#equals(java.lang.Object)" class="member-name-link">equals</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;o)</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>@NonNull io.micronaut.core.annotation.AnnotationMetadata</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#annotationMetadata()" class="member-name-link">annotationMetadata</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the value of the <a href="#param-annotationMetadata"><code>annotationMetadata</code></a> record component.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#equals(java.lang.Object)" class="member-name-link">equals</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;o)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Indicates whether some other object is "equal to" this one.</div>
 </div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>@NonNull io.micronaut.core.annotation.AnnotationMetadata</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAnnotationMetadata()" class="member-name-link">getAnnotationMetadata</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getName()" class="member-name-link">getName</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
@@ -211,13 +229,18 @@ implements <a href="ConnectionDefinition.html" title="interface in io.micronaut.
 <div class="block">Returns a string representation of this record class.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="ConnectionDefinition.html" title="interface in io.micronaut.data.connection">ConnectionDefinition</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#withName(java.lang.String)" class="member-name-link">withName</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#withAnnotationMetadata(io.micronaut.core.annotation.AnnotationMetadata)" class="member-name-link">withAnnotationMetadata</a><wbr>(io.micronaut.core.annotation.AnnotationMetadata&nbsp;newAnnotationMetadata)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Connection definition with specific name.</div>
+<div class="block">Connection definition with new annotation metadata.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="ConnectionDefinition.html" title="interface in io.micronaut.data.connection">ConnectionDefinition</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#withPropagation(io.micronaut.data.connection.ConnectionDefinition.Propagation)" class="member-name-link">withPropagation</a><wbr>(<a href="ConnectionDefinition.Propagation.html" title="enum class in io.micronaut.data.connection">ConnectionDefinition.Propagation</a>&nbsp;propagation)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#withName(java.lang.String)" class="member-name-link">withName</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Connection definition with specific name.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="ConnectionDefinition.html" title="interface in io.micronaut.data.connection">ConnectionDefinition</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#withPropagation(io.micronaut.data.connection.ConnectionDefinition.Propagation)" class="member-name-link">withPropagation</a><wbr>(<a href="ConnectionDefinition.Propagation.html" title="enum class in io.micronaut.data.connection">ConnectionDefinition.Propagation</a>&nbsp;propagation)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Connection definition with specific propagation.</div>
 </div>
 </div>
@@ -226,6 +249,12 @@ implements <a href="ConnectionDefinition.html" title="interface in io.micronaut.
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
+<div class="inherited-list">
+<h3 id="methods-inherited-from-class-io.micronaut.core.annotation.AnnotationMetadataProvider">Methods inherited from interface&nbsp;io.micronaut.core.annotation.AnnotationMetadataProvider</h3>
+<code>findAnnotation, findAnnotation, findDeclaredAnnotation, findDeclaredAnnotation, getTargetAnnotationMetadata, isAnnotationPresent, isDeclaredAnnotationPresent, synthesize, synthesizeAll, synthesizeAnnotationsByType, synthesizeDeclared, synthesizeDeclared, synthesizeDeclaredAnnotationsByType</code></div>
+<div class="inherited-list">
+<h3 id="methods-inherited-from-class-io.micronaut.core.annotation.AnnotationSource">Methods inherited from interface&nbsp;io.micronaut.core.annotation.AnnotationSource</h3>
+<code>getAnnotation, getAnnotation, getDeclaredAnnotation, getDeclaredAnnotation, isAnnotationPresent, isDeclaredAnnotationPresent, synthesize, synthesizeDeclared</code></div>
 </section>
 </li>
 </ul>
@@ -253,12 +282,23 @@ implements <a href="ConnectionDefinition.html" title="interface in io.micronaut.
 <li>
 <section class="detail" id="&lt;init&gt;(java.lang.String,io.micronaut.data.connection.ConnectionDefinition.Propagation,java.time.Duration,java.lang.Boolean)">
 <h3>DefaultConnectionDefinition</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">DefaultConnectionDefinition</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
+ <a href="ConnectionDefinition.Propagation.html" title="enum class in io.micronaut.data.connection">ConnectionDefinition.Propagation</a>&nbsp;propagationBehavior,
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/Duration.html" title="class or interface in java.time" class="external-link">Duration</a>&nbsp;timeout,
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Boolean.html" title="class or interface in java.lang" class="external-link">Boolean</a>&nbsp;readOnlyValue)</span></div>
+</section>
+</li>
+<li>
+<section class="detail" id="&lt;init&gt;(java.lang.String,io.micronaut.data.connection.ConnectionDefinition.Propagation,java.time.Duration,java.lang.Boolean,io.micronaut.core.annotation.AnnotationMetadata)">
+<h3>DefaultConnectionDefinition</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">DefaultConnectionDefinition</span><wbr><span class="parameters">(@Nullable
  @Nullable <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
  <a href="ConnectionDefinition.Propagation.html" title="enum class in io.micronaut.data.connection">ConnectionDefinition.Propagation</a>&nbsp;propagationBehavior,
  @Nullable
  @Nullable <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/Duration.html" title="class or interface in java.time" class="external-link">Duration</a>&nbsp;timeout,
- <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Boolean.html" title="class or interface in java.lang" class="external-link">Boolean</a>&nbsp;readOnlyValue)</span></div>
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Boolean.html" title="class or interface in java.lang" class="external-link">Boolean</a>&nbsp;readOnlyValue,
+ @NonNull
+ @NonNull io.micronaut.core.annotation.AnnotationMetadata&nbsp;annotationMetadata)</span></div>
 <div class="block">Creates an instance of a <code>DefaultConnectionDefinition</code> record class.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -266,6 +306,7 @@ implements <a href="ConnectionDefinition.html" title="interface in io.micronaut.
 <dd><code>propagationBehavior</code> - the value for the <a href="#param-propagationBehavior"><code>propagationBehavior</code></a> record component</dd>
 <dd><code>timeout</code> - the value for the <a href="#param-timeout"><code>timeout</code></a> record component</dd>
 <dd><code>readOnlyValue</code> - the value for the <a href="#param-readOnlyValue"><code>readOnlyValue</code></a> record component</dd>
+<dd><code>annotationMetadata</code> - the value for the <a href="#param-annotationMetadata"><code>annotationMetadata</code></a> record component</dd>
 </dl>
 </section>
 </li>
@@ -368,6 +409,33 @@ implements <a href="ConnectionDefinition.html" title="interface in io.micronaut.
 </section>
 </li>
 <li>
+<section class="detail" id="withAnnotationMetadata(io.micronaut.core.annotation.AnnotationMetadata)">
+<h3>withAnnotationMetadata</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="ConnectionDefinition.html" title="interface in io.micronaut.data.connection">ConnectionDefinition</a></span>&nbsp;<span class="element-name">withAnnotationMetadata</span><wbr><span class="parameters">(io.micronaut.core.annotation.AnnotationMetadata&nbsp;newAnnotationMetadata)</span></div>
+<div class="block"><span class="descfrm-type-label">Description copied from interface:&nbsp;<code><a href="ConnectionDefinition.html#withAnnotationMetadata(io.micronaut.core.annotation.AnnotationMetadata)">ConnectionDefinition</a></code></span></div>
+<div class="block">Connection definition with new annotation metadata.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="ConnectionDefinition.html#withAnnotationMetadata(io.micronaut.core.annotation.AnnotationMetadata)">withAnnotationMetadata</a></code>&nbsp;in interface&nbsp;<code><a href="ConnectionDefinition.html" title="interface in io.micronaut.data.connection">ConnectionDefinition</a></code></dd>
+<dt>Parameters:</dt>
+<dd><code>newAnnotationMetadata</code> - The new annotation metadata</dd>
+<dt>Returns:</dt>
+<dd>A new connection definition with specified annotation metadata</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getAnnotationMetadata()">
+<h3>getAnnotationMetadata</h3>
+<div class="member-signature"><span class="annotations">@NonNull
+</span><span class="modifiers">public</span>&nbsp;<span class="return-type">@NonNull io.micronaut.core.annotation.AnnotationMetadata</span>&nbsp;<span class="element-name">getAnnotationMetadata</span>()</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code>getAnnotationMetadata</code>&nbsp;in interface&nbsp;<code>io.micronaut.core.annotation.AnnotationMetadataProvider</code></dd>
+</dl>
+</section>
+</li>
+<li>
 <section class="detail" id="toString()">
 <h3>toString</h3>
 <div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">toString</span>()</div>
@@ -451,6 +519,18 @@ implements <a href="ConnectionDefinition.html" title="interface in io.micronaut.
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the value of the <a href="#param-readOnlyValue"><code>readOnlyValue</code></a> record component</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="annotationMetadata()">
+<h3>annotationMetadata</h3>
+<div class="member-signature"><span class="annotations">@NonNull
+</span><span class="modifiers">public</span>&nbsp;<span class="return-type">@NonNull io.micronaut.core.annotation.AnnotationMetadata</span>&nbsp;<span class="element-name">annotationMetadata</span>()</div>
+<div class="block">Returns the value of the <a href="#param-annotationMetadata"><code>annotationMetadata</code></a> record component.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the value of the <a href="#param-annotationMetadata"><code>annotationMetadata</code></a> record component</dd>
 </dl>
 </section>
 </li>
