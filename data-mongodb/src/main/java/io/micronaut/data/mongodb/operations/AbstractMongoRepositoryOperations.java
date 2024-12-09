@@ -168,8 +168,10 @@ abstract sealed class AbstractMongoRepositoryOperations<Dtb> extends AbstractRep
             try {
                 return mapIntrospectedObject(result, resultType);
             } catch (Exception e) {
-                LOG.warn("Failed to map @Introspection annotated result. " +
-                    "Now attempting to fallback and read object from the document. Error: {}", e.getMessage());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Failed to map @Introspection annotated result. " +
+                        "Now attempting to fallback and read object from the document. Error: {}", e.getMessage());
+                }
             }
         }
         BsonValue value;
@@ -178,9 +180,9 @@ abstract sealed class AbstractMongoRepositoryOperations<Dtb> extends AbstractRep
         } else if (result.size() == 1) {
             value = result.values().iterator().next();
         } else if (result.size() == 2) {
-            Optional<Map.Entry<String, BsonValue>> id = result.entrySet().stream().filter(f -> !f.getKey().equals("_id")).findFirst();
-            if (id.isPresent()) {
-                value = id.get().getValue();
+            Optional<Map.Entry<String, BsonValue>> nonIdValue = result.entrySet().stream().filter(f -> !f.getKey().equals("_id")).findFirst();
+            if (nonIdValue.isPresent()) {
+                value = nonIdValue.get().getValue();
             } else {
                 value = result.values().iterator().next();
             }

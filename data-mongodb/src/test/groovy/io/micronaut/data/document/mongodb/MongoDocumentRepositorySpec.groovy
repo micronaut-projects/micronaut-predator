@@ -10,8 +10,10 @@ import com.mongodb.client.model.Updates
 import groovy.transform.Memoized
 import io.micronaut.data.document.mongodb.entities.ComplexEntity
 import io.micronaut.data.document.mongodb.entities.ComplexValue
+import io.micronaut.data.document.mongodb.entities.Customer
 import io.micronaut.data.document.mongodb.entities.ElementRow
 import io.micronaut.data.document.mongodb.repositories.ComplexEntityRepository
+import io.micronaut.data.document.mongodb.repositories.CustomerRepository
 import io.micronaut.data.document.mongodb.repositories.ElementRowRepository
 import io.micronaut.data.document.mongodb.repositories.MongoAuthorRepository
 import io.micronaut.data.document.mongodb.repositories.MongoCriteriaPersonRepository
@@ -892,6 +894,23 @@ class MongoDocumentRepositorySpec extends AbstractDocumentRepositorySpec impleme
             people.collect{ it.id }.containsAll(limitedPeople2.collect{ it.id })
     }
 
+    void "test DTO retrieval"() {
+        when:
+        def customer = new Customer("1", "first", "last", List.of())
+        def saved = customerRepository.save(customer)
+        def loaded = customerRepository.findById(saved.id)
+        then:
+        loaded.present
+        loaded.get().id == saved.id
+        when:
+        def customerViews = customerRepository.viewFindAll();
+        then:
+        customerViews.size() == 1
+        customerViews[0].id == saved.id
+        cleanup:
+        customerRepository.deleteAll()
+    }
+
     @Memoized
     MongoExecutorPersonRepository getMongoExecutorPersonRepository() {
         return context.getBean(MongoExecutorPersonRepository)
@@ -958,5 +977,10 @@ class MongoDocumentRepositorySpec extends AbstractDocumentRepositorySpec impleme
     @Memoized
     ComplexEntityRepository getComplexEntityRepository() {
         return context.getBean(ComplexEntityRepository)
+    }
+
+    @Memoized
+    CustomerRepository getCustomerRepository() {
+        return context.getBean(CustomerRepository)
     }
 }
