@@ -163,17 +163,12 @@ abstract sealed class AbstractMongoRepositoryOperations<Dtb> extends AbstractRep
         if (resultType == BsonDocument.class) {
             return (R) result;
         }
-        Optional<BeanIntrospection<R>> introspection = BeanIntrospector.SHARED.findIntrospection(resultType);
-        if (introspection.isPresent()) {
-            try {
-                return mapIntrospectedObject(result, resultType);
-            } catch (Exception e) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Failed to map @Introspection annotated result. " +
-                        "Now attempting to fallback and read object from the document. Error: {}", e.getMessage());
-                }
-            }
+
+        Optional<R> maybeConverted = convertUsingIntrospected(result, resultType);
+        if (maybeConverted.isPresent()) {
+            return maybeConverted.get();
         }
+
         BsonValue value;
         if (result == null) {
             value = BsonNull.VALUE;
@@ -198,6 +193,42 @@ abstract sealed class AbstractMongoRepositoryOperations<Dtb> extends AbstractRep
         return conversionService.convertRequired(MongoUtils.toValue(value), resultType);
     }
 
+    /**
+     * Attempts to convert a BSON document into an instance of the specified result type using introspection.
+     *
+     * If the result type has been annotated with `@Introspection`, this method will attempt to use the provided
+     * `BeanIntrospection` to map the BSON document onto an instance of the result type.
+     *
+     * If the mapping fails or if no `BeanIntrospection` is found for the result type, an empty `Optional` is returned.
+     *
+     * @param result      The BSON document containing the data to be mapped
+     * @param resultType  The type of the object being mapped
+     * @param <R>         The type parameter representing the result type
+     * @return An `Optional` containing the mapped object, or an empty `Optional` if mapping failed or no `BeanIntrospection` was found
+     */
+    protected <R> Optional<R> convertUsingIntrospected(BsonDocument result, Class<R> resultType) {
+        Optional<BeanIntrospection<R>> introspection = BeanIntrospector.SHARED.findIntrospection(resultType);
+        if (introspection.isPresent()) {
+            try {
+                return Optional.of(mapIntrospectedObject(result, resultType));
+            } catch (Exception e) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Failed to map @Introspection annotated result. " +
+                        "Now attempting to fallback and read object from the document. Error: {}", e.getMessage());
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Maps an introspected object from a BSON document.
+     *
+     * @param result      The BSON document containing the data to be mapped
+     * @param resultType  The type of the object being mapped
+     * @param <R>         The type parameter representing the result type
+     * @return An instance of the specified result type, populated with data from the BSON document
+     */
     private <R> R mapIntrospectedObject(BsonDocument result, Class<R> resultType) {
         return (new BeanIntrospectionMapper<BsonDocument, R>() {
             @Override
