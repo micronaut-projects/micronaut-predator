@@ -99,6 +99,9 @@ class H2RepositorySpec extends AbstractRepositorySpec implements H2TestPropertyP
     @Shared
     H2BookEntityRepository bookEntityRepository = context.getBean(H2BookEntityRepository)
 
+    @Shared
+    H2ExampleEntityRepository exampleEntityRepo = context.getBean(H2ExampleEntityRepository)
+
     @Override
     EntityWithIdClassRepository getEntityWithIdClassRepository() {
         return entityWithIdClassRepo
@@ -219,6 +222,11 @@ class H2RepositorySpec extends AbstractRepositorySpec implements H2TestPropertyP
     @Override
     PageRepository getPageRepository() {
         return pageRepo
+    }
+
+    @Override
+    ExampleEntityRepository getExampleEntityRepository() {
+        return exampleEntityRepo
     }
 
     @Override

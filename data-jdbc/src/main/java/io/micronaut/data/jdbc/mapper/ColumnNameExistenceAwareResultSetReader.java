@@ -49,6 +49,9 @@ public class ColumnNameExistenceAwareResultSetReader extends AbstractDelegatingR
     }
 
     private boolean containsColumnName(ResultSet resultSet, String name) {
+        if (name == null) {
+            return false;
+        }
         if (knownColumns == null) {
             try {
                 ResultSetMetaData rsmd = resultSet.getMetaData();
@@ -61,6 +64,6 @@ public class ColumnNameExistenceAwareResultSetReader extends AbstractDelegatingR
                 throw new RuntimeException(e);
             }
         }
-        return knownColumns.contains(name);
+        return knownColumns.contains(name.toLowerCase());
     }
 }

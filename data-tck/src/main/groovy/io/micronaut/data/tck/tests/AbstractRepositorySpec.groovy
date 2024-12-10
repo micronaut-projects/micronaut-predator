@@ -45,6 +45,7 @@ import io.micronaut.data.tck.entities.CountryRegionCity
 import io.micronaut.data.tck.entities.EntityIdClass
 import io.micronaut.data.tck.entities.EntityWithIdClass
 import io.micronaut.data.tck.entities.EntityWithIdClass2
+import io.micronaut.data.tck.entities.ExampleEntity
 import io.micronaut.data.tck.entities.Face
 import io.micronaut.data.tck.entities.Food
 import io.micronaut.data.tck.entities.Genre
@@ -120,6 +121,7 @@ abstract class AbstractRepositorySpec extends Specification {
     abstract PageRepository getPageRepository()
     abstract EntityWithIdClassRepository getEntityWithIdClassRepository()
     abstract EntityWithIdClass2Repository getEntityWithIdClass2Repository()
+    abstract ExampleEntityRepository getExampleEntityRepository()
 
     abstract Map<String, String> getProperties()
 
@@ -3414,6 +3416,33 @@ abstract class AbstractRepositorySpec extends Specification {
         def books = bookRepository.findByAuthorInList(List.of(author))
         then:
         books.size() > 0
+    }
+
+    void "test query specification with uppercase/lowercase column names"() {
+        given:
+        exampleEntityRepository.save(new ExampleEntity(1, "foo", "bar"))
+        when:
+        QuerySpecification<ExampleEntity> qs = (root, query, criteriaBuilder) -> {
+            query.multiselect(
+                    root.get("id"),
+                    root.get("lowercaseColumn"))
+            return criteriaBuilder.equal(root.get("id"), 1)
+        }
+        def entity = exampleEntityRepository.find(qs)
+        then:
+        entity.lowercaseColumn() == "bar"
+        when:
+        qs = (root, query, criteriaBuilder) -> {
+            query.multiselect(
+                    root.get("id"),
+                    root.get("uppercaseColumn"))
+            return criteriaBuilder.equal(root.get("id"), 1)
+        }
+        entity = exampleEntityRepository.find(qs)
+        then:
+        entity.uppercaseColumn() == "foo"
+        cleanup:
+        exampleEntityRepository.deleteById(1)
     }
 
     private GregorianCalendar getYearMonthDay(Date dateCreated) {

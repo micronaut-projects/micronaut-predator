@@ -172,6 +172,12 @@ class OracleXERepositorySpec extends AbstractRepositorySpec implements OracleTes
         return context.getBean(OracleXEEntityWithIdClass2Repository)
     }
 
+    @Memoized
+    @Override
+    ExampleEntityRepository getExampleEntityRepository() {
+        return context.getBean(OracleExampleEntityRepository)
+    }
+
     @Override
     protected boolean skipCustomSchemaAndCatalogTest() {
         // ORA-04043: object "FORD"."CARS" does not exist
