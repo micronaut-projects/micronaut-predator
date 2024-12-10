@@ -49,21 +49,22 @@ public class ColumnNameExistenceAwareResultSetReader extends AbstractDelegatingR
     }
 
     private boolean containsColumnName(ResultSet resultSet, String name) {
-        if (name == null) {
-            return false;
-        }
         if (knownColumns == null) {
             try {
                 ResultSetMetaData rsmd = resultSet.getMetaData();
                 int columnsCount = rsmd.getColumnCount();
                 knownColumns = CollectionUtils.newHashSet(columnsCount);
                 for (int x = 1; x <= columnsCount; x++) {
-                    knownColumns.add(rsmd.getColumnLabel(x).toLowerCase());
+                    knownColumns.add(toLowerCase(rsmd.getColumnLabel(x)));
                 }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         }
-        return knownColumns.contains(name.toLowerCase());
+        return knownColumns.contains(toLowerCase(name));
+    }
+
+    private static String toLowerCase(String str) {
+        return str == null ? null : str.toLowerCase();
     }
 }
