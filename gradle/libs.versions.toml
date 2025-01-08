@@ -25,11 +25,11 @@ groovy = "4.0.24"
 
 managed-javax-persistence = "2.2"
 
-spring-data = "3.3.5"
+spring-data = "3.4.1"
 
 # Testing and benchmarking
 
-benchmark-spring-data = "2024.0.5"
+benchmark-spring-data = "2024.1.1"
 spock = "2.2-groovy-4.0"
 testcontainers = "1.19.4"
 jmh = "1.37"
