@@ -50,6 +50,7 @@ import static io.micronaut.data.processor.visitors.TestUtils.getParameterBinding
 import static io.micronaut.data.processor.visitors.TestUtils.getParameterExpressions
 import static io.micronaut.data.processor.visitors.TestUtils.getParameterPropertyPaths
 import static io.micronaut.data.processor.visitors.TestUtils.getQuery
+import static io.micronaut.data.processor.visitors.TestUtils.getQueryParts
 import static io.micronaut.data.processor.visitors.TestUtils.getRawQuery
 import static io.micronaut.data.processor.visitors.TestUtils.getResultDataType
 import static io.micronaut.data.processor.visitors.TestUtils.isExpandableQuery
@@ -638,6 +639,36 @@ interface FacesRepository extends CrudRepository<Face, Long> {
         expect:
         query == 'SELECT COUNT(DISTINCT(face_.`id`)) FROM `face` face_ INNER JOIN `nose` face_nose_ ON face_.`id`=face_nose_.`face_id` WHERE (face_nose_.`id` = ?)'
 
+    }
+
+    void "test native query with colon used in query"() {
+        given:
+        def repository = buildRepository('test.FacesRepository', """
+import io.micronaut.core.annotation.Nullable;
+import io.micronaut.data.jdbc.annotation.JdbcRepository;
+import io.micronaut.data.model.query.builder.sql.Dialect;
+import io.micronaut.data.repository.GenericRepository;
+import io.micronaut.data.tck.entities.Face;
+import java.util.UUID;
+
+@JdbcRepository(dialect = Dialect.ORACLE)
+interface FacesRepository extends GenericRepository<Face, Long> {
+
+    @Query("SELECT * FROM face f WHERE" +
+           " (f.date_created >= COALESCE(TO_TIMESTAMP(:dateCreated, 'YYYY-MM-DD\\"T\\"HH24\\\\:MI\\\\:SS\\"Z\\"'), f.date_created) OR :dateCreated IS NULL) AND"
+           + " (f.name = :name OR :name IS NULL)")
+    List<Face> findAllWithOptionalFilters(
+        @Nullable String name,
+        @Nullable String dateCreated);
+}
+""")
+        def method = repository.getRequiredMethod("findAllWithOptionalFilters", String, String)
+        def rawQuery = getRawQuery(method)
+        def query = getQuery(method)
+
+        expect:
+        rawQuery == 'SELECT * FROM face f WHERE (f.date_created >= COALESCE(TO_TIMESTAMP(?, \'YYYY-MM-DD"T"HH24:MI:SS"Z"\'), f.date_created) OR ? IS NULL) AND (f.name = ? OR ? IS NULL)'
+        query == 'SELECT * FROM face f WHERE (f.date_created >= COALESCE(TO_TIMESTAMP(:dateCreated, \'YYYY-MM-DD"T"HH24\\:MI\\:SS"Z"\'), f.date_created) OR :dateCreated IS NULL) AND (f.name = :name OR :name IS NULL)'
     }
 
     void "test In in properties"() {

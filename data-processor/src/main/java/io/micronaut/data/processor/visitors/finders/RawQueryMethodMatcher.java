@@ -68,6 +68,9 @@ public class RawQueryMethodMatcher implements MethodMatcher {
     private static final Pattern RETURNING_PATTERN = Pattern.compile(".*\\breturning\\b.*");
 
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("([^:\\\\]*)((?<![:]):([a-zA-Z0-9]+))([^:]*)");
+    private static final String COLON = ":";
+    private static final String COLON_ESCAPE_PATTERN = "\\" + COLON;
+    private static final String COLON_TEMP_REPLACEMENT = "___MICRONAUT_COLON_PLA@CEHOLDER___";
 
     @Override
     public final int getOrder() {
@@ -251,7 +254,8 @@ public class RawQueryMethodMatcher implements MethodMatcher {
                                        boolean namedParameters,
                                        ParameterElement entityParam,
                                        SourcePersistentEntity persistentEntity) {
-        Matcher matcher = VARIABLE_PATTERN.matcher(queryString.replace("\\:", ""));
+        String newQueryString = queryString.replace(COLON_ESCAPE_PATTERN, COLON_TEMP_REPLACEMENT);
+        Matcher matcher = VARIABLE_PATTERN.matcher(newQueryString);
 
         List<AnnotationValue<ParameterExpression>> parameterExpressions = matchContext.getMethodElement()
             .getAnnotationMetadata()
@@ -262,9 +266,9 @@ public class RawQueryMethodMatcher implements MethodMatcher {
         int index = 1;
         int lastOffset = 0;
         while (matcher.find()) {
-            String prefix = queryString.substring(lastOffset, matcher.start(3) - 1);
+            String prefix = newQueryString.substring(lastOffset, matcher.start(3) - 1);
             if (!prefix.isEmpty()) {
-                queryParts.add(prefix);
+                queryParts.add(prefix.replace(COLON_TEMP_REPLACEMENT, COLON));
             }
             lastOffset = matcher.end(3);
             String name = matcher.group(3);
@@ -285,13 +289,12 @@ public class RawQueryMethodMatcher implements MethodMatcher {
             parameterBindings.add(queryParameterBinding);
         }
 
-        queryString = queryString.replace("\\:", ":");
         if (queryParts.isEmpty()) {
-            queryParts.add(queryString);
+            queryParts.add(newQueryString.replace(COLON_TEMP_REPLACEMENT, COLON));
         } else if (lastOffset > 0) {
-            queryParts.add(queryString.substring(lastOffset));
+            queryParts.add(newQueryString.substring(lastOffset).replace(COLON_TEMP_REPLACEMENT, COLON));
         }
-        String finalQueryString = queryString;
+        String finalQueryString = newQueryString.replace(COLON_TEMP_REPLACEMENT, COLON);
         return new QueryResult() {
             @Override
             public String getQuery() {
