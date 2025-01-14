@@ -185,6 +185,9 @@ public abstract class AbstractQueryInterceptor<T, R> implements DataInterceptor<
     @Nullable
     protected final Object convertOne(MethodInvocationContext<?, ?> context, @Nullable Object o) {
         Argument<?> argumentType = getReturnType(context);
+        if (argumentType.isVoid()) {
+            return null;
+        }
         Class<?> type = argumentType.getType();
         if (o == null) {
             if (type == Optional.class) {

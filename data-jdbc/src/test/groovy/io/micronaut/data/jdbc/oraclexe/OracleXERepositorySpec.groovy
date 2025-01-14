@@ -287,6 +287,10 @@ class OracleXERepositorySpec extends AbstractRepositorySpec implements OracleTes
         then:
         faces
         faces[0].name == face.name
+        when:"Call repository void method"
+        oracleFaceRepository.lock()
+        then:"No error thrown"
+        noExceptionThrown()
         cleanup:
         faceRepository.delete(face)
     }

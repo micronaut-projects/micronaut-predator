@@ -36,4 +36,10 @@ public interface OracleXEFaceRepository extends FaceRepository {
     List<Face> findAllWithOptionalFilters(
         @Nullable String name,
         @Nullable String dateCreatedParam);
+
+    /**
+     * Test for custom repository void method not returning result.
+     */
+    @Query("LOCK TABLE face IN EXCLUSIVE MODE")
+    void lock();
 }
