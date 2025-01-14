@@ -1170,7 +1170,10 @@ public final class DefaultJdbcRepositoryOperations extends AbstractSqlRepository
                     }
                     return connection.prepareStatement(this.storedQuery.getQuery(), new String[]{persistentEntity.getIdentity().getPersistedName()});
                 } else {
-                    return connection.prepareStatement(this.storedQuery.getQuery(), hasGeneratedId ? Statement.RETURN_GENERATED_KEYS : Statement.NO_GENERATED_KEYS);
+                    if (hasGeneratedId) {
+                        return connection.prepareStatement(this.storedQuery.getQuery(), Statement.RETURN_GENERATED_KEYS);
+                    }
+                    return connection.prepareStatement(this.storedQuery.getQuery());
                 }
             } else {
                 return connection.prepareStatement(this.storedQuery.getQuery());
