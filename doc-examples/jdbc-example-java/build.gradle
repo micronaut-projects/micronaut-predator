@@ -13,9 +13,11 @@ micronaut {
 }
 
 dependencies {
+    annotationProcessor libs.lombok
     annotationProcessor projects.micronautDataProcessor
     annotationProcessor mnSql.hibernate.jpamodelgen
     annotationProcessor mnValidation.micronaut.validation
+    compileOnly libs.lombok
     implementation projects.micronautDataJdbc
     implementation mnRxjava2.micronaut.rxjava2
     implementation mn.micronaut.http.client
