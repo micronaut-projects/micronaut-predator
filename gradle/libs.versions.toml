@@ -27,6 +27,10 @@ managed-javax-persistence = "2.2"
 
 spring-data = "3.4.1"
 
+# Lombok
+
+lombok = "1.18.36"
+
 # Testing and benchmarking
 
 benchmark-spring-data = "2024.1.1"
@@ -88,6 +92,10 @@ managed-javax-persistence-api = { module = "javax.persistence:javax.persistence-
 
 spring-data-jpa = { module = "org.springframework.data:spring-data-jpa", version.ref = "spring-data" }
 spring-data-commons = { module = "org.springframework.data:spring-data-commons", version.ref = "spring-data" }
+
+# Lombok
+
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 
 # AZURE COSMOS
 
