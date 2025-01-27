@@ -120,7 +120,7 @@ loadScripts(document, 'script');</script>
 <div class="col-first odd-row-color"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;? extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Throwable.html" title="class or interface in java.lang" class="external-link">Throwable</a>&gt;[]</code></div>
 <div class="col-second odd-row-color"><code><a href="#rollbackFor()" class="member-name-link">rollbackFor</a></code></div>
 <div class="col-last odd-row-color">
-<div class="block">Defines the exceptions that will not result in a rollback.</div>
+<div class="block">Defines the exceptions that will result in a rollback.</div>
 </div>
 <div class="col-first even-row-color"><code>int</code></div>
 <div class="col-second even-row-color"><code><a href="#timeout()" class="member-name-link">timeout</a></code></div>
@@ -272,10 +272,10 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="rollbackFor()">
 <h3>rollbackFor</h3>
 <div class="member-signature"><span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;? extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Throwable.html" title="class or interface in java.lang" class="external-link">Throwable</a>&gt;[]</span>&nbsp;<span class="element-name">rollbackFor</span></div>
-<div class="block">Defines the exceptions that will not result in a rollback.</div>
+<div class="block">Defines the exceptions that will result in a rollback.</div>
 <dl class="notes">
 <dt>Returns:</dt>
-<dd>The exception types that will not result in a rollback.</dd>
+<dd>The exception types that will result in a rollback.</dd>
 <dt>Since:</dt>
 <dd>3.5.0</dd>
 </dl>

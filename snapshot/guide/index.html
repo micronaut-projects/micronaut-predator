@@ -11392,15 +11392,69 @@ More about Oracle JSON VIEW can be read here <a href="https://docs.oracle.com/en
 <p>Essentially, json view will be treated like mapped entity and will return JSON structure from the database and be mapped to java entity. All CRUD operations can be
 performed against json view mapped entities.</p>
 </div>
+<div class="sect3">
+<h4 id="_optimistic_locking">Optimistic Locking</h4>
 <div class="paragraph">
-<p>Limitations</p>
+<p>You can use optimistic/lock-free concurrency control with duality views, writing JSON documents or committing their updates only when other sessions haven&#8217;t modified them concurrently.</p>
 </div>
+<div class="paragraph">
+<p>Optimistic concurrency control at the document level uses embedded ETAG values in field etag, which is in the object that is the value of field <code>_metadata</code>.</p>
+</div>
+<div class="paragraph">
+<p>Example of class used to map <code>_metadata</code> field:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">/**
+ * The Json Duality View metadata.
+ *
+ * @param etag A unique identifier for a specific version of the document, as a string of hexadecimal characters.
+ * @param asof The latest system change number (SCN) for the JSON document, as a JSON number.
+*              This records the last logical point in time at which the document was generated.
+ */
+@Introspected
+public record Metadata(
+    String etag,
+    String asof
+) {
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then this metadata class can be declared as property of class mapped to Json Duality View like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">@JsonProperty("_metadata")
+Metadata metadata;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If Json Duality View mapped entity is updated with invalid or unexpected <code>etag</code> value of the <code>metadata</code> field
+then <code>OptimisticLockingException</code> will be thrown.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Using <code>@Version</code> is not supported in Json Duality View mapped classes.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_limitations">Limitations</h4>
 <div class="ulist">
 <ul>
 <li>
 <p>During schema creation, json view mapped entities are skipped, and it is expected for users to create them manually or via migration scripts.</p>
 </li>
 </ul>
+</div>
 </div>
 
 <h2 id="javaRecords"><a class="anchor" href="#javaRecords"></a>6.5.13 Support for Java 16 Records</h2>
