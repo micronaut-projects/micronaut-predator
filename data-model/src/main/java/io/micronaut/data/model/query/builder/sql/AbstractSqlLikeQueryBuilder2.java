@@ -700,16 +700,11 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
 
         PersistentEntity entity = queryState.getEntity();
         boolean jsonEntity = isJsonEntity(annotationMetadata, queryState.getEntity());
-        if (jsonEntity) {
+        if (jsonEntity && propertiesToUpdate.size() == 1) {
             checkDialectSupportsJsonEntity(entity);
-            // JsonView updates only DATA column
-            String jsonEntityColumn = getJsonEntityColumn(annotationMetadata);
-            if (propertiesToUpdate.size() > 1 && propertiesToUpdate.keySet().contains(jsonEntityColumn)) {
-                List<String> nonSupportedColumns = propertiesToUpdate.keySet().stream().filter(s -> !jsonEntityColumn.equals(s)).collect(Collectors.toList());
-                throw new IllegalStateException("Json View supports only `" + jsonEntityColumn + "` column to be updated. Cannot update: " + nonSupportedColumns);
-            }
             // Update JsonView DATA column
             String name = propertiesToUpdate.keySet().iterator().next();
+            String jsonEntityColumn = getJsonEntityColumn(annotationMetadata);
             if (name.equals(jsonEntityColumn)) {
                 Object value = propertiesToUpdate.get(name);
                 queryString.append(queryState.getRootAlias()).append(DOT).append(jsonEntityColumn).append("=");
