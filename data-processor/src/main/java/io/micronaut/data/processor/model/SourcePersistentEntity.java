@@ -81,6 +81,9 @@ public class SourcePersistentEntity extends AbstractPersistentEntity implements 
                 allPersistentProperties.put(id.getName(), id);
             } else if (propertyElement.hasStereotype(Version.class)) {
                 version = new SourcePersistentProperty(this, propertyElement);
+                if (hasAnnotation(JsonView.class)) {
+                    throw new MappingException("@JsonView mapped entities do not support @Version fields.");
+                }
                 allPersistentProperties.put(version.getName(), version);
             } else {
                 SourcePersistentProperty prop;

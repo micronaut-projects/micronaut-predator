@@ -75,7 +75,7 @@ class OracleR2DbcJsonViewSpec extends Specification {
 
         when:"Test optimistic locking"
         contactView = contactViewRepository.findById(contactView.id).get()
-        contactView.metadata.etag = UUID.randomUUID().toString()
+        contactView.metadata = new io.micronaut.data.tck.entities.Metadata(UUID.randomUUID().toString(), contactView.metadata.asof())
         contactViewRepository.update(contactView)
         then:
         def e = thrown(OptimisticLockException)

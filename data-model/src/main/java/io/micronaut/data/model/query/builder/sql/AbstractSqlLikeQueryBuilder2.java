@@ -1740,7 +1740,7 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
                     rootAlias
                 );
             }
-            throw new IllegalArgumentException("Cannot order on non-existent property path: " + pp);
+            throw new IllegalArgumentException("Cannot select or update non-existent property path: " + propertyPath);
         }
 
         @NonNull

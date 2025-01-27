@@ -112,4 +112,19 @@ record Person(@Id @GeneratedValue @MappedProperty("id") Long id, String name, in
         def ex = thrown(RuntimeException)
         ex.message.contains("@JsonView identity @MappedProperty value cannot be set to value different than '_id'")
     }
+
+    void "test JsonView entity with @Version not supported"() {
+        when:
+        buildEntity('test.Person', '''
+import io.micronaut.data.annotation.JsonView;
+import io.micronaut.data.annotation.MappedProperty;
+import io.micronaut.data.annotation.Version;
+
+@JsonView
+record Person(@Id @GeneratedValue @MappedProperty("_id") Long id, String name, int age, @Version Long version) {}
+''')
+        then:
+        def ex = thrown(RuntimeException)
+        ex.message.contains("@JsonView mapped entities do not support @Version fields")
+    }
 }
