@@ -3,6 +3,7 @@ package io.micronaut.data.jdbc.oraclexe.jsonview
 import io.micronaut.data.exceptions.OptimisticLockException
 import io.micronaut.data.model.Pageable
 import io.micronaut.data.model.Sort
+import io.micronaut.data.tck.entities.Metadata
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
 import spock.lang.Specification
@@ -228,7 +229,7 @@ class OracleJdbcJsonViewSpec extends Specification {
 
         when:"Try to trigger optimistic lock exception with invalid ETAG"
         def newJoshStudentView = studentViewRepository.findByName(newStudentName).get()
-        newJoshStudentView.getMetadata().setEtag(UUID.randomUUID().toString())
+        newJoshStudentView.setMetadata(new Metadata(UUID.randomUUID().toString(), newJoshStudentView.getMetadata().asof()))
         studentViewRepository.update(newJoshStudentView)
         then:
         thrown(OptimisticLockException)
