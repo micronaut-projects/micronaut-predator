@@ -48,6 +48,8 @@ Metadata metadata;
 If Json Duality View mapped entity is updated with invalid or unexpected `etag` value of the `metadata` field
 then `OptimisticLockingException` will be thrown.
 
+NOTE: Using `@Version` is not supported in Json Duality View mapped classes.
+
 ==== Limitations
 
 * During schema creation, json view mapped entities are skipped, and it is expected for users to create them manually or via migration scripts.

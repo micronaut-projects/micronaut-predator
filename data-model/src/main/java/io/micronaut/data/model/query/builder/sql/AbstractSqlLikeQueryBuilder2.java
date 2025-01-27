@@ -700,11 +700,16 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
 
         PersistentEntity entity = queryState.getEntity();
         boolean jsonEntity = isJsonEntity(annotationMetadata, queryState.getEntity());
-        if (jsonEntity && propertiesToUpdate.size() == 1) {
+        if (jsonEntity) {
             checkDialectSupportsJsonEntity(entity);
+            // JsonView updates only DATA column
+            String jsonEntityColumn = getJsonEntityColumn(annotationMetadata);
+            if (propertiesToUpdate.size() != 1) {
+                List<String> nonSupportedColumns = propertiesToUpdate.keySet().stream().filter(s -> !jsonEntityColumn.equals(s)).collect(Collectors.toList());
+                throw new IllegalStateException("Json View supports only `" + jsonEntityColumn + "` column to be updated. Cannot update: " + nonSupportedColumns);
+            }
             // Update JsonView DATA column
             String name = propertiesToUpdate.keySet().iterator().next();
-            String jsonEntityColumn = getJsonEntityColumn(annotationMetadata);
             if (name.equals(jsonEntityColumn)) {
                 Object value = propertiesToUpdate.get(name);
                 queryString.append(queryState.getRootAlias()).append(DOT).append(jsonEntityColumn).append("=");
@@ -1740,7 +1745,7 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
                     rootAlias
                 );
             }
-            throw new IllegalArgumentException("Cannot order on non-existent property path: " + pp);
+            throw new IllegalArgumentException("Cannot select or update non-existent property path: " + propertyPath);
         }
 
         @NonNull
