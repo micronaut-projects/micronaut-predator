@@ -84,6 +84,21 @@ public abstract class AbstractPersistentEntityJoinSupport<J, E> implements Persi
 
     private <X, Y> PersistentAssociationPath<X, Y> getJoin(String attributeName, io.micronaut.data.annotation.Join.Type type, String alias) {
         PersistentProperty persistentProperty = getPersistentEntity().getPropertyByName(attributeName);
+
+        if (persistentProperty == null && attributeName.contains(".")) {
+            int periodIndex = attributeName.indexOf(".");
+            String owner = attributeName.substring(0, periodIndex);
+            PersistentAssociationPath<E, ?> persistentAssociationPath;
+            if (joins.containsKey(owner)) {
+                persistentAssociationPath = joins.get(owner);
+            } else {
+                persistentAssociationPath = (PersistentAssociationPath<E, ?>) join(owner, type);
+            }
+            String remainingJoinPath = attributeName.substring(periodIndex + 1);
+            return alias == null ? (PersistentAssociationPath<X, Y>) persistentAssociationPath.join(remainingJoinPath, type)
+                : (PersistentAssociationPath<X, Y>) persistentAssociationPath.join(remainingJoinPath, type, alias);
+        }
+
         if (!(persistentProperty instanceof Association association)) {
             throw new IllegalStateException("Expected an association for attribute name: " + attributeName);
         }

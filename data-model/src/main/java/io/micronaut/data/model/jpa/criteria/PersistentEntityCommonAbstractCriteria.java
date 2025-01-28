@@ -33,7 +33,7 @@ public interface PersistentEntityCommonAbstractCriteria extends CommonAbstractCr
      * @param type The type
      * @param <U> The subquery type
      * @return A new subquery
-     * @see 4.10
+     * @since 4.10
      */
     <U> PersistentEntitySubquery<U> subquery(ExpressionType<U> type);
 

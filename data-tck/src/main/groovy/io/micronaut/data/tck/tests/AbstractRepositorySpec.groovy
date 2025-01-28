@@ -82,6 +82,8 @@ import java.time.ZoneId
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
+import static io.micronaut.data.tck.repositories.AuthorRepository.Specifications.authorIdEquals
+import static io.micronaut.data.tck.repositories.AuthorRepository.Specifications.authorNameEquals
 import static io.micronaut.data.tck.repositories.BookSpecifications.hasChapter
 import static io.micronaut.data.tck.repositories.BookSpecifications.titleAndTotalPagesEquals
 import static io.micronaut.data.tck.repositories.BookSpecifications.titleAndTotalPagesEqualsUsingConjunction
@@ -1946,20 +1948,27 @@ abstract class AbstractRepositorySpec extends Specification {
         author.getBooks()[0].preRemove == 0
         author.getBooks()[0].postRemove == 0
 
-        def result1 = author.getBooks().find {book -> book.title == "Book1" }
-        result1.pages.size() == 1
-        result1.pages.find {page -> page.num = 1}
+        verifyAuthorBooksAndPages(author)
 
-        def result2 = author.getBooks().find {book -> book.title == "Book2" }
-        result2.pages.size() == 2
-        result2.pages.find {page -> page.num = 21}
-        result2.pages.find {page -> page.num = 22}
+        when:"Retrieve author using findOne predicate specification"
+        def foundAuthor = authorRepository.findOne(authorNameEquals(author.name)).orElse(null)
+        then:"All joined relations are loaded"
+        foundAuthor
+        foundAuthor.name == author.name
+        verifyAuthorBooksAndPages(foundAuthor)
 
-        def result3 = author.getBooks().find {book -> book.title == "Book3" }
-        result3.pages.size() == 3
-        result3.pages.find {page -> page.num = 31}
-        result3.pages.find {page -> page.num = 32}
-        result3.pages.find {page -> page.num = 33}
+        when:"Retrieve author using findOne query specification"
+        def otherFoundAuthor = authorRepository.findOne(authorIdEquals(author.id)).orElse(null)
+        then:"All joined relations are loaded"
+        otherFoundAuthor
+        otherFoundAuthor.name == author.name
+        verifyAuthorBooksAndPages(otherFoundAuthor)
+
+        when:"Retrieve author using findAll predicate specification"
+        def foundAuthors = authorRepository.findAll(authorNameEquals(author.name))
+        then:"All joined relations are loaded using findAll"
+        foundAuthors.size() == 1
+        verifyAuthorBooksAndPages(foundAuthors[0])
 
         when:
         def newBook = new Book()
@@ -1989,6 +1998,22 @@ abstract class AbstractRepositorySpec extends Specification {
 //     TODO: Consider whether to support cascade removes
 //        author.getBooks()[0].preRemove == 1
 //        author.getBooks()[0].postRemove == 1
+    }
+
+    def verifyAuthorBooksAndPages(Author author) {
+        def book1 = author.getBooks().find { book -> book.title == "Book1" }
+        def book2 = author.getBooks().find { book -> book.title == "Book2" }
+        def book3 = author.getBooks().find { book -> book.title == "Book3" }
+        author.books.size() == 3 &&
+                book1.pages.size() == 1 &&
+                book1.pages[0].num == 1 &&
+                book2.pages.size() == 2 &&
+                book2.pages[0].num == 21 &&
+                book2.pages[1].num == 22 &&
+                book3.pages.size() == 3 &&
+                book3.pages[0].num == 31 &&
+                book3.pages[1].num == 32 &&
+                book3.pages[2].num == 33
     }
 
     void "test one-to-one mappedBy"() {
