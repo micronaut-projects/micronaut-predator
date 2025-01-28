@@ -2004,16 +2004,19 @@ abstract class AbstractRepositorySpec extends Specification {
         def book1 = author.getBooks().find { book -> book.title == "Book1" }
         def book2 = author.getBooks().find { book -> book.title == "Book2" }
         def book3 = author.getBooks().find { book -> book.title == "Book3" }
+        def book1pages = book1.pages.sort {it -> it.num}
+        def book2pages = book2.pages.sort {it -> it.num}
+        def book3pages = book3.pages.sort {it -> it.num}
         author.books.size() == 3 &&
                 book1.pages.size() == 1 &&
-                book1.pages[0].num == 1 &&
-                book2.pages.size() == 2 &&
-                book2.pages[0].num == 21 &&
-                book2.pages[1].num == 22 &&
-                book3.pages.size() == 3 &&
-                book3.pages[0].num == 31 &&
-                book3.pages[1].num == 32 &&
-                book3.pages[2].num == 33
+                book1pages[0].num == 1 &&
+                book2pages.size() == 2 &&
+                book2pages[0].num == 21 &&
+                book2pages[1].num == 22 &&
+                book3pages.size() == 3 &&
+                book3pages[0].num == 31 &&
+                book3pages[1].num == 32 &&
+                book3pages[2].num == 33
     }
 
     void "test one-to-one mappedBy"() {
