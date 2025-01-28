@@ -345,8 +345,7 @@ public abstract class AbstractSpecificationInterceptor<T, R> extends AbstractQue
                 }
             }
             if (CollectionUtils.isNotEmpty(joinPaths)) {
-                List<JoinPath> sortedJoinPaths = sortJoinPaths(joinPaths);
-                for (JoinPath joinPath : sortedJoinPaths) {
+                for (JoinPath joinPath : sortJoinPaths(joinPaths)) {
                     join(root, joinPath);
                 }
             }
@@ -387,8 +386,7 @@ public abstract class AbstractSpecificationInterceptor<T, R> extends AbstractQue
             }
         }
         if (CollectionUtils.isNotEmpty(joinPaths)) {
-            List<JoinPath> sortedJoinPaths = sortJoinPaths(joinPaths);
-            for (JoinPath joinPath : sortedJoinPaths) {
+            for (JoinPath joinPath : sortJoinPaths(joinPaths)) {
                 join(root, joinPath);
             }
         }

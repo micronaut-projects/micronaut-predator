@@ -155,7 +155,10 @@ public interface AuthorRepository extends CrudRepository<Author, Long>, JpaSpeci
         """)
     List<Author> findAllByNameCustom(String name);
 
-    class Specifications {
+    final class Specifications {
+
+        private Specifications() {
+        }
 
         static PredicateSpecification<Author> authorNameEquals(String name) {
             return (root, criteriaBuilder) -> criteriaBuilder.equal(root.get("name"), name);
