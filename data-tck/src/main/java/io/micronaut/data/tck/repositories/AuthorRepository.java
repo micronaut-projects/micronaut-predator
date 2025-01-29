@@ -26,6 +26,9 @@ import io.micronaut.data.model.CursoredPageable;
 import io.micronaut.data.model.Page;
 import io.micronaut.data.model.Pageable;
 import io.micronaut.data.repository.CrudRepository;
+import io.micronaut.data.repository.jpa.JpaSpecificationExecutor;
+import io.micronaut.data.repository.jpa.criteria.PredicateSpecification;
+import io.micronaut.data.repository.jpa.criteria.QuerySpecification;
 import io.micronaut.data.tck.entities.Author;
 
 import io.micronaut.core.annotation.Nullable;
@@ -37,7 +40,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public interface AuthorRepository extends CrudRepository<Author, Long> {
+public interface AuthorRepository extends CrudRepository<Author, Long>, JpaSpecificationExecutor<Author> {
 
     @Join(value = "books", type = Join.Type.LEFT_FETCH)
     Author queryByName(String name);
@@ -47,6 +50,19 @@ public interface AuthorRepository extends CrudRepository<Author, Long> {
     @Join(value = "books", alias = "b", type = Join.Type.LEFT_FETCH)
     @Join(value = "books.pages", alias = "bp", type = Join.Type.LEFT_FETCH)
     Optional<Author> findById(@NonNull @NotNull Long aLong);
+
+    @Override
+    @Join(value = "books.pages", alias = "bp", type = Join.Type.LEFT_FETCH)
+    @Join(value = "books", alias = "b", type = Join.Type.LEFT_FETCH)
+    Optional<Author> findOne(PredicateSpecification<Author> specification);
+
+    @Override
+    @Join(value = "books.pages", alias = "bp", type = Join.Type.LEFT_FETCH)
+    List<Author> findAll(PredicateSpecification<Author> specification);
+
+    @Override
+    @Join(value = "books.pages", type = Join.Type.LEFT_FETCH)
+    Optional<Author> findOne(QuerySpecification<Author> specification);
 
     Author findByName(String name);
 
@@ -138,4 +154,18 @@ public interface AuthorRepository extends CrudRepository<Author, Long> {
         WHERE author_.name = :name
         """)
     List<Author> findAllByNameCustom(String name);
+
+    final class Specifications {
+
+        private Specifications() {
+        }
+
+        static PredicateSpecification<Author> authorNameEquals(String name) {
+            return (root, criteriaBuilder) -> criteriaBuilder.equal(root.get("name"), name);
+        }
+
+        static QuerySpecification<Author> authorIdEquals(Long id) {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("id"), id);
+        }
+    }
 }

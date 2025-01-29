@@ -62,6 +62,8 @@ import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Selection;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -343,7 +345,7 @@ public abstract class AbstractSpecificationInterceptor<T, R> extends AbstractQue
                 }
             }
             if (CollectionUtils.isNotEmpty(joinPaths)) {
-                for (JoinPath joinPath : joinPaths) {
+                for (JoinPath joinPath : sortJoinPaths(joinPaths)) {
                     join(root, joinPath);
                 }
             }
@@ -384,7 +386,7 @@ public abstract class AbstractSpecificationInterceptor<T, R> extends AbstractQue
             }
         }
         if (CollectionUtils.isNotEmpty(joinPaths)) {
-            for (JoinPath joinPath : joinPaths) {
+            for (JoinPath joinPath : sortJoinPaths(joinPaths)) {
                 join(root, joinPath);
             }
         }
@@ -588,4 +590,9 @@ public abstract class AbstractSpecificationInterceptor<T, R> extends AbstractQue
         COUNT, FIND_ONE, FIND_PAGE, FIND_ALL, DELETE_ALL, UPDATE_ALL, EXISTS
     }
 
+    private List<JoinPath> sortJoinPaths(Collection<JoinPath> joinPaths) {
+        List<JoinPath> sortedJoinPaths = new ArrayList<>(joinPaths);
+        sortedJoinPaths.sort((o1, o2) -> Comparator.comparingInt(String::length).thenComparing(String::compareTo).compare(o1.getPath(), o2.getPath()));
+        return sortedJoinPaths;
+    }
 }
