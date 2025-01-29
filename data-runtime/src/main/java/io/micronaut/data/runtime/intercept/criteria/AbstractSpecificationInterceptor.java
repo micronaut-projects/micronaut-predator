@@ -62,6 +62,7 @@ import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Selection;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -376,7 +377,16 @@ public abstract class AbstractSpecificationInterceptor<T, R> extends AbstractQue
         selection.add(getIdExpression(root));
         // We need to select all ordered properties from ORDER BY for DISTINCT to work properly
         for (Sort.Order order : sort.getOrderBy()) {
-            selection.add(root.get(order.getProperty()));
+            Path<Object> path = null;
+            for (Iterator<String> iterator = StringUtils.splitOmitEmptyStrings(order.getProperty(), '.').iterator(); iterator.hasNext(); ) {
+                String next = iterator.next();
+                if (iterator.hasNext()) {
+                    path = root.join(next);
+                } else {
+                    path = root.get(next);
+                }
+            }
+            selection.add(path);
         }
         criteriaQuery.multiselect(selection).distinct(true);
         if (specification != null) {
@@ -577,8 +587,13 @@ public abstract class AbstractSpecificationInterceptor<T, R> extends AbstractQue
         List<Order> orders = new ArrayList<>();
         for (Sort.Order order : sort.getOrderBy()) {
             Path<?> path = root;
-            for (String property : StringUtils.splitOmitEmptyStrings(order.getProperty(), '.')) {
-                path = path.get(property);
+            for (Iterator<String> iterator = StringUtils.splitOmitEmptyStrings(order.getProperty(), '.').iterator(); iterator.hasNext(); ) {
+                String next = iterator.next();
+                if (iterator.hasNext()) {
+                    path = root.join(next);
+                } else {
+                    path = root.get(next);
+                }
             }
             Expression<?> expression = order.isIgnoreCase() ? cb.lower(path.type().as(String.class)) : path;
             orders.add(order.isAscending() ? cb.asc(expression) : cb.desc(expression));
