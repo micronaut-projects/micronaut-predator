@@ -55,6 +55,7 @@ import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.CriteriaUpdate;
 import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.From;
 import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
@@ -377,13 +378,12 @@ public abstract class AbstractSpecificationInterceptor<T, R> extends AbstractQue
         selection.add(getIdExpression(root));
         // We need to select all ordered properties from ORDER BY for DISTINCT to work properly
         for (Sort.Order order : sort.getOrderBy()) {
-            Path<Object> path = null;
-            for (Iterator<String> iterator = StringUtils.splitOmitEmptyStrings(order.getProperty(), '.').iterator(); iterator.hasNext(); ) {
-                String next = iterator.next();
-                if (iterator.hasNext()) {
-                    path = root.join(next);
+            Path<?> path = root;
+            for (String next : StringUtils.splitOmitEmptyStrings(order.getProperty(), '.')) {
+                if (path instanceof From<?, ?> from) {
+                    path = from.join(next);
                 } else {
-                    path = root.get(next);
+                    path = path.get(next);
                 }
             }
             selection.add(path);
@@ -587,12 +587,11 @@ public abstract class AbstractSpecificationInterceptor<T, R> extends AbstractQue
         List<Order> orders = new ArrayList<>();
         for (Sort.Order order : sort.getOrderBy()) {
             Path<?> path = root;
-            for (Iterator<String> iterator = StringUtils.splitOmitEmptyStrings(order.getProperty(), '.').iterator(); iterator.hasNext(); ) {
-                String next = iterator.next();
-                if (iterator.hasNext()) {
-                    path = root.join(next);
+            for (String next : StringUtils.splitOmitEmptyStrings(order.getProperty(), '.')) {
+                if (path instanceof From<?, ?> from) {
+                    path = from.join(next);
                 } else {
-                    path = root.get(next);
+                    path = path.get(next);
                 }
             }
             Expression<?> expression = order.isIgnoreCase() ? cb.lower(path.type().as(String.class)) : path;
