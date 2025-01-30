@@ -2512,6 +2512,8 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
                     } else {
                         query.setLength(query.length() - 1);
                     }
+                } else if (!propertyPath.getAssociations().isEmpty() && queryState.isJoined(propertyPath.getAssociationsPath())) {
+                    appendPropertyProjection(findProperty(propertyPath.getPath()));
                 } else {
                     appendCompoundPropertyProjection(propertyPath);
                 }
@@ -2520,7 +2522,7 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
                     query.append(DISTINCT);
                 }
                 if (property instanceof Association association && !property.isEmbedded()) {
-                    appendAssociationProjection(association, propertyPath);
+                    appendAssociationProjection(new PersistentAssociationPath(propertyPath.getAssociations(), association));
                 } else {
                     appendPropertyProjection(findProperty(propertyPath.getPath()));
                 }
@@ -2681,7 +2683,21 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
         @Internal
         protected void appendCompoundAssociationProjection(PersistentAssociationPath propertyPath) {
             if (!query.isEmpty() && query.charAt(query.length() - 1) == ',') {
-                // Strip last .
+                // Strip last ,
+                query.setLength(query.length() - 1);
+            }
+            selectAllColumnsFromJoinPaths(queryState.baseQueryDefinition().getJoinPaths(), null);
+        }
+
+        /**
+         * Appends the compound (part of entity or DTO) association projection.
+         *
+         * @param propertyPath The property path
+         */
+        @Internal
+        protected void appendCompoundProjection(PersistentPropertyPath propertyPath) {
+            if (!query.isEmpty() && query.charAt(query.length() - 1) == ',') {
+                // Strip last ,
                 query.setLength(query.length() - 1);
             }
             selectAllColumnsFromJoinPaths(queryState.baseQueryDefinition().getJoinPaths(), null);
@@ -2737,19 +2753,17 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
         /**
          * Appends selection projection for the property which is association.
          *
-         * @param association  the persistent property
-         * @param propertyPath the persistent property path
+         * @param associationPath the persistent property path
          */
-        protected void appendAssociationProjection(Association association,
-                                                   PersistentPropertyPath propertyPath) {
-            String joinedPath = propertyPath.getPath();
+        protected void appendAssociationProjection(PersistentAssociationPath associationPath) {
+            String joinedPath = associationPath.getPath();
             if (!queryState.isJoined(joinedPath)) {
                 query.setLength(query.length() - 1);
                 return;
             }
-            String joinAlias = queryState.findJoinAlias(propertyPath.getPath());
+            String joinAlias = queryState.findJoinAlias(associationPath.getPath());
 
-            selectAllColumns(AnnotationMetadata.EMPTY_METADATA, association.getAssociatedEntity(), joinAlias);
+            selectAllColumns(AnnotationMetadata.EMPTY_METADATA, associationPath.getAssociation().getAssociatedEntity(), joinAlias);
 
             Collection<JoinPath> joinPaths = queryState.baseQueryDefinition().getJoinPaths();
             List<JoinPath> newJoinPaths = new ArrayList<>(joinPaths.size());

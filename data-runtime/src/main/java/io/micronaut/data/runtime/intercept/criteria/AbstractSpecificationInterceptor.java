@@ -379,9 +379,10 @@ public abstract class AbstractSpecificationInterceptor<T, R> extends AbstractQue
         // We need to select all ordered properties from ORDER BY for DISTINCT to work properly
         for (Sort.Order order : sort.getOrderBy()) {
             Path<?> path = root;
-            for (String next : StringUtils.splitOmitEmptyStrings(order.getProperty(), '.')) {
-                if (path instanceof From<?, ?> from) {
-                    path = from.join(next);
+            for (Iterator<String> iterator = StringUtils.splitOmitEmptyStrings(order.getProperty(), '.').iterator(); iterator.hasNext(); ) {
+                String next = iterator.next();
+                if (iterator.hasNext()) {
+                    path = ((From<?, ?>) path).join(next);
                 } else {
                     path = path.get(next);
                 }
@@ -587,9 +588,10 @@ public abstract class AbstractSpecificationInterceptor<T, R> extends AbstractQue
         List<Order> orders = new ArrayList<>();
         for (Sort.Order order : sort.getOrderBy()) {
             Path<?> path = root;
-            for (String next : StringUtils.splitOmitEmptyStrings(order.getProperty(), '.')) {
-                if (path instanceof From<?, ?> from) {
-                    path = from.join(next);
+            for (Iterator<String> iterator = StringUtils.splitOmitEmptyStrings(order.getProperty(), '.').iterator(); iterator.hasNext(); ) {
+                String next = iterator.next();
+                if (iterator.hasNext()) {
+                    path = ((From<?, ?>) path).join(next);
                 } else {
                     path = path.get(next);
                 }

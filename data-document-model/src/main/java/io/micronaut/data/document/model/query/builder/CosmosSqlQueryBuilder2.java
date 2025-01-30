@@ -108,14 +108,14 @@ public final class CosmosSqlQueryBuilder2 extends SqlQueryBuilder2 {
             }
 
             @Override
-            protected void appendAssociationProjection(Association association, PersistentPropertyPath propertyPath) {
-                String joinedPath = propertyPath.getPath();
+            protected void appendAssociationProjection(PersistentAssociationPath associationPath) {
+                String joinedPath = associationPath.getPath();
                 if (!queryState.isJoined(joinedPath)) {
                     query.setLength(query.length() - 1);
                     return;
                 }
-                String joinAlias = queryState.getJoinAlias(propertyPath.getPath());
-                selectAllColumns(AnnotationMetadata.EMPTY_METADATA, association.getAssociatedEntity(), joinAlias);
+                String joinAlias = queryState.getJoinAlias(associationPath.getPath());
+                selectAllColumns(AnnotationMetadata.EMPTY_METADATA, associationPath.getAssociation().getAssociatedEntity(), joinAlias);
             }
 
             @Override
