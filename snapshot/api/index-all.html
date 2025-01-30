@@ -806,7 +806,7 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/data/model/jpa/criteria/impl/expression/SubqueryExpression.Type.html#ANY" class="member-name-link">ANY</a> - Enum constant in enum class io.micronaut.data.model.jpa.criteria.impl.expression.<a href="io/micronaut/data/model/jpa/criteria/impl/expression/SubqueryExpression.Type.html" title="enum class in io.micronaut.data.model.jpa.criteria.impl.expression">SubqueryExpression.Type</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="io/micronaut/data/model/query/builder/sql/AbstractSqlLikeQueryBuilder2.SqlSelectionVisitor.html#appendAssociationProjection(io.micronaut.data.model.Association,io.micronaut.data.model.PersistentPropertyPath)" class="member-name-link">appendAssociationProjection(Association, PersistentPropertyPath)</a> - Method in class io.micronaut.data.model.query.builder.sql.<a href="io/micronaut/data/model/query/builder/sql/AbstractSqlLikeQueryBuilder2.SqlSelectionVisitor.html" title="class in io.micronaut.data.model.query.builder.sql">AbstractSqlLikeQueryBuilder2.SqlSelectionVisitor</a></dt>
+<dt><a href="io/micronaut/data/model/query/builder/sql/AbstractSqlLikeQueryBuilder2.SqlSelectionVisitor.html#appendAssociationProjection(io.micronaut.data.model.PersistentAssociationPath)" class="member-name-link">appendAssociationProjection(PersistentAssociationPath)</a> - Method in class io.micronaut.data.model.query.builder.sql.<a href="io/micronaut/data/model/query/builder/sql/AbstractSqlLikeQueryBuilder2.SqlSelectionVisitor.html" title="class in io.micronaut.data.model.query.builder.sql">AbstractSqlLikeQueryBuilder2.SqlSelectionVisitor</a></dt>
 <dd>
 <div class="block">Appends selection projection for the property which is association.</div>
 </dd>
@@ -826,6 +826,10 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="io/micronaut/data/model/query/builder/jpa/JpaQueryBuilder.html#appendCompoundAssociationProjection(io.micronaut.data.model.query.builder.AbstractSqlLikeQueryBuilder.QueryState,java.lang.StringBuilder,io.micronaut.data.model.Association,io.micronaut.data.model.PersistentPropertyPath,java.lang.String)" class="member-name-link">appendCompoundAssociationProjection(AbstractSqlLikeQueryBuilder.QueryState, StringBuilder, Association, PersistentPropertyPath, String)</a> - Method in class io.micronaut.data.model.query.builder.jpa.<a href="io/micronaut/data/model/query/builder/jpa/JpaQueryBuilder.html" title="class in io.micronaut.data.model.query.builder.jpa">JpaQueryBuilder</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/micronaut/data/model/query/builder/sql/AbstractSqlLikeQueryBuilder2.SqlSelectionVisitor.html#appendCompoundProjection(io.micronaut.data.model.PersistentPropertyPath)" class="member-name-link">appendCompoundProjection(PersistentPropertyPath)</a> - Method in class io.micronaut.data.model.query.builder.sql.<a href="io/micronaut/data/model/query/builder/sql/AbstractSqlLikeQueryBuilder2.SqlSelectionVisitor.html" title="class in io.micronaut.data.model.query.builder.sql">AbstractSqlLikeQueryBuilder2.SqlSelectionVisitor</a></dt>
+<dd>
+<div class="block">Appends the compound (part of entity or DTO) association projection.</div>
+</dd>
 <dt><a href="io/micronaut/data/model/query/builder/sql/AbstractSqlLikeQueryBuilder2.SqlSelectionVisitor.html#appendCompoundPropertyProjection(io.micronaut.data.model.PersistentPropertyPath)" class="member-name-link">appendCompoundPropertyProjection(PersistentPropertyPath)</a> - Method in class io.micronaut.data.model.query.builder.sql.<a href="io/micronaut/data/model/query/builder/sql/AbstractSqlLikeQueryBuilder2.SqlSelectionVisitor.html" title="class in io.micronaut.data.model.query.builder.sql">AbstractSqlLikeQueryBuilder2.SqlSelectionVisitor</a></dt>
 <dd>
 <div class="block">Appends the compound (part of entity or DTO) property projection.</div>
@@ -7332,6 +7336,8 @@ loadScripts(document, 'script');</script>
 <dt><a href="io/micronaut/data/model/query/builder/sql/AbstractSqlLikeQueryBuilder2.QueryPropertyPath.html#getAssociations()" class="member-name-link">getAssociations()</a> - Method in class io.micronaut.data.model.query.builder.sql.<a href="io/micronaut/data/model/query/builder/sql/AbstractSqlLikeQueryBuilder2.QueryPropertyPath.html" title="class in io.micronaut.data.model.query.builder.sql">AbstractSqlLikeQueryBuilder2.QueryPropertyPath</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/data/model/runtime/RuntimePersistentEntity.html#getAssociations()" class="member-name-link">getAssociations()</a> - Method in class io.micronaut.data.model.runtime.<a href="io/micronaut/data/model/runtime/RuntimePersistentEntity.html" title="class in io.micronaut.data.model.runtime">RuntimePersistentEntity</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/micronaut/data/model/PersistentPropertyPath.html#getAssociationsPath()" class="member-name-link">getAssociationsPath()</a> - Method in class io.micronaut.data.model.<a href="io/micronaut/data/model/PersistentPropertyPath.html" title="class in io.micronaut.data.model">PersistentPropertyPath</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/micronaut/data/processor/visitors/finders/FindersUtils.html#getAsyncType(io.micronaut.inject.ast.MethodElement,io.micronaut.inject.ast.ClassElement)" class="member-name-link">getAsyncType(MethodElement, ClassElement)</a> - Static method in interface io.micronaut.data.processor.visitors.finders.<a href="io/micronaut/data/processor/visitors/finders/FindersUtils.html" title="interface in io.micronaut.data.processor.visitors.finders">FindersUtils</a></dt>
 <dd>&nbsp;</dd>

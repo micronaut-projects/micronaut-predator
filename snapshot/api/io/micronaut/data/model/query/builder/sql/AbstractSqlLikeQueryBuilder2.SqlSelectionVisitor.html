@@ -155,8 +155,7 @@ implements <a href="../../../jpa/criteria/impl/SelectionVisitor.html" title="int
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#appendAssociationProjection(io.micronaut.data.model.Association,io.micronaut.data.model.PersistentPropertyPath)" class="member-name-link">appendAssociationProjection</a><wbr>(<a href="../../../Association.html" title="interface in io.micronaut.data.model">Association</a>&nbsp;association,
- <a href="../../../PersistentPropertyPath.html" title="class in io.micronaut.data.model">PersistentPropertyPath</a>&nbsp;propertyPath)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#appendAssociationProjection(io.micronaut.data.model.PersistentAssociationPath)" class="member-name-link">appendAssociationProjection</a><wbr>(<a href="../../../PersistentAssociationPath.html" title="class in io.micronaut.data.model">PersistentAssociationPath</a>&nbsp;associationPath)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Appends selection projection for the property which is association.</div>
 </div>
@@ -166,99 +165,104 @@ implements <a href="../../../jpa/criteria/impl/SelectionVisitor.html" title="int
 <div class="block">Appends the compound (part of entity or DTO) association projection.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#appendCompoundPropertyProjection(io.micronaut.data.model.PersistentPropertyPath)" class="member-name-link">appendCompoundPropertyProjection</a><wbr>(<a href="../../../PersistentPropertyPath.html" title="class in io.micronaut.data.model">PersistentPropertyPath</a>&nbsp;propertyPath)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#appendCompoundProjection(io.micronaut.data.model.PersistentPropertyPath)" class="member-name-link">appendCompoundProjection</a><wbr>(<a href="../../../PersistentPropertyPath.html" title="class in io.micronaut.data.model">PersistentPropertyPath</a>&nbsp;propertyPath)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Appends the compound (part of entity or DTO) association projection.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#appendCompoundPropertyProjection(io.micronaut.data.model.PersistentPropertyPath)" class="member-name-link">appendCompoundPropertyProjection</a><wbr>(<a href="../../../PersistentPropertyPath.html" title="class in io.micronaut.data.model">PersistentPropertyPath</a>&nbsp;propertyPath)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Appends the compound (part of entity or DTO) property projection.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected final void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#appendProperty(java.lang.StringBuilder,java.util.List,io.micronaut.data.model.PersistentProperty,io.micronaut.data.model.naming.NamingStrategy,java.lang.String,boolean)" class="member-name-link">appendProperty</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/StringBuilder.html" title="class or interface in java.lang" class="external-link">StringBuilder</a>&nbsp;sb,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected final void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#appendProperty(java.lang.StringBuilder,java.util.List,io.micronaut.data.model.PersistentProperty,io.micronaut.data.model.naming.NamingStrategy,java.lang.String,boolean)" class="member-name-link">appendProperty</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/StringBuilder.html" title="class or interface in java.lang" class="external-link">StringBuilder</a>&nbsp;sb,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../../../Association.html" title="interface in io.micronaut.data.model">Association</a>&gt;&nbsp;associations,
  <a href="../../../PersistentProperty.html" title="interface in io.micronaut.data.model">PersistentProperty</a>&nbsp;property,
  <a href="../../../naming/NamingStrategy.html" title="interface in io.micronaut.data.model.naming">NamingStrategy</a>&nbsp;namingStrategy,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;tableAlias,
  boolean&nbsp;escape)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#appendPropertyProjection(io.micronaut.data.model.query.builder.sql.AbstractSqlLikeQueryBuilder2.QueryPropertyPath)" class="member-name-link">appendPropertyProjection</a><wbr>(<a href="AbstractSqlLikeQueryBuilder2.QueryPropertyPath.html" title="class in io.micronaut.data.model.query.builder.sql">AbstractSqlLikeQueryBuilder2.QueryPropertyPath</a>&nbsp;propertyPath)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#appendPropertyProjection(io.micronaut.data.model.query.builder.sql.AbstractSqlLikeQueryBuilder2.QueryPropertyPath)" class="member-name-link">appendPropertyProjection</a><wbr>(<a href="AbstractSqlLikeQueryBuilder2.QueryPropertyPath.html" title="class in io.micronaut.data.model.query.builder.sql">AbstractSqlLikeQueryBuilder2.QueryPropertyPath</a>&nbsp;propertyPath)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Append the property projection.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#appendRowCount(java.lang.String)" class="member-name-link">appendRowCount</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;logicalName)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#appendRowCount(java.lang.String)" class="member-name-link">appendRowCount</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;logicalName)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Appends a row count projection to the query string.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#appendRowCountDistinct(java.lang.String)" class="member-name-link">appendRowCountDistinct</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;logicalName)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#appendRowCountDistinct(java.lang.String)" class="member-name-link">appendRowCountDistinct</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;logicalName)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Appends a row count distinct projection to the query string.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#selectAllColumns(io.micronaut.core.annotation.AnnotationMetadata,io.micronaut.data.model.PersistentEntity,java.lang.String)" class="member-name-link">selectAllColumns</a><wbr>(io.micronaut.core.annotation.AnnotationMetadata&nbsp;annotationMetadata,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#selectAllColumns(io.micronaut.core.annotation.AnnotationMetadata,io.micronaut.data.model.PersistentEntity,java.lang.String)" class="member-name-link">selectAllColumns</a><wbr>(io.micronaut.core.annotation.AnnotationMetadata&nbsp;annotationMetadata,
  <a href="../../../PersistentEntity.html" title="interface in io.micronaut.data.model">PersistentEntity</a>&nbsp;persistentEntity,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;tableAlias)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Select all the columns from the entity.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#selectAllColumnsAndJoined()" class="member-name-link">selectAllColumnsAndJoined</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#selectAllColumnsAndJoined()" class="member-name-link">selectAllColumnsAndJoined</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Select all the columns from the entity and the joined entities.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#selectAllColumnsFromJoinPaths(java.util.Collection,java.util.Map)" class="member-name-link">selectAllColumnsFromJoinPaths</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Collection.html" title="class or interface in java.util" class="external-link">Collection</a>&lt;<a href="../../JoinPath.html" title="class in io.micronaut.data.model.query">JoinPath</a>&gt;&nbsp;allPaths,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#selectAllColumnsFromJoinPaths(java.util.Collection,java.util.Map)" class="member-name-link">selectAllColumnsFromJoinPaths</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Collection.html" title="class or interface in java.util" class="external-link">Collection</a>&lt;<a href="../../JoinPath.html" title="class in io.micronaut.data.model.query">JoinPath</a>&gt;&nbsp;allPaths,
  @Nullable <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link">Map</a>&lt;<a href="../../JoinPath.html" title="class in io.micronaut.data.model.query">JoinPath</a>,<wbr><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;&nbsp;joinAliasOverride)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Does nothing but subclasses might override and implement new behavior.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#visit(io.micronaut.data.model.jpa.criteria.impl.expression.BinaryExpression)" class="member-name-link">visit</a><wbr>(<a href="../../../jpa/criteria/impl/expression/BinaryExpression.html" title="class in io.micronaut.data.model.jpa.criteria.impl.expression">BinaryExpression</a>&lt;?&gt;&nbsp;binaryExpression)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#visit(io.micronaut.data.model.jpa.criteria.impl.expression.BinaryExpression)" class="member-name-link">visit</a><wbr>(<a href="../../../jpa/criteria/impl/expression/BinaryExpression.html" title="class in io.micronaut.data.model.jpa.criteria.impl.expression">BinaryExpression</a>&lt;?&gt;&nbsp;binaryExpression)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Visit <a href="../../../jpa/criteria/impl/expression/BinaryExpression.html" title="class in io.micronaut.data.model.jpa.criteria.impl.expression"><code>BinaryExpression</code></a>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#visit(io.micronaut.data.model.jpa.criteria.impl.expression.FunctionExpression)" class="member-name-link">visit</a><wbr>(<a href="../../../jpa/criteria/impl/expression/FunctionExpression.html" title="class in io.micronaut.data.model.jpa.criteria.impl.expression">FunctionExpression</a>&lt;?&gt;&nbsp;functionExpression)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#visit(io.micronaut.data.model.jpa.criteria.impl.expression.FunctionExpression)" class="member-name-link">visit</a><wbr>(<a href="../../../jpa/criteria/impl/expression/FunctionExpression.html" title="class in io.micronaut.data.model.jpa.criteria.impl.expression">FunctionExpression</a>&lt;?&gt;&nbsp;functionExpression)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Visit <a href="../../../jpa/criteria/impl/expression/FunctionExpression.html" title="class in io.micronaut.data.model.jpa.criteria.impl.expression"><code>FunctionExpression</code></a>.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#visit(io.micronaut.data.model.jpa.criteria.impl.expression.IdExpression)" class="member-name-link">visit</a><wbr>(<a href="../../../jpa/criteria/impl/expression/IdExpression.html" title="class in io.micronaut.data.model.jpa.criteria.impl.expression">IdExpression</a>&lt;?,<wbr>?&gt;&nbsp;idExpression)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#visit(io.micronaut.data.model.jpa.criteria.impl.expression.IdExpression)" class="member-name-link">visit</a><wbr>(<a href="../../../jpa/criteria/impl/expression/IdExpression.html" title="class in io.micronaut.data.model.jpa.criteria.impl.expression">IdExpression</a>&lt;?,<wbr>?&gt;&nbsp;idExpression)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Visit <a href="../../../jpa/criteria/impl/expression/IdExpression.html" title="class in io.micronaut.data.model.jpa.criteria.impl.expression"><code>IdExpression</code></a>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#visit(io.micronaut.data.model.jpa.criteria.impl.expression.LiteralExpression)" class="member-name-link">visit</a><wbr>(<a href="../../../jpa/criteria/impl/expression/LiteralExpression.html" title="class in io.micronaut.data.model.jpa.criteria.impl.expression">LiteralExpression</a>&lt;?&gt;&nbsp;literalExpression)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#visit(io.micronaut.data.model.jpa.criteria.impl.expression.LiteralExpression)" class="member-name-link">visit</a><wbr>(<a href="../../../jpa/criteria/impl/expression/LiteralExpression.html" title="class in io.micronaut.data.model.jpa.criteria.impl.expression">LiteralExpression</a>&lt;?&gt;&nbsp;literalExpression)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Visit <a href="../../../jpa/criteria/impl/expression/LiteralExpression.html" title="class in io.micronaut.data.model.jpa.criteria.impl.expression"><code>LiteralExpression</code></a>.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#visit(io.micronaut.data.model.jpa.criteria.impl.expression.UnaryExpression)" class="member-name-link">visit</a><wbr>(<a href="../../../jpa/criteria/impl/expression/UnaryExpression.html" title="class in io.micronaut.data.model.jpa.criteria.impl.expression">UnaryExpression</a>&lt;?&gt;&nbsp;unaryExpression)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#visit(io.micronaut.data.model.jpa.criteria.impl.expression.UnaryExpression)" class="member-name-link">visit</a><wbr>(<a href="../../../jpa/criteria/impl/expression/UnaryExpression.html" title="class in io.micronaut.data.model.jpa.criteria.impl.expression">UnaryExpression</a>&lt;?&gt;&nbsp;unaryExpression)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Visit <a href="../../../jpa/criteria/impl/expression/UnaryExpression.html" title="class in io.micronaut.data.model.jpa.criteria.impl.expression"><code>UnaryExpression</code></a>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#visit(io.micronaut.data.model.jpa.criteria.impl.selection.AliasedSelection)" class="member-name-link">visit</a><wbr>(<a href="../../../jpa/criteria/impl/selection/AliasedSelection.html" title="class in io.micronaut.data.model.jpa.criteria.impl.selection">AliasedSelection</a>&lt;?&gt;&nbsp;aliasedSelection)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#visit(io.micronaut.data.model.jpa.criteria.impl.selection.AliasedSelection)" class="member-name-link">visit</a><wbr>(<a href="../../../jpa/criteria/impl/selection/AliasedSelection.html" title="class in io.micronaut.data.model.jpa.criteria.impl.selection">AliasedSelection</a>&lt;?&gt;&nbsp;aliasedSelection)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Visit <a href="../../../jpa/criteria/impl/selection/AliasedSelection.html" title="class in io.micronaut.data.model.jpa.criteria.impl.selection"><code>AliasedSelection</code></a>.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#visit(io.micronaut.data.model.jpa.criteria.impl.selection.CompoundSelection)" class="member-name-link">visit</a><wbr>(<a href="../../../jpa/criteria/impl/selection/CompoundSelection.html" title="class in io.micronaut.data.model.jpa.criteria.impl.selection">CompoundSelection</a>&lt;?&gt;&nbsp;compoundSelection)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#visit(io.micronaut.data.model.jpa.criteria.impl.selection.CompoundSelection)" class="member-name-link">visit</a><wbr>(<a href="../../../jpa/criteria/impl/selection/CompoundSelection.html" title="class in io.micronaut.data.model.jpa.criteria.impl.selection">CompoundSelection</a>&lt;?&gt;&nbsp;compoundSelection)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Visit <a href="../../../jpa/criteria/impl/selection/CompoundSelection.html" title="class in io.micronaut.data.model.jpa.criteria.impl.selection"><code>CompoundSelection</code></a>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#visit(io.micronaut.data.model.jpa.criteria.PersistentEntityRoot)" class="member-name-link">visit</a><wbr>(<a href="../../../jpa/criteria/PersistentEntityRoot.html" title="interface in io.micronaut.data.model.jpa.criteria">PersistentEntityRoot</a>&lt;?&gt;&nbsp;entityRoot)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#visit(io.micronaut.data.model.jpa.criteria.PersistentEntityRoot)" class="member-name-link">visit</a><wbr>(<a href="../../../jpa/criteria/PersistentEntityRoot.html" title="interface in io.micronaut.data.model.jpa.criteria">PersistentEntityRoot</a>&lt;?&gt;&nbsp;entityRoot)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Visit <a href="../../../jpa/criteria/PersistentEntityRoot.html" title="interface in io.micronaut.data.model.jpa.criteria"><code>PersistentEntityRoot</code></a>.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#visit(io.micronaut.data.model.jpa.criteria.PersistentEntitySubquery)" class="member-name-link">visit</a><wbr>(<a href="../../../jpa/criteria/PersistentEntitySubquery.html" title="interface in io.micronaut.data.model.jpa.criteria">PersistentEntitySubquery</a>&lt;?&gt;&nbsp;subquery)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#visit(io.micronaut.data.model.jpa.criteria.PersistentEntitySubquery)" class="member-name-link">visit</a><wbr>(<a href="../../../jpa/criteria/PersistentEntitySubquery.html" title="interface in io.micronaut.data.model.jpa.criteria">PersistentEntitySubquery</a>&lt;?&gt;&nbsp;subquery)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Visit <a href="../../../jpa/criteria/PersistentEntitySubquery.html" title="interface in io.micronaut.data.model.jpa.criteria"><code>PersistentEntitySubquery</code></a>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#visit(io.micronaut.data.model.jpa.criteria.PersistentPropertyPath)" class="member-name-link">visit</a><wbr>(<a href="../../../jpa/criteria/PersistentPropertyPath.html" title="interface in io.micronaut.data.model.jpa.criteria">PersistentPropertyPath</a>&lt;?&gt;&nbsp;persistentPropertyPath)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#visit(io.micronaut.data.model.jpa.criteria.PersistentPropertyPath)" class="member-name-link">visit</a><wbr>(<a href="../../../jpa/criteria/PersistentPropertyPath.html" title="interface in io.micronaut.data.model.jpa.criteria">PersistentPropertyPath</a>&lt;?&gt;&nbsp;persistentPropertyPath)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Visit <a href="../../../jpa/criteria/PersistentPropertyPath.html" title="interface in io.micronaut.data.model.jpa.criteria"><code>PersistentPropertyPath</code></a>.</div>
 </div>
 </div>
@@ -515,6 +519,18 @@ implements <a href="../../../jpa/criteria/impl/SelectionVisitor.html" title="int
 </section>
 </li>
 <li>
+<section class="detail" id="appendCompoundProjection(io.micronaut.data.model.PersistentPropertyPath)">
+<h3>appendCompoundProjection</h3>
+<div class="member-signature"><span class="annotations">@Internal
+</span><span class="modifiers">protected</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">appendCompoundProjection</span><wbr><span class="parameters">(<a href="../../../PersistentPropertyPath.html" title="class in io.micronaut.data.model">PersistentPropertyPath</a>&nbsp;propertyPath)</span></div>
+<div class="block">Appends the compound (part of entity or DTO) association projection.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>propertyPath</code> - The property path</dd>
+</dl>
+</section>
+</li>
+<li>
 <section class="detail" id="appendPropertyProjection(io.micronaut.data.model.query.builder.sql.AbstractSqlLikeQueryBuilder2.QueryPropertyPath)">
 <h3>appendPropertyProjection</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">appendPropertyProjection</span><wbr><span class="parameters">(<a href="AbstractSqlLikeQueryBuilder2.QueryPropertyPath.html" title="class in io.micronaut.data.model.query.builder.sql">AbstractSqlLikeQueryBuilder2.QueryPropertyPath</a>&nbsp;propertyPath)</span></div>
@@ -526,15 +542,13 @@ implements <a href="../../../jpa/criteria/impl/SelectionVisitor.html" title="int
 </section>
 </li>
 <li>
-<section class="detail" id="appendAssociationProjection(io.micronaut.data.model.Association,io.micronaut.data.model.PersistentPropertyPath)">
+<section class="detail" id="appendAssociationProjection(io.micronaut.data.model.PersistentAssociationPath)">
 <h3>appendAssociationProjection</h3>
-<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">appendAssociationProjection</span><wbr><span class="parameters">(<a href="../../../Association.html" title="interface in io.micronaut.data.model">Association</a>&nbsp;association,
- <a href="../../../PersistentPropertyPath.html" title="class in io.micronaut.data.model">PersistentPropertyPath</a>&nbsp;propertyPath)</span></div>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">appendAssociationProjection</span><wbr><span class="parameters">(<a href="../../../PersistentAssociationPath.html" title="class in io.micronaut.data.model">PersistentAssociationPath</a>&nbsp;associationPath)</span></div>
 <div class="block">Appends selection projection for the property which is association.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
-<dd><code>association</code> - the persistent property</dd>
-<dd><code>propertyPath</code> - the persistent property path</dd>
+<dd><code>associationPath</code> - the persistent property path</dd>
 </dl>
 </section>
 </li>
