@@ -201,6 +201,21 @@ public class PersistentPropertyPath {
     }
 
     /**
+     * @return The associations path
+     */
+    @NonNull
+    public String getAssociationsPath() {
+        if (associations.isEmpty()) {
+            return "";
+        }
+        StringJoiner joiner = new StringJoiner(".");
+        for (Association association : associations) {
+            joiner.add(association.getName());
+        }
+        return joiner.toString();
+    }
+
+    /**
      * @return The array path
      */
     @NonNull
