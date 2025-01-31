@@ -103,6 +103,7 @@ import java.util.stream.Collectors;
 public class RepositoryTypeElementVisitor implements TypeElementVisitor<Repository, Object> {
 
     public static final String SPRING_REPO = "org.springframework.data.repository.Repository";
+    public static final String JAKARTA_DATA_REPO = "jakarta.data.repository.DataRepository";
     private static final boolean IS_DOCUMENT_ANNOTATION_PROCESSOR = ClassUtils.isPresent("io.micronaut.data.document.processor.mapper.MappedEntityMapper", RepositoryTypeElementVisitor.class.getClassLoader());
 
     private ClassElement currentClass;
@@ -132,6 +133,8 @@ public class RepositoryTypeElementVisitor implements TypeElementVisitor<Reposito
         typeRoles.put(CursoredPage.class.getName(), TypeRole.CURSORED_PAGE);
         typeRoles.put(Page.class.getName(), TypeRole.PAGE);
         typeRoles.put(Slice.class.getName(), TypeRole.SLICE);
+        typeRoles.put("jakarta.data.page.PageRequest", TypeRole.PAGEABLE);
+        typeRoles.put("jakarta.data.Order", TypeRole.SORT);
     }
 
     @NonNull
@@ -246,6 +249,22 @@ public class RepositoryTypeElementVisitor implements TypeElementVisitor<Reposito
     @Override
     public void visitMethod(MethodElement element, VisitorContext context) {
         if (currentRepository == null || failing) {
+            return;
+        }
+        if (currentClass.hasStereotype("jakarta.data.repository.Repository")
+            && !currentClass.isAssignable("jakarta.data.repository.DataRepository")) {
+            return;
+        }
+        if (element.hasStereotype("jakarta.data.repository.Find")) {
+            return;
+        }
+        if (element.hasStereotype("jakarta.data.repository.Insert")) {
+            return;
+        }
+        if (element.hasStereotype("jakarta.data.repository.Delete")) {
+            return;
+        }
+        if (element.hasStereotype("jakarta.data.repository.Update")) {
             return;
         }
         ClassElement genericReturnType = element.getGenericReturnType();
@@ -723,6 +742,10 @@ public class RepositoryTypeElementVisitor implements TypeElementVisitor<Reposito
         if (typeArguments.isEmpty()) {
             argName = "T";
             typeArguments = currentRepository.getTypeArguments(SPRING_REPO);
+        }
+        if (typeArguments.isEmpty()) {
+            argName = "T";
+            typeArguments = currentRepository.getTypeArguments(JAKARTA_DATA_REPO);
         }
         if (!typeArguments.isEmpty()) {
             ClassElement ce = typeArguments.get(argName);

@@ -13,28 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.micronaut.data.processor.visitors.finders;
+package io.micronaut.validation.tck;
 
 import io.micronaut.core.annotation.Internal;
+import org.jboss.arquillian.container.spi.ConfigurationException;
+import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
 
-/**
- * Type of method match.
- *
- * @author Denis Stepanov
- * @since 4.2.0
- */
 @Internal
-public enum QueryMatchId implements MethodNameParser.MatchId {
-
-    PREFIX,
-    ALL,
-    ALL_OR_ONE,
-    LIMIT,
-    FIRST,
-    DISTINCT,
-    PROJECTION,
-    PREDICATE,
-    RETURNING,
-    ORDER,
-    FOR_UPDATE
+final class TckContainerConfiguration implements ContainerConfiguration {
+    @Override
+    public void validate() throws ConfigurationException {
+    }
 }

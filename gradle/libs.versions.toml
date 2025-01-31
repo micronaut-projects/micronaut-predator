@@ -52,6 +52,8 @@ sonatype-scan = "3.0.0"
 # meaning that they should be extracted into their own BOM
 kotlin-coroutines = "1.9.0"
 
+jakarta-data = "1.0.1"
+
 [libraries]
 micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }
 
@@ -107,6 +109,10 @@ jupiter-engine = { module = 'org.junit.jupiter:junit-jupiter-engine' }
 jupiter-api = { module = 'org.junit.jupiter:junit-jupiter-api' }
 groovy-sql = { module = "org.apache.groovy:groovy-sql" }
 groovy-dateutil = { module = "org.apache.groovy:groovy-dateutil", version.ref = "groovy" }
+
+jakarta-data-tck = { module = 'jakarta.data:jakarta.data-tck', version.ref = "jakarta-data" }
+jakarta-data-api = { module = 'jakarta.data:jakarta.data-api', version.ref = "jakarta-data" }
+junit-platform-suite-engine = { module = "org.junit.platform:junit-platform-suite-engine" }
 
 # Benchmark
 

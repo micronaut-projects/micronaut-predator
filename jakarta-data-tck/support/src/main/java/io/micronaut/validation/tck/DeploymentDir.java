@@ -13,28 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.micronaut.data.processor.visitors.finders;
+package io.micronaut.validation.tck;
 
 import io.micronaut.core.annotation.Internal;
 
-/**
- * Type of method match.
- *
- * @author Denis Stepanov
- * @since 4.2.0
- */
-@Internal
-public enum QueryMatchId implements MethodNameParser.MatchId {
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-    PREFIX,
-    ALL,
-    ALL_OR_ONE,
-    LIMIT,
-    FIRST,
-    DISTINCT,
-    PROJECTION,
-    PREDICATE,
-    RETURNING,
-    ORDER,
-    FOR_UPDATE
+@Internal
+final class DeploymentDir {
+    final Path root;
+    final Path source;
+    final Path target;
+    final Path lib;
+
+    DeploymentDir() throws IOException {
+        this.root = Files.createTempDirectory("odi-arquillian-");
+
+        this.source = Files.createDirectory(root.resolve("source"));
+        this.target = Files.createDirectory(root.resolve("target"));
+        this.lib = Files.createDirectory(root.resolve("lib"));
+    }
 }

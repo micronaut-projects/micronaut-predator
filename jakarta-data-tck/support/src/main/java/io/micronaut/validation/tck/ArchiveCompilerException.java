@@ -13,28 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.micronaut.data.processor.visitors.finders;
+package io.micronaut.validation.tck;
 
 import io.micronaut.core.annotation.Internal;
 
 /**
- * Type of method match.
+ * The exception indicates internal compiler error.
  *
  * @author Denis Stepanov
- * @since 4.2.0
  */
 @Internal
-public enum QueryMatchId implements MethodNameParser.MatchId {
+public final class ArchiveCompilerException extends Exception {
+    public ArchiveCompilerException(String message) {
+        super(message);
+    }
 
-    PREFIX,
-    ALL,
-    ALL_OR_ONE,
-    LIMIT,
-    FIRST,
-    DISTINCT,
-    PROJECTION,
-    PREDICATE,
-    RETURNING,
-    ORDER,
-    FOR_UPDATE
+    public ArchiveCompilerException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
