@@ -13,9 +13,6 @@ jpa:
   default:
     properties:
       hibernate:
+        show_sql: true
         hbm2ddl:
           auto: update
-    compileTimeHibernateProxies: true
-    entity-scan:
-      enabled: true
-      packages: ee.jakarta.tck.data

@@ -27,6 +27,8 @@ import io.micronaut.core.type.Argument;
 import io.micronaut.core.util.ArgumentUtils;
 import io.micronaut.data.annotation.QueryHint;
 import io.micronaut.data.annotation.sql.Procedure;
+import io.micronaut.data.connection.ConnectionOperations;
+import io.micronaut.data.connection.ConnectionStatus;
 import io.micronaut.data.hibernate.conf.RequiresSyncHibernate;
 import io.micronaut.data.jpa.annotation.EntityGraph;
 import io.micronaut.data.jpa.operations.JpaRepositoryOperations;
@@ -55,6 +57,7 @@ import io.micronaut.data.runtime.operations.ExecutorAsyncOperations;
 import io.micronaut.data.runtime.operations.ExecutorAsyncOperationsSupportingCriteria;
 import io.micronaut.data.runtime.operations.ExecutorReactiveOperationsSupportingCriteria;
 import io.micronaut.transaction.TransactionOperations;
+import io.micronaut.transaction.TransactionStatus;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -65,6 +68,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.CriteriaUpdate;
+import org.hibernate.LockMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.graph.RootGraph;
@@ -98,6 +102,7 @@ final class HibernateJpaOperations extends AbstractHibernateOperations<Session, 
     implements JpaRepositoryOperations, AsyncCapableRepository, ReactiveCapableRepository, CriteriaRepositoryOperations {
 
     private final SessionFactory sessionFactory;
+    private final ConnectionOperations<Session> connectionOperations;
     private final TransactionOperations<Session> transactionOperations;
     private ExecutorAsyncOperations asyncOperations;
     private ExecutorService executorService;
@@ -106,6 +111,7 @@ final class HibernateJpaOperations extends AbstractHibernateOperations<Session, 
      * Default constructor.
      *
      * @param sessionFactory        The session factory
+     * @param connectionOperations  The connection operations
      * @param transactionOperations The transaction operations
      * @param executorService       The executor service for I/O tasks to use
      * @param runtimeEntityRegistry The runtime entity registry
@@ -113,6 +119,7 @@ final class HibernateJpaOperations extends AbstractHibernateOperations<Session, 
      */
     public HibernateJpaOperations(
         @NonNull @Parameter SessionFactory sessionFactory,
+        @NonNull @Parameter ConnectionOperations<Session> connectionOperations,
         @NonNull @Parameter TransactionOperations<Session> transactionOperations,
         @Named("io") @Nullable ExecutorService executorService,
         RuntimeEntityRegistry runtimeEntityRegistry,
@@ -120,6 +127,7 @@ final class HibernateJpaOperations extends AbstractHibernateOperations<Session, 
         super(runtimeEntityRegistry, dataConversionService);
         ArgumentUtils.requireNonNull("sessionFactory", sessionFactory);
         this.sessionFactory = sessionFactory;
+        this.connectionOperations = connectionOperations;
         this.transactionOperations = transactionOperations;
         this.executorService = executorService;
     }
@@ -555,23 +563,26 @@ final class HibernateJpaOperations extends AbstractHibernateOperations<Session, 
     @NonNull
     @Override
     public <T, R> Stream<R> findStream(@NonNull PreparedQuery<T, R> preparedQuery) {
-        return executeRead(session -> {
+        Optional<ConnectionStatus<Session>> connectionStatus = connectionOperations.findConnectionStatus();
+        if (connectionStatus.isPresent()) {
             StreamResultCollector<R> resultCollector = new StreamResultCollector<>();
-            collectFindAll(session, preparedQuery, resultCollector);
+            collectFindAll(connectionStatus.get().getConnection(), preparedQuery, resultCollector);
             return resultCollector.result;
+        }
+        // Lazy stream will not work without open session
+        return executeRead(session -> {
+            ListResultCollector<R> resultCollector = new ListResultCollector<>();
+            collectFindAll(session, preparedQuery, resultCollector);
+            return resultCollector.result.stream();
         });
     }
 
     private <R> R executeRead(Function<Session, R> callback) {
-        return transactionOperations.executeRead(status -> callback.apply(getCurrentSession()));
+        return transactionOperations.executeRead(status -> callback.apply(status.getConnection()));
     }
 
     private <R> R executeWrite(Function<Session, R> callback) {
-        return transactionOperations.executeWrite(status -> callback.apply(getCurrentSession()));
-    }
-
-    private Session getCurrentSession() {
-        return sessionFactory.getCurrentSession();
+        return transactionOperations.executeWrite(status -> callback.apply(sessionFactory.getCurrentSession()));
     }
 
     @NonNull

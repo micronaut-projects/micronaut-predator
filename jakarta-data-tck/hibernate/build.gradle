@@ -10,13 +10,6 @@ dependencies {
     testImplementation projects.micronautDataHibernateJpa
     testImplementation projects.micronautDataProcessor
 
-    testImplementation libs.jakarta.data.tck
-    testImplementation(libs.jakarta.data.tck) {
-        artifact {
-            classifier = "sources"
-        }
-    }
-
     testRuntimeOnly mnTest.junit.jupiter.engine
     testRuntimeOnly mnSql.micronaut.jdbc.tomcat
     testRuntimeOnly mnLogging.logback.classic

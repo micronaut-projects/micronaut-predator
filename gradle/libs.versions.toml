@@ -24,6 +24,7 @@ micronaut-coherence = "5.0.4"
 groovy = "4.0.25"
 
 managed-javax-persistence = "2.2"
+managed-jakarta-data = "1.0.1"
 
 spring-data = "3.4.2"
 
@@ -51,8 +52,6 @@ sonatype-scan = "3.0.0"
 # Dependency versions which are found in the platform BOM
 # meaning that they should be extracted into their own BOM
 kotlin-coroutines = "1.9.0"
-
-jakarta-data = "1.0.1"
 
 [libraries]
 micronaut-core = { module = 'io.micronaut:micronaut-core-bom', version.ref = 'micronaut' }
@@ -89,6 +88,7 @@ kotlin-coroutines-reactive = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect" }
 
 managed-javax-persistence-api = { module = "javax.persistence:javax.persistence-api", version.ref = "managed-javax-persistence" }
+managed-jakarta-data-api = { module = 'jakarta.data:jakarta.data-api', version.ref = "managed-jakarta-data" }
 
 # JPA
 
@@ -110,8 +110,7 @@ jupiter-api = { module = 'org.junit.jupiter:junit-jupiter-api' }
 groovy-sql = { module = "org.apache.groovy:groovy-sql" }
 groovy-dateutil = { module = "org.apache.groovy:groovy-dateutil", version.ref = "groovy" }
 
-jakarta-data-tck = { module = 'jakarta.data:jakarta.data-tck', version.ref = "jakarta-data" }
-jakarta-data-api = { module = 'jakarta.data:jakarta.data-api', version.ref = "jakarta-data" }
+jakarta-data-tck = { module = 'jakarta.data:jakarta.data-tck', version.ref = "managed-jakarta-data" }
 junit-platform-suite-engine = { module = "org.junit.platform:junit-platform-suite-engine" }
 
 # Benchmark

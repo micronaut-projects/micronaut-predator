@@ -16,6 +16,7 @@
 package io.micronaut.data.processor.visitors;
 
 import io.micronaut.core.annotation.NonNull;
+import io.micronaut.core.annotation.Nullable;
 import io.micronaut.data.model.query.builder.QueryBuilder;
 import io.micronaut.data.processor.model.SourcePersistentEntity;
 import io.micronaut.inject.ast.ClassElement;
@@ -38,7 +39,7 @@ import java.util.function.Function;
  */
 public class MethodMatchContext extends MatchContext {
 
-    @NonNull
+    @Nullable
     private final SourcePersistentEntity entity;
     private final Map<String, Element> parametersInRole;
     private final Function<ClassElement, SourcePersistentEntity> entityResolver;
@@ -60,7 +61,7 @@ public class MethodMatchContext extends MatchContext {
     MethodMatchContext(
             @NonNull QueryBuilder queryBuilder,
             @NonNull ClassElement repositoryClass,
-            @NonNull SourcePersistentEntity entity,
+            @Nullable SourcePersistentEntity entity,
             @NonNull VisitorContext visitorContext,
             @NonNull ClassElement returnType,
             @NonNull MethodElement methodElement,
@@ -97,7 +98,7 @@ public class MethodMatchContext extends MatchContext {
      * The root entity being queried.
      * @return The root entity
      */
-    @NonNull
+    @Nullable
     public SourcePersistentEntity getRootEntity() {
         return entity;
     }

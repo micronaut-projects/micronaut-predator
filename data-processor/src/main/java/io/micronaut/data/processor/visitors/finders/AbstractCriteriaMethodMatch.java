@@ -26,6 +26,7 @@ import io.micronaut.core.expressions.EvaluatedExpressionReference;
 import io.micronaut.core.naming.NameUtils;
 import io.micronaut.core.util.CollectionUtils;
 import io.micronaut.core.util.StringUtils;
+import io.micronaut.data.annotation.By;
 import io.micronaut.data.annotation.DataAnnotationUtils;
 import io.micronaut.data.annotation.Id;
 import io.micronaut.data.annotation.Join;
@@ -204,10 +205,15 @@ public abstract class AbstractCriteriaMethodMatch implements MethodMatcher.Metho
             List<Predicate> predicates = new ArrayList<>(queryParams.size());
             for (ParameterElement queryParam : queryParams) {
                 String paramName = queryParam.getName();
+                boolean isId = TypeRole.ID.equals(paramName);
+                if (queryParam.hasAnnotation(By.class)) {
+                    paramName = queryParam.stringValue(By.class).orElseThrow();
+                    isId = By.ID.equals(paramName);
+                }
                 PersistentPropertyPath propPath = rootEntity.getPropertyPath(rootEntity.getPath(paramName).orElse(paramName));
                 ParameterExpression<Object> param = ((SourcePersistentEntityCriteriaBuilder) cb).parameter(queryParam, propPath);
                 if (propPath == null) {
-                    if (TypeRole.ID.equals(paramName) && (rootEntity.hasIdentity() || rootEntity.hasCompositeIdentity())) {
+                    if (isId && (rootEntity.hasIdentity() || rootEntity.hasCompositeIdentity())) {
                         predicates.add(cb.equal(root.id(), param));
                     } else {
                         throw new MatchFailedException("Cannot query persistentEntity [" + rootEntity.getSimpleName() + "] on non-existent property: " + paramName);

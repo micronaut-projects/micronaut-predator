@@ -95,7 +95,7 @@ public class SaveMethodMatcher extends AbstractMethodMatcher {
         return saveProperties();
     }
 
-    private MethodMatch saveEntity(DataMethod.OperationType operationType) {
+    public static MethodMatch saveEntity(DataMethod.OperationType operationType) {
         return mc -> {
             ParameterElement[] parameters = mc.getParameters();
             ParameterElement entityParameter = Arrays.stream(parameters).filter(p -> TypeUtils.isEntity(p.getGenericType())).findFirst().orElse(null);

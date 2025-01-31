@@ -251,20 +251,11 @@ public class RepositoryTypeElementVisitor implements TypeElementVisitor<Reposito
         if (currentRepository == null || failing) {
             return;
         }
-        if (currentClass.hasStereotype("jakarta.data.repository.Repository")
-            && !currentClass.isAssignable("jakarta.data.repository.DataRepository")) {
-            return;
-        }
+//        if (currentClass.hasStereotype("jakarta.data.repository.Repository")
+//            && !currentClass.isAssignable("jakarta.data.repository.DataRepository")) {
+//            return;
+//        }
         if (element.hasStereotype("jakarta.data.repository.Find")) {
-            return;
-        }
-        if (element.hasStereotype("jakarta.data.repository.Insert")) {
-            return;
-        }
-        if (element.hasStereotype("jakarta.data.repository.Delete")) {
-            return;
-        }
-        if (element.hasStereotype("jakarta.data.repository.Update")) {
             return;
         }
         ClassElement genericReturnType = element.getGenericReturnType();
@@ -712,6 +703,7 @@ public class RepositoryTypeElementVisitor implements TypeElementVisitor<Reposito
         return query;
     }
 
+    @Nullable
     private SourcePersistentEntity resolvePersistentEntity(MethodElement element, Map<String, Element> parametersInRole) {
         ClassElement returnType = element.getGenericReturnType();
         SourcePersistentEntity entity = resolveEntityForCurrentClass();

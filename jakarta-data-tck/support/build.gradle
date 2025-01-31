@@ -11,7 +11,12 @@ dependencies {
     api mn.micronaut.context
 
     api libs.jakarta.data.tck
-    api libs.jakarta.data.api
+    api(libs.jakarta.data.tck) {
+        artifact {
+            classifier = "sources"
+        }
+    }
+    api libs.managed.jakarta.data.api
 
     api mnLogging.slf4j.jul.to.slf4j
     api("jakarta.servlet:jakarta.servlet-api:6.1.0")
@@ -21,9 +26,4 @@ dependencies {
 
     api mnTest.junit.jupiter.api
     api libs.junit.platform.suite.engine
-    api(libs.jakarta.data.tck) {
-        artifact {
-            classifier = "sources"
-        }
-    }
 }
