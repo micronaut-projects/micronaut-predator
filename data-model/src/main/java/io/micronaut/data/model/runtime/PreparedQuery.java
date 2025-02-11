@@ -17,6 +17,8 @@ package io.micronaut.data.model.runtime;
 
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.type.Argument;
+import io.micronaut.data.model.Limit;
+import io.micronaut.data.model.Sort;
 
 import java.util.Collections;
 import java.util.Map;
@@ -59,4 +61,14 @@ public interface PreparedQuery<E, R> extends PagedQuery<E>, StoredQuery<E, R>, P
      */
     @Override
     boolean isRawQuery();
+
+    @Override
+    default Sort getSort() {
+        return PagedQuery.super.getSort();
+    }
+
+    @Override
+    default Limit getQueryLimit() {
+        return PagedQuery.super.getQueryLimit();
+    }
 }

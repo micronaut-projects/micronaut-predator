@@ -240,8 +240,10 @@ public final class JpaQueryBuilder2 extends AbstractSqlLikeQueryBuilder2 {
     }
 
     @Override
-    protected void appendPaginationAndOrder(AnnotationMetadata annotationMetadata, SelectQueryDefinition definition, boolean pagination, QueryState queryState) {
-        appendOrder(annotationMetadata, definition.order(), queryState);
+    protected void appendLimitAndOrder(AnnotationMetadata annotationMetadata, SelectQueryDefinition definition, boolean appendLimit, boolean appendOrder, QueryState queryState) {
+        if (appendOrder) {
+            appendOrder(annotationMetadata, definition.order(), queryState);
+        }
     }
 
     @Override

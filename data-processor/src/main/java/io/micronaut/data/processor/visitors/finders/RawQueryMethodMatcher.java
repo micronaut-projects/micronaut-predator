@@ -338,7 +338,7 @@ public class RawQueryMethodMatcher implements MethodMatcher {
             .filter(p -> p.stringValue(Parameter.class).orElse(p.getName()).equals(name))
             .findFirst();
         if (element.isPresent()) {
-            PersistentPropertyPath propertyPath = matchContext.getRootEntity().getPropertyPath(name);
+            PersistentPropertyPath propertyPath = matchContext.getRootEntity() == null ? null : matchContext.getRootEntity().getPropertyPath(name);
             bindingContext = bindingContext
                 .incomingMethodParameterProperty(propertyPath)
                 .outgoingQueryParameterProperty(propertyPath);

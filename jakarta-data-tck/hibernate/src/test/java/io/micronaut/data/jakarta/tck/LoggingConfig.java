@@ -1,4 +1,4 @@
-package x;
+package io.micronaut.data.jakarta.tck;
 
 import org.slf4j.bridge.SLF4JBridgeHandler;
 

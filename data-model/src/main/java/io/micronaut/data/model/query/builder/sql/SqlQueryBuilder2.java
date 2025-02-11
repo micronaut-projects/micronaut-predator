@@ -1475,35 +1475,21 @@ public class SqlQueryBuilder2 extends AbstractSqlLikeQueryBuilder2 {
     }
 
     @Override
-    public QueryResult buildSelect(@NonNull AnnotationMetadata annotationMetadata, @NonNull SelectQueryDefinition definition) {
-        if (definition.parametersInRole().isEmpty()) {
-            // We can directly generate the query with limit and offset and omit the runtime modification
-            QueryState queryState = buildQuery(annotationMetadata, definition, new QueryBuilder(), true, null);
-
-            return QueryResult.of(
-                queryState.getFinalQuery(),
-                queryState.getQueryParts(),
-                queryState.getParameterBindings(),
-                queryState.getJoinPaths()
-            );
-        }
-
-        return super.buildSelect(annotationMetadata, definition);
-    }
-
-    @Override
-    protected void appendPaginationAndOrder(AnnotationMetadata annotationMetadata,
-                                            SelectQueryDefinition definition,
-                                            boolean pagination,
-                                            QueryState queryState) {
+    protected void appendLimitAndOrder(AnnotationMetadata annotationMetadata,
+                                       SelectQueryDefinition definition,
+                                       boolean appendLimit,
+                                       boolean appendOrder,
+                                       QueryState queryState) {
         Map<String, Integer> parametersInRole = definition.parametersInRole();
         if (parametersInRole.isEmpty()) {
             // Directly create a query with LIMIT and ORDER
-            appendOrder(annotationMetadata, definition, queryState);
-            if (pagination) {
+            if (appendOrder) {
+                appendOrder(annotationMetadata, definition, queryState);
+            }
+            if (appendLimit) {
                 appendLimitAndOffset(getDialect(), definition.limit(), definition.offset(), queryState.getQuery());
             }
-        } else if (parametersInRole.containsKey(TypeRole.SORT) || parametersInRole.containsKey(TypeRole.PAGEABLE) || parametersInRole.containsKey(TypeRole.PAGEABLE_REQUIRED)) {
+        } else if (parameterInRoleModifiesOrder(parametersInRole) || parametersInRole.containsKey(TypeRole.LIMIT)) {
             Map.Entry<String, Integer> e = parametersInRole.entrySet().iterator().next();
             queryState.pushParameter(new QueryParameterBinding() {
                 @Override

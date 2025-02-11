@@ -32,8 +32,8 @@ import io.micronaut.data.connection.ConnectionStatus;
 import io.micronaut.data.hibernate.conf.RequiresSyncHibernate;
 import io.micronaut.data.jpa.annotation.EntityGraph;
 import io.micronaut.data.jpa.operations.JpaRepositoryOperations;
+import io.micronaut.data.model.Limit;
 import io.micronaut.data.model.Page;
-import io.micronaut.data.model.Pageable;
 import io.micronaut.data.model.runtime.BatchOperation;
 import io.micronaut.data.model.runtime.DeleteBatchOperation;
 import io.micronaut.data.model.runtime.DeleteOperation;
@@ -57,7 +57,6 @@ import io.micronaut.data.runtime.operations.ExecutorAsyncOperations;
 import io.micronaut.data.runtime.operations.ExecutorAsyncOperationsSupportingCriteria;
 import io.micronaut.data.runtime.operations.ExecutorReactiveOperationsSupportingCriteria;
 import io.micronaut.transaction.TransactionOperations;
-import io.micronaut.transaction.TransactionStatus;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -68,15 +67,16 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.CriteriaUpdate;
-import org.hibernate.LockMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.StatelessSession;
 import org.hibernate.graph.RootGraph;
 import org.hibernate.procedure.ProcedureCall;
 import org.hibernate.query.CommonQueryContract;
 import org.hibernate.query.MutationQuery;
 import org.hibernate.query.Order;
 import org.hibernate.query.Query;
+import org.hibernate.query.QueryProducer;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
@@ -304,7 +304,7 @@ final class HibernateJpaOperations extends AbstractHibernateOperations<Session, 
         return executeRead(session -> Page.of(
             findPaged(session, pagedQuery),
             pagedQuery.getPageable(),
-            countOf(session, pagedQuery, pagedQuery.getPageable())
+            countOf(session, pagedQuery, pagedQuery.getQueryLimit())
         ));
     }
 
@@ -319,9 +319,9 @@ final class HibernateJpaOperations extends AbstractHibernateOperations<Session, 
         return collector.result;
     }
 
-    private <T> Long countOf(Session session, PagedQuery<T> pagedQuery, @Nullable Pageable pageable) {
+    private <T> Long countOf(Session session, PagedQuery<T> pagedQuery, Limit limit) {
         SingleResultCollector<Long> collector = new SingleResultCollector<>();
-        collectCountOf(sessionFactory.getCriteriaBuilder(), session, pagedQuery.getRootEntity(), pageable, collector);
+        collectCountOf(sessionFactory.getCriteriaBuilder(), session, pagedQuery.getRootEntity(), limit, collector);
         return collector.result;
     }
 
@@ -515,46 +515,70 @@ final class HibernateJpaOperations extends AbstractHibernateOperations<Session, 
     @Override
     public <T> int delete(@NonNull DeleteOperation<T> operation) {
         StoredQuery<T, ?> storedQuery = operation.getStoredQuery();
-        return executeWrite(session -> {
-            if (storedQuery != null) {
-                int numAffected = executeUpdate(session, storedQuery, operation.getInvocationContext(), operation.getEntity());
-                if (flushIfNecessary(session, operation.getAnnotationMetadata())) {
-                    session.remove(operation.getEntity());
+        Optional<ConnectionStatus<Session>> connectionStatus = connectionOperations.findConnectionStatus();
+        if (connectionStatus.isEmpty()) {
+            // Stateless session is enough to delete an entity
+            try (StatelessSession session = sessionFactory.openStatelessSession()) {
+                if (storedQuery != null) {
+                    return executeUpdate(session, storedQuery, operation.getInvocationContext(), operation.getEntity());
                 }
-                return numAffected;
+                session.delete(operation.getEntity());
             }
-            session.remove(operation.getEntity());
             return 1;
-        });
+        }
+        Session session = connectionStatus.get().getConnection();
+        if (storedQuery != null) {
+            int numAffected = executeUpdate(session, storedQuery, operation.getInvocationContext(), operation.getEntity());
+            if (flushIfNecessary(session, operation.getAnnotationMetadata())) {
+                session.remove(operation.getEntity());
+            }
+            return numAffected;
+        }
+        session.remove(operation.getEntity());
+        return 1;
     }
 
     @Override
     public <T> Optional<Number> deleteAll(@NonNull DeleteBatchOperation<T> operation) {
         StoredQuery<T, ?> storedQuery = operation.getStoredQuery();
-        Integer result = executeWrite(session -> {
+        Optional<ConnectionStatus<Session>> connectionStatus = connectionOperations.findConnectionStatus();
+        int deleted = 0;
+        if (connectionStatus.isEmpty()) {
+            // Stateless session is enough to delete entities
+            try (StatelessSession session = sessionFactory.openStatelessSession()) {
+                if (storedQuery != null) {
+                    for (T entity : operation) {
+                        deleted += executeUpdate(session, storedQuery, operation.getInvocationContext(), entity);
+                    }
+                } else {
+                    for (T entity : operation) {
+                        session.delete(entity);
+                        deleted++;
+                    }
+                }
+            }
+        } else {
+            Session session = connectionStatus.get().getConnection();
             if (storedQuery != null) {
-                int i = 0;
                 for (T entity : operation) {
-                    i += executeUpdate(session, storedQuery, operation.getInvocationContext(), entity);
+                    deleted += executeUpdate(session, storedQuery, operation.getInvocationContext(), entity);
                 }
                 if (flushIfNecessary(session, operation.getAnnotationMetadata())) {
                     for (T entity : operation) {
                         session.remove(entity);
                     }
                 }
-                return i;
+            } else {
+                for (T entity : operation) {
+                    session.remove(entity);
+                    deleted++;
+                }
             }
-            int i = 0;
-            for (T entity : operation) {
-                session.remove(entity);
-                i++;
-            }
-            return i;
-        });
-        return Optional.ofNullable(result);
+        }
+        return Optional.of(deleted);
     }
 
-    private <T> int executeUpdate(Session session, StoredQuery<T, ?> storedQuery, InvocationContext<?, ?> invocationContext, T entity) {
+    private <T> int executeUpdate(QueryProducer session, StoredQuery<T, ?> storedQuery, InvocationContext<?, ?> invocationContext, T entity) {
         MutationQuery query = session.createMutationQuery(storedQuery.getQuery());
         bindParameters(query, storedQuery, invocationContext, entity);
         return query.executeUpdate();

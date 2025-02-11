@@ -17,3 +17,4 @@ io.micronaut.data.processor.visitors.finders.ProcedureMethodMatcher
 io.micronaut.data.processor.visitors.finders.annotated.InsertAnnotatedMethodMatcher
 io.micronaut.data.processor.visitors.finders.annotated.UpdateAnnotatedMethodMatcher
 io.micronaut.data.processor.visitors.finders.annotated.DeleteAnnotatedMethodMatcher
+io.micronaut.data.processor.visitors.finders.annotated.FindAnnotatedMethodMatcher

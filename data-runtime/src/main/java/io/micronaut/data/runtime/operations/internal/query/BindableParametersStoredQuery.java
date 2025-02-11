@@ -36,7 +36,7 @@ import java.util.Map;
  * @since 3.8.0
  */
 @Internal
-public interface BindableParametersStoredQuery<E, R> extends StoredQuery<E, R>, PersistentEntityAwareQuery<E> {
+public interface BindableParametersStoredQuery<E, R> extends StoredQuery<E, R> {
 
     /**
      * Bind query parameters.

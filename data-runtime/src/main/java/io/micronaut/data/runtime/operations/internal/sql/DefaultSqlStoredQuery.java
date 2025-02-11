@@ -17,6 +17,7 @@ package io.micronaut.data.runtime.operations.internal.sql;
 
 import io.micronaut.core.annotation.AnnotationValue;
 import io.micronaut.core.annotation.Internal;
+import io.micronaut.core.annotation.Nullable;
 import io.micronaut.core.beans.BeanWrapper;
 import io.micronaut.core.type.Argument;
 import io.micronaut.data.annotation.QueryResult;
@@ -56,7 +57,7 @@ public class DefaultSqlStoredQuery<E, R> extends DefaultBindableParametersStored
      * @param runtimePersistentEntity The persistent entity
      * @param queryBuilder            The query builder
      */
-    public DefaultSqlStoredQuery(StoredQuery<E, R> storedQuery, RuntimePersistentEntity<E> runtimePersistentEntity, SqlQueryBuilder2 queryBuilder) {
+    public DefaultSqlStoredQuery(StoredQuery<E, R> storedQuery, @Nullable RuntimePersistentEntity<E> runtimePersistentEntity, SqlQueryBuilder2 queryBuilder) {
         super(storedQuery, runtimePersistentEntity);
         this.queryBuilder = queryBuilder;
         Objects.requireNonNull(storedQuery, "Query cannot be null");

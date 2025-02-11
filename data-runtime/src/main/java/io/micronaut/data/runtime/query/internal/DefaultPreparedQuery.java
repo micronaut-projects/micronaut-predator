@@ -18,12 +18,16 @@ package io.micronaut.data.runtime.query.internal;
 import io.micronaut.aop.MethodInvocationContext;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.NonNull;
+import io.micronaut.core.annotation.Nullable;
 import io.micronaut.core.convert.ConversionService;
 import io.micronaut.core.convert.value.ConvertibleValues;
 import io.micronaut.core.type.Argument;
 import io.micronaut.core.type.MutableArgumentValue;
+import io.micronaut.data.annotation.TypeRole;
 import io.micronaut.data.intercept.annotation.DataMethod;
+import io.micronaut.data.model.Limit;
 import io.micronaut.data.model.Pageable;
+import io.micronaut.data.model.Sort;
 import io.micronaut.data.model.runtime.DefaultStoredDataOperation;
 import io.micronaut.data.model.runtime.PreparedQuery;
 import io.micronaut.data.model.runtime.StoredQuery;
@@ -46,6 +50,8 @@ public final class DefaultPreparedQuery<E, RT> extends DefaultStoredDataOperatio
     private final boolean dto;
     private final MethodInvocationContext<?, ?> context;
     private final ConversionService conversionService;
+    @Nullable
+    private final Limit limit;
 
     /**
      * The default constructor.
@@ -68,9 +74,10 @@ public final class DefaultPreparedQuery<E, RT> extends DefaultStoredDataOperatio
         this.context = context;
         this.query = finalQuery;
         this.storedQuery = storedQuery;
-        this.pageable = pageable;
+        this.pageable = pageable.withSort(storedQuery.getSort().orders(pageable.getOrderBy()));
         this.dto = dtoProjection;
         this.conversionService = conversionService;
+        this.limit = getParameterInRole(TypeRole.LIMIT, Limit.class).orElse(null);
     }
 
     /**
@@ -173,4 +180,32 @@ public final class DefaultPreparedQuery<E, RT> extends DefaultStoredDataOperatio
         return context.getAttribute(name, type);
     }
 
+    @Override
+    public int getOffset() {
+        if (limit != null) {
+            return (int) limit.offset();
+        }
+        return DelegateStoredQuery.super.getOffset();
+    }
+
+    @Override
+    public int getLimit() {
+        if (limit != null) {
+            return limit.maxResults();
+        }
+        return DelegateStoredQuery.super.getLimit();
+    }
+
+    @Override
+    public Sort getSort() {
+        return pageable.getSort();
+    }
+
+    @Override
+    public Limit getQueryLimit() {
+        if (limit != null) {
+            return limit;
+        }
+        return pageable.getLimit();
+    }
 }

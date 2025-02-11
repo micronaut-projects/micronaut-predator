@@ -407,10 +407,10 @@ public abstract class AbstractQueryInterceptor<T, R> implements DataInterceptor<
             if (limit > 0) {
                 pageable = Pageable.from(0, limit);
             }
-            Sort sort = getParameterInRole(context, TypeRole.SORT, Sort.class).orElse(null);
-            if (sort != null) {
-                return pageable.orders(sort.getOrderBy());
-            }
+        }
+        Sort sort = getParameterInRole(context, TypeRole.SORT, Sort.class).orElse(null);
+        if (sort != null && pageable != sort) {
+            return pageable.orders(sort.getOrderBy());
         }
         return pageable;
     }

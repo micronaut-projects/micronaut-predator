@@ -87,6 +87,11 @@ public @interface DataMethodQuery {
     String META_MEMBER_LIMIT = "limit";
 
     /**
+     * The parameter that holds the order value.
+     */
+    String META_MEMBER_SORT = "sorts";
+
+    /**
      * Does the query result in a DTO object.
      */
     String META_MEMBER_DTO = "dto";

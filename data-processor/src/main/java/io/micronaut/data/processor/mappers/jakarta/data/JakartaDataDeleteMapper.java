@@ -15,8 +15,10 @@
  */
 package io.micronaut.data.processor.mappers.jakarta.data;
 
+import io.micronaut.core.annotation.AnnotationClassValue;
 import io.micronaut.core.annotation.AnnotationValue;
 import io.micronaut.core.annotation.NonNull;
+import io.micronaut.data.annotation.ConvertException;
 import io.micronaut.data.annotation.Delete;
 import io.micronaut.inject.annotation.NamedAnnotationMapper;
 import io.micronaut.inject.visitor.VisitorContext;
@@ -41,7 +43,10 @@ public final class JakartaDataDeleteMapper implements NamedAnnotationMapper {
     @Override
     public List<AnnotationValue<?>> map(AnnotationValue<Annotation> annotation, VisitorContext visitorContext) {
         return List.of(
-            AnnotationValue.builder(Delete.class).build()
+            AnnotationValue.builder(Delete.class).build(),
+            AnnotationValue.builder(ConvertException.class)
+                .values(new AnnotationClassValue<>("io.micronaut.data.runtime.support.exceptions.jakarta.data.JakartaDataDeleteExceptionConverter"))
+                .build()
         );
     }
 }

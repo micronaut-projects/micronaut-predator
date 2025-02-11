@@ -185,8 +185,8 @@ public abstract class AbstractSqlRepositoryOperations<RS, PS, Exc extends Except
     public <E, R> StoredQuery<E, R> decorate(MethodInvocationContext<?, ?> context, StoredQuery<E, R> storedQuery) {
         Class<?> repositoryType = context.getTarget().getClass();
         SqlQueryBuilder2 queryBuilder = findQueryBuilder(repositoryType);
-        RuntimePersistentEntity<E> runtimePersistentEntity = runtimeEntityRegistry.getEntity(storedQuery.getRootEntity());
-        return new DefaultSqlStoredQuery<>(storedQuery, runtimePersistentEntity, queryBuilder);
+        Class<E> rootEntity = storedQuery.getRootEntity();
+        return new DefaultSqlStoredQuery<>(storedQuery, rootEntity == Object.class ? null : runtimeEntityRegistry.getEntity(rootEntity), queryBuilder);
     }
 
     /**

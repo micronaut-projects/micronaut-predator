@@ -192,24 +192,36 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
     @Override
     public QueryResult buildSelect(AnnotationMetadata annotationMetadata, SelectQueryDefinition definition) {
         QueryBuilder queryBuilder = new QueryBuilder();
-        QueryState queryState = buildQuery(annotationMetadata, definition, queryBuilder, false, null);
+        boolean appendOrder = !parameterInRoleModifiesOrder(definition.parametersInRole());
+        boolean appendLimit = !parameterInRoleModifiesOrder(definition.parametersInRole());
+        QueryState queryState = buildQuery(annotationMetadata, definition, queryBuilder, appendLimit, appendOrder, null);
 
         return QueryResult.of(
             queryState.getFinalQuery(),
             queryState.getQueryParts(),
             queryState.getParameterBindings(),
-            definition.limit(),
-            definition.offset(),
+            appendLimit ? -1 : definition.limit(),
+            appendLimit ? 0 : definition.offset(),
+            appendOrder ? Sort.UNSORTED : definition.asSort(),
             queryState.getJoinPaths()
         );
     }
 
+    protected static boolean parameterInRoleModifiesOrder(Map<String, Integer> parametersInRole) {
+        return parametersInRole.containsKey(TypeRole.SORT) || parametersInRole.containsKey(TypeRole.PAGEABLE) || parametersInRole.containsKey(TypeRole.PAGEABLE_REQUIRED);
+    }
+
+    protected static boolean parameterInRoleModifiesLimit(Map<String, Integer> parametersInRole) {
+        return parametersInRole.containsKey(TypeRole.PAGEABLE) || parametersInRole.containsKey(TypeRole.PAGEABLE_REQUIRED) || parametersInRole.containsKey(TypeRole.LIMIT);
+    }
+
     @NonNull
     protected final QueryState buildQuery(AnnotationMetadata annotationMetadata,
-                                    SelectQueryDefinition definition,
-                                    QueryBuilder queryBuilder,
-                                    boolean supportsQueryPagination,
-                                    @Nullable String tableAliasPrefix) {
+                                          SelectQueryDefinition definition,
+                                          QueryBuilder queryBuilder,
+                                          boolean appendLimit,
+                                          boolean appendOrder,
+                                          @Nullable String tableAliasPrefix) {
         QueryState queryState = new QueryState(queryBuilder, definition, true, true, tableAliasPrefix);
 
         Predicate predicate = definition.predicate();
@@ -232,15 +244,16 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
         if (predicate != null || annotationMetadata.hasStereotype(WhereSpecifications.class) || queryState.getEntity().getAnnotationMetadata().hasStereotype(WhereSpecifications.class)) {
             buildWhereClause(annotationMetadata, predicate, queryState);
         }
-        appendPaginationAndOrder(annotationMetadata, definition, supportsQueryPagination, queryState);
+        appendLimitAndOrder(annotationMetadata, definition, appendLimit, appendOrder, queryState);
         appendForUpdate(QueryPosition.END_OF_QUERY, definition, queryState.getQuery());
         return queryState;
     }
 
-    protected void appendPaginationAndOrder(AnnotationMetadata annotationMetadata,
-                                            SelectQueryDefinition definition,
-                                            boolean pagination,
-                                            QueryState queryState) {
+    protected void appendLimitAndOrder(AnnotationMetadata annotationMetadata,
+                                       SelectQueryDefinition definition,
+                                       boolean appendLimit,
+                                       boolean appendOrder,
+                                       QueryState queryState) {
     }
 
     /**
@@ -2302,7 +2315,7 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
                     if (requiresBrackets) {
                         query.append("(");
                     }
-                    buildQuery(AnnotationMetadata.EMPTY_METADATA, selectQueryDefinition, queryState.queryBuilder, false, outerAlias);
+                    buildQuery(AnnotationMetadata.EMPTY_METADATA, selectQueryDefinition, queryState.queryBuilder, false, true, outerAlias);
                     if (requiresBrackets) {
                         query.append(")");
                     }

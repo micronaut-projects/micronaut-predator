@@ -113,6 +113,15 @@ public interface Pageable extends Sort {
     }
 
     /**
+     * @return The limit
+     * @see 4.12
+     */
+    @NonNull
+    default Limit getLimit() {
+        return Limit.of(getSize(), getOffset());
+    }
+
+    /**
      * @return The next pageable.
      */
     @NonNull
@@ -185,11 +194,7 @@ public interface Pageable extends Sort {
     @NonNull
     @Override
     default Pageable orders(@NonNull List<Order> orders) {
-        Sort newSort = getSort();
-        for (Order order : orders) {
-            newSort = newSort.order(order);
-        }
-        return Pageable.from(getNumber(), getSize(), newSort);
+        return Pageable.from(getNumber(), getSize(), getSort().orders(orders));
     }
 
     /**

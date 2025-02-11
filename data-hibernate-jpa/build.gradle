@@ -15,6 +15,8 @@ dependencies {
     api projects.micronautDataJpa
     api mnSql.hibernate.core
 
+    compileOnly libs.managed.jakarta.data.api
+
     implementation (mnSql.micronaut.hibernate.jpa) {
         exclude group:'org.javassist', module:'javassist'
         exclude group: 'io.micronaut.data'
@@ -40,6 +42,7 @@ dependencies {
 
     testRuntimeOnly(libs.jupiter.engine)
     testImplementation(mnTest.micronaut.test.junit5)
+    testImplementation(libs.managed.jakarta.data.api)
 }
 
 micronaut {

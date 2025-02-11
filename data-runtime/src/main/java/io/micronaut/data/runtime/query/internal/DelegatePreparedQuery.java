@@ -19,7 +19,9 @@ import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.convert.value.ConvertibleValues;
 import io.micronaut.core.type.Argument;
+import io.micronaut.data.model.Limit;
 import io.micronaut.data.model.Pageable;
+import io.micronaut.data.model.Sort;
 import io.micronaut.data.model.runtime.PreparedQuery;
 import io.micronaut.data.model.runtime.StoredQuery;
 
@@ -117,4 +119,13 @@ public interface DelegatePreparedQuery<E, R> extends PreparedQuery<E, R>, Delega
         return getPreparedQueryDelegate().getAttribute(name, type);
     }
 
+    @Override
+    default Sort getSort() {
+        return getPreparedQueryDelegate().getSort();
+    }
+
+    @Override
+    default Limit getQueryLimit() {
+        return getPreparedQueryDelegate().getQueryLimit();
+    }
 }

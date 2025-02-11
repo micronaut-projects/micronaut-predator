@@ -19,9 +19,10 @@ import io.micronaut.aop.InvocationContext;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.data.annotation.TypeRole;
 import io.micronaut.data.exceptions.DataAccessException;
+import io.micronaut.data.model.Limit;
+import io.micronaut.data.model.Sort;
 import io.micronaut.data.model.runtime.PreparedQuery;
 import io.micronaut.data.model.runtime.QueryParameterBinding;
-import io.micronaut.data.model.runtime.RuntimePersistentEntity;
 import io.micronaut.data.model.runtime.StoredQuery;
 import io.micronaut.data.runtime.query.internal.DefaultPreparedQuery;
 import io.micronaut.data.runtime.query.internal.DelegatePreparedQuery;
@@ -70,11 +71,6 @@ public class DefaultBindableParametersPreparedQuery<E, R> implements BindablePar
     }
 
     @Override
-    public RuntimePersistentEntity<E> getPersistentEntity() {
-        return storedQuery.getPersistentEntity();
-    }
-
-    @Override
     public PreparedQuery<E, R> getPreparedQueryDelegate() {
         return preparedQuery;
     }
@@ -98,5 +94,15 @@ public class DefaultBindableParametersPreparedQuery<E, R> implements BindablePar
         } else {
             BindableParametersPreparedQuery.super.bindParameters(binder);
         }
+    }
+
+    @Override
+    public Sort getSort() {
+        return preparedQuery.getSort();
+    }
+
+    @Override
+    public Limit getQueryLimit() {
+        return preparedQuery.getQueryLimit();
     }
 }

@@ -210,13 +210,18 @@ public abstract class AbstractCriteriaMethodMatch implements MethodMatcher.Metho
                     paramName = queryParam.stringValue(By.class).orElseThrow();
                     isId = By.ID.equals(paramName);
                 }
-                PersistentPropertyPath propPath = rootEntity.getPropertyPath(rootEntity.getPath(paramName).orElse(paramName));
+                PersistentPropertyPath propPath;
+                if (isId && rootEntity.hasIdentity()) {
+                    propPath = new PersistentPropertyPath(rootEntity.getIdentity());
+                } else {
+                    propPath = rootEntity.getPropertyPath(rootEntity.getPath(paramName).orElse(paramName));
+                }
                 ParameterExpression<Object> param = ((SourcePersistentEntityCriteriaBuilder) cb).parameter(queryParam, propPath);
                 if (propPath == null) {
                     if (isId && (rootEntity.hasIdentity() || rootEntity.hasCompositeIdentity())) {
                         predicates.add(cb.equal(root.id(), param));
                     } else {
-                        throw new MatchFailedException("Cannot query persistentEntity [" + rootEntity.getSimpleName() + "] on non-existent property: " + paramName);
+                        throw new MatchFailedException("Cannot query entity [" + rootEntity.getSimpleName() + "] on non-existent property: " + paramName);
                     }
                 } else {
                     PersistentProperty property = propPath.getProperty();
@@ -534,7 +539,7 @@ public abstract class AbstractCriteriaMethodMatch implements MethodMatcher.Metho
         if (property != null) {
             return property;
         }
-        throw new MatchFailedException("Cannot query entity [" + root.getPersistentEntity().getSimpleName() + "] on non-existent property: " + propertyName);
+        throw new MatchFailedException("Cannot query entity [" + root.getPersistentEntity().getSimpleName() + "] on non-existent property: " + propertyName + " " + root.getPersistentEntity().getPersistentProperties().stream().map(PersistentProperty::getName).toList());
     }
 
     @Nullable

@@ -20,6 +20,7 @@ import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.data.model.Pageable;
 import io.micronaut.data.model.runtime.QueryResultInfo;
+import io.micronaut.data.model.runtime.RuntimePersistentEntity;
 import io.micronaut.data.runtime.operations.internal.query.BindableParametersPreparedQuery;
 
 /**
@@ -64,4 +65,10 @@ public interface SqlPreparedQuery<E, R> extends BindableParametersPreparedQuery<
     @Nullable
     @SuppressWarnings("java:S1452")
     InvocationContext<?, ?> getInvocationContext();
+
+    /**
+     * @return The persistent entity
+     */
+    @Nullable
+    RuntimePersistentEntity<E> getPersistentEntity();
 }

@@ -73,3 +73,4 @@ io.micronaut.data.processor.mappers.jakarta.data.JakartaDataInsertMapper
 io.micronaut.data.processor.mappers.jakarta.data.JakartaDataUpdateMapper
 io.micronaut.data.processor.mappers.jakarta.data.JakartaDataDeleteMapper
 io.micronaut.data.processor.mappers.jakarta.data.JakartaDataByMapper
+io.micronaut.data.processor.mappers.jakarta.data.JakartaDataFindMapper

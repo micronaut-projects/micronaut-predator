@@ -79,7 +79,7 @@ class DefaultPage<T> extends DefaultSlice<T> implements Page<T> {
         if (!(o instanceof DefaultPage<?> that)) {
             return false;
         }
-        return totalSize == that.totalSize && super.equals(o);
+        return Objects.equals(totalSize, that.totalSize) && super.equals(o);
     }
 
     @Override

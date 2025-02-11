@@ -25,6 +25,7 @@ import io.micronaut.core.type.Argument;
 import io.micronaut.core.util.CollectionUtils;
 import io.micronaut.data.model.DataType;
 import io.micronaut.data.model.JsonDataType;
+import io.micronaut.data.model.PersistentEntity;
 import io.micronaut.data.model.PersistentPropertyPath;
 import io.micronaut.data.model.Sort;
 import io.micronaut.data.model.runtime.DelegatingQueryParameterBinding;
@@ -55,20 +56,20 @@ import java.util.Objects;
 public class DefaultBindableParametersStoredQuery<E, R> implements BindableParametersStoredQuery<E, R>, DelegateStoredQuery<E, R> {
 
     private final StoredQuery<E, R> storedQuery;
+    @Nullable
     private final RuntimePersistentEntity<E> runtimePersistentEntity;
 
     /**
      * @param storedQuery             The stored query
      * @param runtimePersistentEntity The persistent entity
      */
-    public DefaultBindableParametersStoredQuery(StoredQuery<E, R> storedQuery, RuntimePersistentEntity<E> runtimePersistentEntity) {
+    public DefaultBindableParametersStoredQuery(StoredQuery<E, R> storedQuery, @Nullable RuntimePersistentEntity<E> runtimePersistentEntity) {
         this.storedQuery = storedQuery;
         this.runtimePersistentEntity = runtimePersistentEntity;
         Objects.requireNonNull(storedQuery, "Query cannot be null");
     }
 
-    @Override
-    public RuntimePersistentEntity<E> getPersistentEntity() {
+    public final RuntimePersistentEntity<E> getPersistentEntity() {
         return runtimePersistentEntity;
     }
 
@@ -95,7 +96,6 @@ public class DefaultBindableParametersStoredQuery<E, R> implements BindableParam
                                        @Nullable E entity,
                                        @Nullable Map<QueryParameterBinding, Object> previousValues,
                                        QueryParameterBinding binding) {
-        RuntimePersistentEntity<E> persistentEntity = getPersistentEntity();
         Class<?> parameterConverter = binding.getParameterConverterClass();
         Object value = binding.getValue();
         RuntimePersistentProperty<Object> persistentProperty = null;
@@ -121,7 +121,7 @@ public class DefaultBindableParametersStoredQuery<E, R> implements BindableParam
                 value = resolveParameterValue(binding, invocationContext.getParameterValues());
                 argument = invocationContext.getArguments()[binding.getParameterIndex()];
             } else if (binding.isAutoPopulated()) {
-                PersistentPropertyPath pp = getRequiredPropertyPath(binding, persistentEntity);
+                PersistentPropertyPath pp = getRequiredPropertyPath(binding, runtimePersistentEntity);
                 persistentProperty = (RuntimePersistentProperty<Object>) pp.getProperty();
                 if (binding.isRequiresPreviousPopulatedValue()) {
                     if (previousValues != null) {
@@ -149,7 +149,7 @@ public class DefaultBindableParametersStoredQuery<E, R> implements BindableParam
                 if (isJsonEntity() && binding.getDataType() == DataType.JSON) {
                     value = entity;
                 } else {
-                    PersistentPropertyPath pp = getRequiredPropertyPath(binding, persistentEntity);
+                    PersistentPropertyPath pp = getRequiredPropertyPath(binding, runtimePersistentEntity);
                     value = pp.getPropertyValue(entity);
                     persistentProperty = (RuntimePersistentProperty<Object>) pp.getProperty();
                 }
@@ -168,7 +168,8 @@ public class DefaultBindableParametersStoredQuery<E, R> implements BindableParam
                     // Otherwise, value got from binding object meaning it was set to null, so we can at least check
                     // since value is null whether the property is nullable
                     String[] propertyPath = binding.getPropertyPath();
-                    PersistentPropertyPath pp = persistentEntity.getPropertyPath(propertyPath);
+                    requireInvocationContext(runtimePersistentEntity);
+                    PersistentPropertyPath pp = runtimePersistentEntity.getPropertyPath(propertyPath);
                     if (pp != null && pp.getProperty().isRequired()) {
                         throw new IllegalStateException("Field [" + pp.getProperty().getName() + "] does not allow null value.");
                     }
@@ -276,6 +277,7 @@ public class DefaultBindableParametersStoredQuery<E, R> implements BindableParam
     }
 
     protected final <T> PersistentPropertyPath getRequiredPropertyPath(QueryParameterBinding queryParameterBinding, RuntimePersistentEntity<T> persistentEntity) {
+        requireInvocationContext(runtimePersistentEntity);
         String[] propertyPath = queryParameterBinding.getRequiredPropertyPath();
         PersistentPropertyPath pp = persistentEntity.getPropertyPath(propertyPath);
         if (pp == null) {
@@ -287,6 +289,12 @@ public class DefaultBindableParametersStoredQuery<E, R> implements BindableParam
     protected final void requireInvocationContext(InvocationContext<?, ?> invocationContext) {
         if (invocationContext == null) {
             throw new IllegalStateException("Invocation context is required!");
+        }
+    }
+
+    protected final void requireInvocationContext(PersistentEntity persistentEntity) {
+        if (persistentEntity == null) {
+            throw new IllegalStateException("Persistent entity context is required!");
         }
     }
 

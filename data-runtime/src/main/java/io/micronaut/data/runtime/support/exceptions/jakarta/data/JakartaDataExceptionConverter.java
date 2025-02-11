@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 original authors
+ * Copyright 2017-2025 original authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.micronaut.data.runtime.operations.internal.query;
+package io.micronaut.data.runtime.support.exceptions.jakarta.data;
 
 import io.micronaut.core.annotation.Internal;
-import io.micronaut.data.model.runtime.RuntimePersistentEntity;
+import io.micronaut.data.exceptions.ExceptionConverter;
 
 /**
- * The {@link io.micronaut.data.model.PersistentEntity} aware query.
+ * The Jakarta Data exception converter.
  *
- * @param <E> The entity type
  * @author Denis Stepanov
- * @since 3.8.0
+ * @since 4.12
  */
 @Internal
-public interface PersistentEntityAwareQuery<E> {
-
-    /**
-     * @return The persistent entity
-     */
-    RuntimePersistentEntity<E> getPersistentEntity();
+public interface JakartaDataExceptionConverter extends ExceptionConverter {
 }

@@ -18,7 +18,6 @@ package io.micronaut.data.processor.mappers.jakarta.data;
 import io.micronaut.context.annotation.Parameter;
 import io.micronaut.core.annotation.AnnotationValue;
 import io.micronaut.core.annotation.NonNull;
-import io.micronaut.data.annotation.Query;
 import io.micronaut.inject.annotation.NamedAnnotationMapper;
 import io.micronaut.inject.visitor.VisitorContext;
 

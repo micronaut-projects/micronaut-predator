@@ -30,13 +30,17 @@ import io.micronaut.core.order.OrderUtil;
 import io.micronaut.core.reflect.ClassUtils;
 import io.micronaut.core.util.CollectionUtils;
 import io.micronaut.core.util.StringUtils;
+import io.micronaut.data.annotation.Delete;
 import io.micronaut.data.annotation.EntityRepresentation;
+import io.micronaut.data.annotation.Insert;
 import io.micronaut.data.annotation.Join;
+import io.micronaut.data.annotation.MappedEntity;
 import io.micronaut.data.annotation.ParameterExpression;
 import io.micronaut.data.annotation.Query;
 import io.micronaut.data.annotation.Repository;
 import io.micronaut.data.annotation.RepositoryConfiguration;
 import io.micronaut.data.annotation.TypeRole;
+import io.micronaut.data.annotation.Update;
 import io.micronaut.data.annotation.sql.Procedure;
 import io.micronaut.data.intercept.annotation.DataMethod;
 import io.micronaut.data.intercept.annotation.DataMethodQuery;
@@ -44,6 +48,7 @@ import io.micronaut.data.intercept.annotation.DataMethodQueryParameter;
 import io.micronaut.data.model.CursoredPage;
 import io.micronaut.data.model.DataType;
 import io.micronaut.data.model.JsonDataType;
+import io.micronaut.data.model.Limit;
 import io.micronaut.data.model.Page;
 import io.micronaut.data.model.Pageable;
 import io.micronaut.data.model.PersistentProperty;
@@ -72,7 +77,6 @@ import io.micronaut.inject.ast.Element;
 import io.micronaut.inject.ast.MethodElement;
 import io.micronaut.inject.ast.ParameterElement;
 import io.micronaut.inject.ast.TypedElement;
-import io.micronaut.inject.processing.ProcessingException;
 import io.micronaut.inject.visitor.TypeElementVisitor;
 import io.micronaut.inject.visitor.VisitorContext;
 
@@ -133,8 +137,13 @@ public class RepositoryTypeElementVisitor implements TypeElementVisitor<Reposito
         typeRoles.put(CursoredPage.class.getName(), TypeRole.CURSORED_PAGE);
         typeRoles.put(Page.class.getName(), TypeRole.PAGE);
         typeRoles.put(Slice.class.getName(), TypeRole.SLICE);
+        typeRoles.put(Limit.class.getName(), TypeRole.LIMIT);
+        typeRoles.put("jakarta.data.page.Page", TypeRole.PAGE);
+        typeRoles.put("jakarta.data.page.CursoredPage", TypeRole.CURSORED_PAGE);
         typeRoles.put("jakarta.data.page.PageRequest", TypeRole.PAGEABLE);
         typeRoles.put("jakarta.data.Order", TypeRole.SORT);
+        typeRoles.put("jakarta.data.Sort", TypeRole.SORT);
+        typeRoles.put("jakarta.data.Limit", TypeRole.LIMIT);
     }
 
     @NonNull
@@ -251,27 +260,10 @@ public class RepositoryTypeElementVisitor implements TypeElementVisitor<Reposito
         if (currentRepository == null || failing) {
             return;
         }
-//        if (currentClass.hasStereotype("jakarta.data.repository.Repository")
-//            && !currentClass.isAssignable("jakarta.data.repository.DataRepository")) {
-//            return;
-//        }
-        if (element.hasStereotype("jakarta.data.repository.Find")) {
-            return;
-        }
         ClassElement genericReturnType = element.getGenericReturnType();
         if (queryEncoder != null && currentClass != null && element.isAbstract() && !element.isStatic() && methodsMatchers != null) {
             ParameterElement[] parameters = element.getParameters();
-            Map<String, Element> parametersInRole = new HashMap<>(2);
-            for (ParameterElement parameter : parameters) {
-                ClassElement type = parameter.getType();
-                this.typeRoles.entrySet().stream().filter(entry -> {
-                        String roleType = entry.getKey();
-                        return type.isAssignable(roleType);
-                    }
-                ).forEach(entry ->
-                    parametersInRole.put(entry.getValue(), parameter)
-                );
-            }
+            Map<String, Element> parametersInRole = getParametersInRole(parameters);
 
             if (element.hasDeclaredAnnotation(DataMethod.class)) {
                 // explicitly handled
@@ -291,7 +283,10 @@ public class RepositoryTypeElementVisitor implements TypeElementVisitor<Reposito
                 findInterceptors);
 
             try {
-                SourcePersistentEntity entity = resolvePersistentEntity(element, parametersInRole);
+                List<ParameterElement> parametersNotInRole = Arrays.stream(parameters)
+                    .filter(p -> !parametersInRole.containsValue(p))
+                    .toList();
+                SourcePersistentEntity entity = resolvePersistentEntity(element, parametersInRole, parametersNotInRole);
                 MethodMatchContext methodMatchContext = new MethodMatchContext(
                     queryEncoder,
                     currentRepository,
@@ -337,6 +332,32 @@ public class RepositoryTypeElementVisitor implements TypeElementVisitor<Reposito
         }
     }
 
+    private Map<String, Element> getParametersInRole(ParameterElement[] parameters) {
+        Map<String, Element> parametersInRole = new HashMap<>(2);
+        for (ParameterElement parameter : parameters) {
+            ClassElement type = parameter.getType();
+            this.typeRoles.entrySet().stream().filter(entry -> {
+                    String roleType = entry.getKey();
+                    return type.isAssignable(roleType);
+                }
+            ).forEach(entry ->
+                parametersInRole.put(entry.getValue(), parameter)
+            );
+        }
+        return parametersInRole;
+    }
+
+    private List<ParameterElement> getParametersNotInRole(ParameterElement[] parameters) {
+        List<ParameterElement> parametersNotInRole = new ArrayList<>();
+        for (ParameterElement parameter : parameters) {
+            ClassElement type = parameter.getType();
+            if (this.typeRoles.keySet().stream().noneMatch(type::isAssignable)) {
+                parametersNotInRole.add(parameter);
+            }
+        }
+        return parametersNotInRole;
+    }
+
     private void processMethodInfo(MethodMatchContext methodMatchContext, MethodMatchInfo methodInfo) {
         QueryBuilder queryEncoder = methodMatchContext.getQueryBuilder();
         MethodElement element = methodMatchContext.getMethodElement();
@@ -370,7 +391,7 @@ public class RepositoryTypeElementVisitor implements TypeElementVisitor<Reposito
                 ) {
                     QueryResult countQueryResult = methodInfo.getCountQueryResult();
                     if (countQueryResult == null) {
-                        throw new ProcessingException(element, "Query returns a Page and does not specify a 'countQuery' member.");
+//                        throw new ProcessingException(element, "Query returns a Page and does not specify a 'countQuery' member.");
                     } else {
                         element.annotate(
                             Query.class,
@@ -426,7 +447,9 @@ public class RepositoryTypeElementVisitor implements TypeElementVisitor<Reposito
                 throw new MatchFailedException("Unable to implement Repository method: " + currentRepository.getSimpleName() + "." + element.getName() + "(..). No possible runtime implementations found.", element);
             }
             annotationBuilder.member(DataMethod.META_MEMBER_INTERCEPTOR, new AnnotationClassValue<>(runtimeInterceptor.getName()));
-            annotationBuilder.member(DataMethod.META_MEMBER_ROOT_ENTITY, new AnnotationClassValue<>(methodMatchContext.getRootEntity().getName()));
+            if (methodMatchContext.getRootEntity() != null) {
+                annotationBuilder.member(DataMethod.META_MEMBER_ROOT_ENTITY, new AnnotationClassValue<>(methodMatchContext.getRootEntity().getName()));
+            }
 
             if (methodInfo.isDto()) {
                 annotationBuilder.member(DataMethod.META_MEMBER_DTO, true);
@@ -484,31 +507,42 @@ public class RepositoryTypeElementVisitor implements TypeElementVisitor<Reposito
                                     boolean encodeEntityParameters) {
 
         if (methodMatchContext.getMethodElement().hasAnnotation(Procedure.class)) {
-            annotationBuilder.member(DataMethod.META_MEMBER_PROCEDURE, true);
+            annotationBuilder.member(DataMethodQuery.META_MEMBER_PROCEDURE, true);
         }
 
-        annotationBuilder.member(DataMethod.META_MEMBER_OPERATION_TYPE, operationType);
+        annotationBuilder.member(DataMethodQuery.META_MEMBER_OPERATION_TYPE, operationType);
 
         if (resultType != null) {
-            annotationBuilder.member(DataMethod.META_MEMBER_RESULT_TYPE, new AnnotationClassValue<>(resultType.getName()));
+            annotationBuilder.member(DataMethodQuery.META_MEMBER_RESULT_TYPE, new AnnotationClassValue<>(resultType.getName()));
             ClassElement type = resultType.getType();
             if (!TypeUtils.isVoid(type)) {
-                annotationBuilder.member(DataMethod.META_MEMBER_RESULT_DATA_TYPE, TypeUtils.resolveDataType(type, dataTypes));
+                annotationBuilder.member(DataMethodQuery.META_MEMBER_RESULT_DATA_TYPE, TypeUtils.resolveDataType(type, dataTypes));
             }
         }
 
         if (queryResult != null) {
             if (parameterBinding.stream().anyMatch(QueryParameterBinding::isExpandable)) {
-                annotationBuilder.member(DataMethod.META_MEMBER_EXPANDABLE_QUERY, queryResult.getQueryParts().toArray(new String[0]));
+                annotationBuilder.member(DataMethodQuery.META_MEMBER_EXPANDABLE_QUERY, queryResult.getQueryParts().toArray(new String[0]));
             }
 
             int max = queryResult.getMax();
             if (max > -1) {
-                annotationBuilder.member(DataMethod.META_MEMBER_LIMIT, max);
+                annotationBuilder.member(DataMethodQuery.META_MEMBER_LIMIT, max);
             }
             long offset = queryResult.getOffset();
             if (offset > 0) {
-                annotationBuilder.member(DataMethod.META_MEMBER_OFFSET, offset);
+                annotationBuilder.member(DataMethodQuery.META_MEMBER_OFFSET, offset);
+            }
+            Sort sort = queryResult.getSort();
+            if (sort.isSorted()) {
+                annotationBuilder.member(DataMethodQuery.META_MEMBER_SORT, sort.getOrderBy().stream().map(order ->
+                    AnnotationValue.builder("order") // ?? Should we add a new annotation
+                        .value(order.getProperty())
+                        .member("direction", order.getDirection())
+                        .member("ignoreCase", order.isIgnoreCase())
+                        .build())
+                    .toArray(AnnotationValue[]::new)
+                );
             }
         }
 
@@ -704,7 +738,9 @@ public class RepositoryTypeElementVisitor implements TypeElementVisitor<Reposito
     }
 
     @Nullable
-    private SourcePersistentEntity resolvePersistentEntity(MethodElement element, Map<String, Element> parametersInRole) {
+    private SourcePersistentEntity resolvePersistentEntity(MethodElement element,
+                                                           Map<String, Element> parametersInRole,
+                                                           List<ParameterElement> parametersNotInRole) {
         ClassElement returnType = element.getGenericReturnType();
         SourcePersistentEntity entity = resolveEntityForCurrentClass();
         if (entity == null) {
@@ -722,9 +758,38 @@ public class RepositoryTypeElementVisitor implements TypeElementVisitor<Reposito
                 }
             }
             return entity;
-        } else {
-            throw new MatchFailedException("Could not resolved root entity. Either implement the Repository interface or define the entity as part of the signature", element);
         }
+        SourcePersistentEntity sourcePersistentEntity = resolvePersistentEntityFromLifecycleMethods(element, parametersNotInRole);
+        if (sourcePersistentEntity != null) {
+            return sourcePersistentEntity;
+        }
+        if (element.hasStereotype(Query.class)) {
+            return null;
+        }
+        ClassElement owningType = element.getOwningType();
+        for (MethodElement method : owningType.getMethods()) {
+            return resolvePersistentEntityFromLifecycleMethods(method, getParametersNotInRole(method.getParameters()));
+        }
+        throw new MatchFailedException("Could not resolved root entity. Either implement the Repository interface or define the entity as part of the signature", element);
+    }
+
+    @Nullable
+    private SourcePersistentEntity resolvePersistentEntityFromLifecycleMethods(MethodElement element,
+                                                                               List<ParameterElement> parametersNotInRole) {
+        if (element.hasStereotype(Insert.class) || element.hasStereotype(Update.class) || element.hasStereotype(Delete.class)) {
+            if (!parametersNotInRole.isEmpty()) {
+                ClassElement type = parametersNotInRole.iterator().next().getGenericType();
+                if (type.isArray()) {
+                    type = type.fromArray();
+                } else if (type.isAssignable(Iterable.class)) {
+                    type = type.getTypeArguments(Iterable.class).entrySet().iterator().next().getValue();
+                }
+                if (type.hasStereotype(MappedEntity.class)) {
+                    return entityResolver.apply(type);
+                }
+            }
+        }
+        return null;
     }
 
     @Nullable

@@ -24,6 +24,7 @@ import io.micronaut.data.annotation.TypeRole;
 import io.micronaut.data.exceptions.DataAccessException;
 import io.micronaut.data.model.CursoredPageable;
 import io.micronaut.data.model.DataType;
+import io.micronaut.data.model.Limit;
 import io.micronaut.data.model.Pageable;
 import io.micronaut.data.model.Pageable.Cursor;
 import io.micronaut.data.model.Pageable.Mode;
@@ -159,11 +160,10 @@ public class DefaultSqlPreparedQuery<E, R> extends DefaultBindableParametersPrep
                 } else if (TypeRole.SORT.equals(parameter.getRole())) {
                     Sort sort = getSortParameter(parameter);
                     appendSort(sort, q, sqlStoredQuery.getQueryBuilder(), parameter.getTableAlias());
-                    int limit = sqlStoredQuery.getLimit();
-                    int offset = sqlStoredQuery.getOffset();
-                    if (limit != -1 || offset > 0) {
+                    Limit limit = sqlStoredQuery.getQueryLimit();
+                    if (limit.isPresent()) {
                         // Limit defined by the method name
-                        q.append(queryBuilder.buildLimitAndOffset(limit, offset));
+                        q.append(queryBuilder.buildLimitAndOffset(limit.maxResults(), limit.offset()));
                     }
                 }
                 q.append(sqlStoredQuery.getExpandableQueryParts()[queryParamIndex++]);

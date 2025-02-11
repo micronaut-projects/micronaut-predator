@@ -1,6 +1,5 @@
-package x;
+package io.micronaut.data.jakarta.tck;
 
-import ee.jakarta.tck.data.standalone.persistence.PersistenceEntityTests;
 import org.junit.platform.suite.api.IncludeClassNamePatterns;
 import org.junit.platform.suite.api.SelectMethod;
 import org.junit.platform.suite.api.SelectPackages;
@@ -15,10 +14,14 @@ public class TestSuite {
     }
 
     @Suite
-//    @SelectPackages("ee.jakarta.tck.data")
-//    @IncludeClassNamePatterns("ee.jakarta.tck.data.standalone.persistence.*")
-    @SelectMethod(type = PersistenceEntityTests.class, name = "testMultipleInsertUpdateDelete")
+    @SelectPackages("ee.jakarta.tck.data")
+    @IncludeClassNamePatterns("ee.jakarta.tck.data.standalone.persistence.*")
     public static class PersistenceTests {
+    }
+
+    @Suite
+    @SelectMethod(type = ee.jakarta.tck.data.standalone.entity.EntityTests.class, name = "testFindFirst3")
+    public static class SpecificTest {
     }
 
 }
