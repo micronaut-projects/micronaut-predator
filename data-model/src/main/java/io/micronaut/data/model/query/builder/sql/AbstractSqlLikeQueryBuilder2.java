@@ -193,7 +193,7 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
     public QueryResult buildSelect(AnnotationMetadata annotationMetadata, SelectQueryDefinition definition) {
         QueryBuilder queryBuilder = new QueryBuilder();
         boolean appendOrder = !parameterInRoleModifiesOrder(definition.parametersInRole());
-        boolean appendLimit = !parameterInRoleModifiesOrder(definition.parametersInRole());
+        boolean appendLimit = !parameterInRoleModifiesLimit(definition.parametersInRole());
         QueryState queryState = buildQuery(annotationMetadata, definition, queryBuilder, appendLimit, appendOrder, null);
 
         return QueryResult.of(
@@ -783,12 +783,16 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
                     }
                     queryString.append(propertyPath.getPath()).append('=');
                 }
-                if (entry.getValue() instanceof BindingParameter bindingParameter) {
+                Object value = entry.getValue();
+                if (value instanceof BindingParameter bindingParameter) {
                     appendUpdateSetParameter(queryString, tableAlias, prop, () -> {
                         queryState.pushParameter(bindingParameter, newBindingContext(propertyPath.propertyPath));
                     });
+                } else if (value instanceof IExpression<?> expression) {
+                    new ExpressionAppender(queryState, annotationMetadata)
+                        .appendExpression(expression, new DefaultPersistentPropertyPath<>(propertyPath.propertyPath, null));
                 } else {
-                    queryString.append(asLiteral(entry.getValue()));
+                    queryString.append(asLiteral(value));
                 }
                 if (jsonViewColumnName == null) {
                     queryString.append(COMMA);
@@ -831,7 +835,13 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
                         queryString.append(tableAlias).append(DOT);
                     }
                     queryString.append(propertyPath.getColumnName()).append('=');
-                    queryString.append(asLiteral(entry.getValue()));
+                    Object value = entry.getValue();
+                    if (value instanceof IExpression<?> expression) {
+                        new ExpressionAppender(queryState, annotationMetadata)
+                            .appendExpression(expression, new DefaultPersistentPropertyPath<>(propertyPath.propertyPath, null));
+                    } else {
+                        queryString.append(asLiteral(value));
+                    }
                     queryString.append(COMMA);
                     needsTrimming[0] = true;
                 }
@@ -1598,7 +1608,7 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
                     if (rootAlias == null) {
                         ownerAlias = AbstractSqlLikeQueryBuilder2.this.getAliasName(owner);
                     } else {
-                    ownerAlias = rootAlias;
+                        ownerAlias = rootAlias;
                     }
                 } else {
                     ownerAlias = AbstractSqlLikeQueryBuilder2.this.getAliasName(owner);
@@ -1907,20 +1917,11 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
     /**
      * The predicate visitor to construct the query.
      */
-    protected class SqlPredicateVisitor implements AdvancedPredicateVisitor<PersistentPropertyPath> {
+    protected class SqlPredicateVisitor extends ExpressionAppender implements AdvancedPredicateVisitor<PersistentPropertyPath> {
 
-        protected final PersistentEntity persistentEntity;
-        protected final String tableAlias;
-        protected final StringBuilder query;
-        protected final QueryState queryState;
-        protected final AnnotationMetadata annotationMetadata;
 
         protected SqlPredicateVisitor(QueryState queryState, AnnotationMetadata annotationMetadata) {
-            this.queryState = queryState;
-            this.annotationMetadata = annotationMetadata;
-            persistentEntity = queryState.getEntity();
-            tableAlias = queryState.getRootAlias();
-            query = queryState.getQuery();
+            super(queryState, annotationMetadata);
         }
 
         @Override
@@ -2072,10 +2073,11 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
                 PersistentProperty property = propertyPath.getProperty();
                 if (computePropertyPaths() && property instanceof Association) {
                     List<IPredicate> predicates = new ArrayList<>();
+                    Expression<?> finalRightExpression = rightExpression;
                     PersistentEntityUtils.traverse(propertyPath, pp ->
                         predicates.add(new BinaryPredicate(
                             new DefaultPersistentPropertyPath<>(pp, null),
-                            rightExpression,
+                            finalRightExpression,
                             ignoreCase ? PredicateBinaryOp.EQUALS_IGNORE_CASE : PredicateBinaryOp.EQUALS
                         ))
                     );
@@ -2085,6 +2087,23 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
                         visit(new ConjunctionPredicate(predicates));
                     }
                     return;
+                }
+                if (property.isEnum() && rightExpression instanceof LiteralExpression<?> literalExpression
+                    && literalExpression.getValue() instanceof String stringValue) {
+                    String typeName = property.getTypeName().replace("$", ".");
+                    if (stringValue.startsWith(typeName)) {
+                        for (PersistentProperty.EnumConstant enumConstant : property.getEnumConstants()) {
+                            if (stringValue.equals(typeName + "." + enumConstant.name())) {
+                                if (property.getDataType() == DataType.STRING) {
+                                    rightExpression = new LiteralExpression<Object>(enumConstant.name());
+                                }
+                                if (property.getDataType() == DataType.INTEGER) {
+                                    rightExpression = new LiteralExpression<Object>(enumConstant.ordinal());
+                                }
+                                break;
+                            }
+                        }
+                    }
                 }
             }
             if (ignoreCase) {
@@ -2215,166 +2234,6 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
             }
         }
 
-        protected final void appendPropertyRef(PersistentPropertyPath propertyPath) {
-            AbstractSqlLikeQueryBuilder2.this.appendPropertyRef(annotationMetadata, query, queryState, propertyPath, false);
-        }
-
-        private void appendBinaryOperation(@NonNull String operator, @NonNull Expression<?> leftExpression, @NonNull Expression<?> rightExpression) {
-            appendExpression(leftExpression, null);
-            query.append(operator);
-            appendExpression(rightExpression, leftExpression);
-        }
-
-        private void appendExpression(Expression<?> expression) {
-            appendExpression(expression, null);
-        }
-
-        protected final void appendExpression(Expression<?> expression, @Nullable Expression<?> boundedExpression) {
-            CriteriaUtils.requireIExpression(expression).visitExpression(new ExpressionVisitor() {
-
-                @Override
-                public void visit(io.micronaut.data.model.jpa.criteria.PersistentPropertyPath<?> persistentPropertyPath) {
-                    appendPropertyRef(persistentPropertyPath.getPropertyPath());
-                }
-
-                @Override
-                public void visit(PersistentEntityRoot<?> entityRoot) {
-                    visit(new IdExpression<>(entityRoot));
-                }
-
-                @Override
-                public void visit(LiteralExpression<?> literalExpression) {
-                    query.append(asLiteral(literalExpression));
-                }
-
-                @Override
-                public void visit(UnaryExpression<?> unaryExpression) {
-                    Expression<?> expression = unaryExpression.getExpression();
-                    switch (unaryExpression.getType()) {
-                        case SUM, AVG, MAX, MIN, UPPER, LOWER ->
-                            appendFunction(unaryExpression.getType().name(), expression);
-                        default ->
-                            throw new IllegalStateException(UNSUPPORTED_EXPRESSION + unaryExpression.getType());
-                    }
-                }
-
-                @Override
-                public void visit(BinaryExpression<?> binaryExpression) {
-                    Expression<?> left = binaryExpression.getLeft();
-                    Expression<?> right = binaryExpression.getRight();
-                    switch (binaryExpression.getType()) {
-                        case SUM -> {
-                            appendExpression(left);
-                            query.append(" + ");
-                            appendExpression(right);
-                        }
-                        case CONCAT -> appendFunction("CONCAT", List.of(left, right));
-                        default ->
-                            throw new IllegalStateException(UNSUPPORTED_EXPRESSION + binaryExpression.getType());
-                    }
-                }
-
-                @Override
-                public void visit(IdExpression<?, ?> idExpression) {
-                    PersistentEntity persistentEntity = idExpression.getRoot().getPersistentEntity();
-                    if (persistentEntity.hasCompositeIdentity()) {
-                        throw new IllegalStateException("ID expression with composite IDs not allowed");
-                    }
-                    if (persistentEntity.getIdentityProperties().size() > 1) {
-                        throw new IllegalStateException("ID expression with multiple IDs not allowed");
-                    }
-                    PersistentProperty identity = persistentEntity.getIdentity();
-                    appendPropertyRef(new PersistentPropertyPath(identity));
-                }
-
-                @Override
-                public void visit(FunctionExpression<?> functionExpression) {
-                    appendFunction(functionExpression.getName(), functionExpression.getExpressions());
-                }
-
-                @Override
-                public void visit(IParameterExpression<?> parameterExpression) {
-                    appendBindingParameter(parameterExpression, findParameterBoundProperty(boundedExpression));
-                }
-
-                @Override
-                public void visit(SubqueryExpression<?> subqueryExpression) {
-                    query.append(subqueryExpression.getType().name());
-                    visit(subqueryExpression.getSubquery());
-                }
-
-                @Override
-                public void visit(PersistentEntitySubquery<?> subquery) {
-                    AbstractPersistentEntityQuery<?, ?> abstractPersistentEntityQuery = (AbstractPersistentEntityQuery<?, ?>) subquery;
-                    SelectQueryDefinition selectQueryDefinition = abstractPersistentEntityQuery.toSelectQueryDefinition();
-                    String outerAlias = queryState.getRootAlias();
-                    if (outerAlias == null) {
-                        outerAlias = getAliasName(queryState.getEntity());
-                    }
-                    boolean requiresBrackets = query.charAt(query.length() - 1) != '(';
-                    if (requiresBrackets) {
-                        query.append("(");
-                    }
-                    buildQuery(AnnotationMetadata.EMPTY_METADATA, selectQueryDefinition, queryState.queryBuilder, false, true, outerAlias);
-                    if (requiresBrackets) {
-                        query.append(")");
-                    }
-                }
-            });
-        }
-
-        private PersistentPropertyPath findParameterBoundProperty(Expression<?> binaryOpExpression) {
-            // We want to find the property bound to the parameter
-            if (binaryOpExpression == null) {
-                return null;
-            }
-            if (binaryOpExpression instanceof UnaryExpression<?> unaryExpression) {
-                return findParameterBoundProperty(unaryExpression.getExpression());
-            }
-            if (binaryOpExpression instanceof io.micronaut.data.model.jpa.criteria.PersistentPropertyPath<?> persistentPropertyPath) {
-                return persistentPropertyPath.getPropertyPath();
-            }
-            return null;
-        }
-
-        private void appendFunction(String functionName, Expression<?> expression) {
-            appendFunction(functionName, List.of(expression));
-        }
-
-        private void appendFunction(String functionName, List<Expression<?>> expressions) {
-            query.append(functionName)
-                .append(OPEN_BRACKET);
-            for (Iterator<Expression<?>> iterator = expressions.iterator(); iterator.hasNext(); ) {
-                Expression<?> expression = iterator.next();
-                appendExpression(expression);
-                if (iterator.hasNext()) {
-                    query.append(COMMA);
-                }
-            }
-            query.append(CLOSE_BRACKET);
-        }
-
-        private void appendBindingParameter(BindingParameter bindingParameter,
-                                            @Nullable PersistentPropertyPath entityPropertyPath) {
-            Runnable pushParameter = () -> {
-                queryState.pushParameter(
-                    bindingParameter,
-                    newBindingContext(null, entityPropertyPath)
-                );
-            };
-            if (entityPropertyPath == null) {
-                pushParameter.run();
-            } else {
-                QueryPropertyPath qpp = queryState.findProperty(entityPropertyPath);
-                String writeTransformer = getDataTransformerWriteValue(qpp.tableAlias, entityPropertyPath.getProperty()).orElse(null);
-                if (writeTransformer != null) {
-                    appendTransformed(query, writeTransformer, pushParameter);
-                } else {
-                    pushParameter.run();
-                }
-            }
-        }
-
         private void appendCaseInsensitiveOp(Expression<?> leftExpression, Expression<?> expression, String operator) {
             query.append("LOWER(");
             appendExpression(leftExpression);
@@ -2490,6 +2349,212 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
 
     }
 
+    protected class ExpressionAppender implements ExpressionVisitor {
+
+        protected final PersistentEntity persistentEntity;
+        protected final String tableAlias;
+        protected final StringBuilder query;
+        protected final QueryState queryState;
+        protected final AnnotationMetadata annotationMetadata;
+
+        protected ExpressionAppender(QueryState queryState, AnnotationMetadata annotationMetadata) {
+            this.queryState = queryState;
+            this.annotationMetadata = annotationMetadata;
+            persistentEntity = queryState.getEntity();
+            tableAlias = queryState.getRootAlias();
+            query = queryState.getQuery();
+        }
+
+        public PersistentPropertyPath getRequiredProperty(io.micronaut.data.model.jpa.criteria.PersistentPropertyPath<?> persistentPropertyPath) {
+            return persistentPropertyPath.getPropertyPath();
+        }
+
+        protected final void appendPropertyRef(PersistentPropertyPath propertyPath) {
+            AbstractSqlLikeQueryBuilder2.this.appendPropertyRef(annotationMetadata, query, queryState, propertyPath, false);
+        }
+
+        protected void appendBinaryOperation(@NonNull String operator, @NonNull Expression<?> leftExpression, @NonNull Expression<?> rightExpression) {
+            appendExpression(leftExpression, null);
+            query.append(operator);
+            appendExpression(rightExpression, leftExpression);
+        }
+
+        protected void appendExpression(Expression<?> expression) {
+            appendExpression(expression, null);
+        }
+
+        protected final void appendExpression(Expression<?> expression, @Nullable Expression<?> boundedExpression) {
+            this.boundedExpression = boundedExpression;
+            CriteriaUtils.requireIExpression(expression).visitExpression(this);
+            this.boundedExpression = null;
+        }
+
+        protected PersistentPropertyPath findParameterBoundProperty(Expression<?> binaryOpExpression) {
+            // We want to find the property bound to the parameter
+            if (binaryOpExpression == null) {
+                return null;
+            }
+            if (binaryOpExpression instanceof UnaryExpression<?> unaryExpression) {
+                return findParameterBoundProperty(unaryExpression.getExpression());
+            }
+            if (binaryOpExpression instanceof io.micronaut.data.model.jpa.criteria.PersistentPropertyPath<?> persistentPropertyPath) {
+                return persistentPropertyPath.getPropertyPath();
+            }
+            return null;
+        }
+
+        protected void appendFunction(String functionName, Expression<?> expression) {
+            appendFunction(functionName, List.of(expression));
+        }
+
+        protected void appendFunction(String functionName, List<Expression<?>> expressions) {
+            query.append(functionName)
+                .append(OPEN_BRACKET);
+            for (Iterator<Expression<?>> iterator = expressions.iterator(); iterator.hasNext(); ) {
+                Expression<?> expression = iterator.next();
+                appendExpression(expression);
+                if (iterator.hasNext()) {
+                    query.append(COMMA);
+                }
+            }
+            query.append(CLOSE_BRACKET);
+        }
+
+        protected void appendBindingParameter(BindingParameter bindingParameter,
+                                            @Nullable PersistentPropertyPath entityPropertyPath) {
+            Runnable pushParameter = () -> {
+                queryState.pushParameter(
+                    bindingParameter,
+                    newBindingContext(null, entityPropertyPath)
+                );
+            };
+            if (entityPropertyPath == null) {
+                pushParameter.run();
+            } else {
+                QueryPropertyPath qpp = queryState.findProperty(entityPropertyPath);
+                String writeTransformer = getDataTransformerWriteValue(qpp.tableAlias, entityPropertyPath.getProperty()).orElse(null);
+                if (writeTransformer != null) {
+                    appendTransformed(query, writeTransformer, pushParameter);
+                } else {
+                    pushParameter.run();
+                }
+            }
+        }
+
+        private @Nullable Expression<?> boundedExpression;
+
+        @Override
+        public void visit(io.micronaut.data.model.jpa.criteria.PersistentPropertyPath<?> persistentPropertyPath) {
+            appendPropertyRef(persistentPropertyPath.getPropertyPath());
+        }
+
+        @Override
+        public void visit(PersistentEntityRoot<?> entityRoot) {
+            visit(new IdExpression<>(entityRoot));
+        }
+
+        @Override
+        public void visit(LiteralExpression<?> literalExpression) {
+            query.append(asLiteral(literalExpression));
+        }
+
+        @Override
+        public void visit(UnaryExpression<?> unaryExpression) {
+            Expression<?> expression = unaryExpression.getExpression();
+            switch (unaryExpression.getType()) {
+                case LENGTH -> {
+                    if (getDialect() == Dialect.SQL_SERVER) {
+                        appendFunction("LEN", expression);
+                    } else {
+                        appendFunction("LENGTH", expression);
+                    }
+                }
+                case SUM, AVG, MAX, MIN, UPPER, LOWER ->
+                    appendFunction(unaryExpression.getType().name(), expression);
+                default ->
+                    throw new IllegalStateException(UNSUPPORTED_EXPRESSION + unaryExpression.getType());
+            }
+        }
+
+        @Override
+        public void visit(BinaryExpression<?> binaryExpression) {
+            Expression<?> left = binaryExpression.getLeft();
+            Expression<?> right = binaryExpression.getRight();
+            switch (binaryExpression.getType()) {
+                case SUM -> {
+                    appendExpression(left);
+                    query.append(" + ");
+                    appendExpression(right);
+                }
+                case DIFF -> {
+                    appendExpression(left);
+                    query.append(" - ");
+                    appendExpression(right);
+                }
+                case QUOT -> {
+                    appendExpression(left);
+                    query.append(" / ");
+                    appendExpression(right);
+                }
+                case PROD -> {
+                    appendExpression(left);
+                    query.append(" * ");
+                    appendExpression(right);
+                }
+                case CONCAT -> appendFunction("CONCAT", List.of(left, right));
+                default ->
+                    throw new IllegalStateException(UNSUPPORTED_EXPRESSION + binaryExpression.getType());
+            }
+        }
+
+        @Override
+        public void visit(IdExpression<?, ?> idExpression) {
+            PersistentEntity persistentEntity = idExpression.getRoot().getPersistentEntity();
+            if (persistentEntity.hasCompositeIdentity()) {
+                throw new IllegalStateException("ID expression with composite IDs not allowed");
+            }
+            if (persistentEntity.getIdentityProperties().size() > 1) {
+                throw new IllegalStateException("ID expression with multiple IDs not allowed");
+            }
+            PersistentProperty identity = persistentEntity.getIdentity();
+            appendPropertyRef(new PersistentPropertyPath(identity));
+        }
+
+        @Override
+        public void visit(FunctionExpression<?> functionExpression) {
+            appendFunction(functionExpression.getName(), functionExpression.getExpressions());
+        }
+
+        @Override
+        public void visit(IParameterExpression<?> parameterExpression) {
+            appendBindingParameter(parameterExpression, findParameterBoundProperty(boundedExpression));
+        }
+
+        @Override
+        public void visit(SubqueryExpression<?> subqueryExpression) {
+            query.append(subqueryExpression.getType().name());
+            visit(subqueryExpression.getSubquery());
+        }
+
+        @Override
+        public void visit(PersistentEntitySubquery<?> subquery) {
+            AbstractPersistentEntityQuery<?, ?> abstractPersistentEntityQuery = (AbstractPersistentEntityQuery<?, ?>) subquery;
+            SelectQueryDefinition selectQueryDefinition = abstractPersistentEntityQuery.toSelectQueryDefinition();
+            String outerAlias = queryState.getRootAlias();
+            if (outerAlias == null) {
+                outerAlias = getAliasName(queryState.getEntity());
+            }
+            boolean requiresBrackets = query.charAt(query.length() - 1) != '(';
+            if (requiresBrackets) {
+                query.append("(");
+            }
+            buildQuery(AnnotationMetadata.EMPTY_METADATA, selectQueryDefinition, queryState.queryBuilder, false, true, outerAlias);
+            if (requiresBrackets) {
+                query.append(")");
+            }
+        }
+    }
+
     /**
      * The selection visitor to construct the query.
      */
@@ -2591,6 +2656,13 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
         public void visit(UnaryExpression<?> unaryExpression) {
             Expression<?> expression = unaryExpression.getExpression();
             switch (unaryExpression.getType()) {
+                case LENGTH -> {
+                    if (getDialect() == Dialect.SQL_SERVER) {
+                        appendFunction("LEN", expression);
+                    } else {
+                        appendFunction("LENGTH", expression);
+                    }
+                }
                 case SUM, AVG, MAX, MIN, UPPER, LOWER ->
                     appendFunction(unaryExpression.getType().name(), expression);
                 case COUNT -> {
@@ -2625,6 +2697,21 @@ public abstract class AbstractSqlLikeQueryBuilder2 implements QueryBuilder2 {
                 case SUM -> {
                     appendExpression(left);
                     query.append(" + ");
+                    appendExpression(right);
+                }
+                case DIFF -> {
+                    appendExpression(left);
+                    query.append(" - ");
+                    appendExpression(right);
+                }
+                case QUOT -> {
+                    appendExpression(left);
+                    query.append(" / ");
+                    appendExpression(right);
+                }
+                case PROD -> {
+                    appendExpression(left);
+                    query.append(" * ");
                     appendExpression(right);
                 }
                 case CONCAT -> appendFunction("CONCAT", List.of(left, right));

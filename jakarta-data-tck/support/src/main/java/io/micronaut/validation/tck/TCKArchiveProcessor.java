@@ -15,39 +15,23 @@
  */
 package io.micronaut.validation.tck;
 
-import ee.jakarta.tck.data.framework.junit.anno.Platform;
-import ee.jakarta.tck.data.framework.junit.anno.ReadOnlyTest;
-import ee.jakarta.tck.data.framework.junit.anno.Signature;
-import ee.jakarta.tck.data.framework.junit.anno.Web;
-import ee.jakarta.tck.data.framework.read.only.Populator;
-import ee.jakarta.tck.data.framework.servlet.TestServlet;
-import ee.jakarta.tck.data.framework.signature.DataSignatureTestRunner;
+import ee.jakarta.tck.data.standalone.entity.Coordinate;
 import ee.jakarta.tck.data.standalone.entity.EntityTests;
 import ee.jakarta.tck.data.standalone.entity.MultipleEntityRepo;
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
 import org.jboss.arquillian.test.spi.TestClass;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.container.ClassContainer;
-import org.jboss.shrinkwrap.api.container.LibraryContainer;
-import org.jboss.shrinkwrap.api.container.ResourceContainer;
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.logging.Logger;
 
 
 public class TCKArchiveProcessor implements ApplicationArchiveProcessor {
-    private static final Logger log = Logger.getLogger(TCKArchiveProcessor.class.getCanonicalName());
-
-    private static final Package servletPackage = TestServlet.class.getPackage();
-    private static final Package readOnlyPackage = Populator.class.getPackage();
 
     @Override
     public void process(Archive<?> applicationArchive, TestClass testClass) {
         if (applicationArchive instanceof ClassContainer) {
-            if(testClass.getName().equals(EntityTests.class.getName())) {
+            if (testClass.getName().equals(EntityTests.class.getName())) {
                 ((ClassContainer<?>) applicationArchive).addClass(MultipleEntityRepo.class);
+                ((ClassContainer<?>) applicationArchive).addClass(Coordinate.class);
             }
         }
     }

@@ -43,7 +43,7 @@ public class MethodMatchContext extends MatchContext {
     private final SourcePersistentEntity entity;
     private final Map<String, Element> parametersInRole;
     private final Function<ClassElement, SourcePersistentEntity> entityResolver;
-
+    private final Function<String, SourcePersistentEntity> entityBySimplyNameResolver;
     /**
      * Creates the context.
      * @param queryBuilder The query builder
@@ -69,11 +69,17 @@ public class MethodMatchContext extends MatchContext {
             @NonNull Map<String, String> typeRoles,
             @NonNull ParameterElement[] parameters,
             @NonNull Function<ClassElement, SourcePersistentEntity> entityResolver,
-            @NonNull Map<ClassElement, FindInterceptorDef> findInterceptors) {
+            @NonNull Map<ClassElement, FindInterceptorDef> findInterceptors,
+            @NonNull Function<String, SourcePersistentEntity> entityBySimplyNameResolver) {
         super(queryBuilder, repositoryClass, visitorContext, methodElement, typeRoles, returnType, parameters, findInterceptors);
         this.entity = entity;
         this.parametersInRole = Collections.unmodifiableMap(parametersInRole);
         this.entityResolver = entityResolver;
+        this.entityBySimplyNameResolver = entityBySimplyNameResolver;
+    }
+
+    public Function<String, SourcePersistentEntity> getEntityBySimplyNameResolver() {
+        return entityBySimplyNameResolver;
     }
 
     /**

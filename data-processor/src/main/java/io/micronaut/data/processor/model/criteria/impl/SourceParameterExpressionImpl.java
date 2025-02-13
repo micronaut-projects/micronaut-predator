@@ -317,12 +317,14 @@ public final class SourceParameterExpressionImpl extends IParameterExpression<Ob
         return !dataType.isArray() && (parameterElement != null && parameterElement.getType().isAssignable(Iterable.class.getName()));
     }
 
-    private String[] getBindingPath(PersistentPropertyPath parameterProperty, PersistentPropertyPath bindedPath) {
-        if (parameterProperty == null) {
-            return bindedPath.getArrayPath();
+    private String[] getBindingPath(
+        PersistentPropertyPath incomingMethodParameterPropertyPath,
+        PersistentPropertyPath outgoingQueryParameterPropertyPath) {
+        if (incomingMethodParameterPropertyPath == null) {
+            return null;
         }
-        List<String> parameterPath = List.of(parameterProperty.getArrayPath());
-        List<String> path = List.of(bindedPath.getArrayPath());
+        List<String> parameterPath = List.of(incomingMethodParameterPropertyPath.getArrayPath());
+        List<String> path = List.of(outgoingQueryParameterPropertyPath.getArrayPath());
         if (path.equals(parameterPath)) {
             return null;
         }

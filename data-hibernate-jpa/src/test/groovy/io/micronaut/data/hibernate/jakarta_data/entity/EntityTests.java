@@ -16,6 +16,7 @@
 package io.micronaut.data.hibernate.jakarta_data.entity;
 
 import io.micronaut.context.annotation.Property;
+import io.micronaut.data.hibernate.H2DBProperties;
 import io.micronaut.data.hibernate.jakarta_data.read.only.AsciiCharacter;
 import io.micronaut.data.hibernate.jakarta_data.read.only.AsciiCharacters;
 import io.micronaut.data.hibernate.jakarta_data.read.only.AsciiCharactersPopulator;
@@ -65,9 +66,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * can run against a provider that supports any Entity type.
  */
 @Property(name = "jpa.default.properties.hibernate.show_sql", value = "true")
-@Property(name = "datasources.default.name", value = "mydb")
-@Property(name = "datasources.default.db-type", value = "postgres")
-@Property(name = "jpa.default.properties.hibernate.hbm2ddl.auto", value = "create-drop")
+@H2DBProperties
 @MicronautTest(transactional = false)
 public class EntityTests {
 

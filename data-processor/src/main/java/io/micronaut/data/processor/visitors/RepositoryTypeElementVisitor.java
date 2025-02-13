@@ -120,6 +120,7 @@ public class RepositoryTypeElementVisitor implements TypeElementVisitor<Reposito
     private Map<String, DataType> dataTypes = Collections.emptyMap();
     private final Map<String, SourcePersistentEntity> entityMap = new HashMap<>(50);
     private Function<ClassElement, SourcePersistentEntity> entityResolver;
+    private Function<String, SourcePersistentEntity> entityBySimplyNameResolver;
 
     {
         List<MethodMatcher> matcherList = new ArrayList<>(20);
@@ -207,6 +208,17 @@ public class RepositoryTypeElementVisitor implements TypeElementVisitor<Reposito
                     }
                     return new SourcePersistentEntity(classElement, this);
                 });
+            }
+        };
+        entityBySimplyNameResolver = new Function<>() {
+            @Override
+            public SourcePersistentEntity apply(String entitySimpleName) {
+                for (SourcePersistentEntity persistentEntity : entityMap.values()) {
+                    if (persistentEntity.getSimpleName().equals(entitySimpleName)) {
+                        return persistentEntity;
+                    }
+                }
+                return null;
             }
         };
 
@@ -298,7 +310,8 @@ public class RepositoryTypeElementVisitor implements TypeElementVisitor<Reposito
                     typeRoles,
                     parameters,
                     entityResolver,
-                    findInterceptors
+                    findInterceptors,
+                    entityBySimplyNameResolver
                 );
 
                 for (MethodMatcher finder : methodsMatchers) {
@@ -326,6 +339,7 @@ public class RepositoryTypeElementVisitor implements TypeElementVisitor<Reposito
                 context.fail(matchContext.getUnableToImplementMessage() + e.getMessage(), e.getElement() == null ? element : e.getElement());
                 this.failing = true;
             } catch (Exception e) {
+                e.printStackTrace();
                 matchContext.fail(e.getMessage());
                 this.failing = true;
             }

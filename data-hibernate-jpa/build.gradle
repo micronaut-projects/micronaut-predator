@@ -30,7 +30,9 @@ dependencies {
     testImplementation mnValidation.micronaut.validation.processor
 
     testImplementation mn.micronaut.inject.groovy
-    testImplementation projects.micronautDataProcessor
+    testImplementation (projects.micronautDataProcessor) {
+        exclude group: 'org.antlr'
+    }
     testImplementation mnRxjava2.micronaut.rxjava2
     testImplementation mnReactor.micronaut.reactor
     testImplementation projects.micronautDataTck

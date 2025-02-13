@@ -45,12 +45,9 @@ import static io.micronaut.data.model.jpa.criteria.impl.CriteriaUtils.notSupport
 public final class SourcePersistentEntityCriteriaBuilderImpl extends AbstractCriteriaBuilder implements SourcePersistentEntityCriteriaBuilder {
 
     private final Function<ClassElement, SourcePersistentEntity> entityResolver;
-    private final CriteriaBuilder criteriaBuilder;
 
-    public SourcePersistentEntityCriteriaBuilderImpl(Function<ClassElement, SourcePersistentEntity> entityResolver,
-                                                     CriteriaBuilder criteriaBuilder) {
+    public SourcePersistentEntityCriteriaBuilderImpl(Function<ClassElement, SourcePersistentEntity> entityResolver) {
         this.entityResolver = entityResolver;
-        this.criteriaBuilder = criteriaBuilder;
     }
 
     @Override
@@ -59,23 +56,23 @@ public final class SourcePersistentEntityCriteriaBuilderImpl extends AbstractCri
     }
 
     @Override
-    public <T> PersistentEntityCriteriaQuery<T> createQuery(Class<T> resultClass) {
+    public <T> SourcePersistentEntityCriteriaQuery<T> createQuery(Class<T> resultClass) {
         return new SourcePersistentEntityCriteriaQueryImpl<>(resultClass, entityResolver, this);
     }
 
     @Override
-    public PersistentEntityCriteriaQuery<Tuple> createTupleQuery() {
-        return new SourcePersistentEntityCriteriaQueryImpl<>(Tuple.class, entityResolver, criteriaBuilder);
+    public SourcePersistentEntityCriteriaQuery<Tuple> createTupleQuery() {
+        return new SourcePersistentEntityCriteriaQueryImpl<>(Tuple.class, entityResolver, this);
     }
 
     @Override
     public <T> SourcePersistentEntityCriteriaDelete<T> createCriteriaDelete(Class<T> targetEntity) {
-        return new SourcePersistentEntityCriteriaDeleteImpl<>(entityResolver, targetEntity, criteriaBuilder);
+        return new SourcePersistentEntityCriteriaDeleteImpl<>(entityResolver, targetEntity, this);
     }
 
     @Override
     public <T> SourcePersistentEntityCriteriaUpdate<T> createCriteriaUpdate(Class<T> targetEntity) {
-        return new SourcePersistentEntityCriteriaUpdateImpl<>(entityResolver, targetEntity, criteriaBuilder);
+        return new SourcePersistentEntityCriteriaUpdateImpl<>(entityResolver, targetEntity, this);
     }
 
     @Override
@@ -86,6 +83,16 @@ public final class SourcePersistentEntityCriteriaBuilderImpl extends AbstractCri
     @Override
     public <T> ParameterExpression<T> parameter(ParameterElement parameterElement, PersistentPropertyPath propertyPath) {
         throw notSupportedOperation();
+    }
+
+    @Override
+    public <T> ParameterExpression<T> parameterReferencingMethodParameter(int parameterIndex) {
+        return (ParameterExpression<T>) parameter(Object.class, "p" + parameterIndex);
+    }
+
+    @Override
+    public <T> ParameterExpression<T> parameterReferencingMethodParameter(String parameterName) {
+        return (ParameterExpression<T>) parameter(Object.class, parameterName);
     }
 
     @Override

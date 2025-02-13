@@ -16,6 +16,7 @@
 package io.micronaut.data.hibernate.jakarta_data.persistence;
 
 import io.micronaut.context.annotation.Property;
+import io.micronaut.data.hibernate.H2DBProperties;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.data.Order;
 import jakarta.data.Sort;
@@ -43,9 +44,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  * Execute tests with a Persistence specific entity with a repository that requires read and writes (AKA not read-only)
  */
 @Property(name = "jpa.default.properties.hibernate.show_sql", value = "true")
-@Property(name = "datasources.default.name", value = "mydb")
-@Property(name = "datasources.default.db-type", value = "postgres")
-@Property(name = "jpa.default.properties.hibernate.hbm2ddl.auto", value = "create-drop")
+@H2DBProperties
 @MicronautTest(transactional = false)
 public class PersistenceEntityTests {
 
@@ -249,7 +248,6 @@ public class PersistenceEntityTests {
         assertEquals(6L, catalog.deleteByProductNumLike("TEST-PROD-%"));
     }
 
-    @Disabled // TODO
     @Test
     public void testQueryWithPositionalParameters() {
         catalog.deleteByProductNumLike("TEST-PROD-%");

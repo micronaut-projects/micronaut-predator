@@ -57,6 +57,26 @@ public interface SourcePersistentEntityCriteriaBuilder extends PersistentEntityC
                                          @Nullable PersistentPropertyPath propertyPath);
 
     /**
+     * Create parameter expression from {@link ParameterElement}.
+     *
+     * @param parameterIndex The parameter index
+     * @return new parameter
+     * @since 4.12
+     */
+    @NonNull
+    <T> ParameterExpression<T> parameterReferencingMethodParameter(int parameterIndex);
+
+    /**
+     * Create parameter expression from {@link ParameterElement}.
+     *
+     * @param parameterName The parameter name
+     * @return new parameter
+     * @since 4.12
+     */
+    @NonNull
+    <T> ParameterExpression<T> parameterReferencingMethodParameter(String parameterName);
+
+    /**
      * Create parameter expression from {@link ParameterElement} that is representing an entity instance.
      *
      * @param entityParameter The entity parameter element
@@ -67,4 +87,16 @@ public interface SourcePersistentEntityCriteriaBuilder extends PersistentEntityC
     @NonNull
     <T> ParameterExpression<T> entityPropertyParameter(@NonNull ParameterElement entityParameter,
                                                        @Nullable PersistentPropertyPath propertyPath);
+
+    @Override
+    <T> SourcePersistentEntityCriteriaDelete<T> createCriteriaDelete(Class<T> targetEntity);
+
+    @Override
+    <T> SourcePersistentEntityCriteriaUpdate<T> createCriteriaUpdate(Class<T> targetEntity);
+
+    @Override
+    SourcePersistentEntityCriteriaQuery<Object> createQuery();
+
+    @Override
+    <T> SourcePersistentEntityCriteriaQuery<T> createQuery(Class<T> resultClass);
 }

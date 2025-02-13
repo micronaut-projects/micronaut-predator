@@ -15,11 +15,14 @@
  */
 package io.micronaut.data.hibernate.jakarta_data.entity;
 
+import io.micronaut.core.annotation.Introspected;
+
 import java.util.UUID;
 
 /**
  * This entity includes some field types that aren't covered elsewhere in the TCK.
  */
+@Introspected(accessKind = {Introspected.AccessKind.FIELD, Introspected.AccessKind.METHOD}, visibility = Introspected.Visibility.ANY)
 @jakarta.persistence.Entity
 public class Coordinate {
     @jakarta.persistence.Id

@@ -67,7 +67,6 @@ io.micronaut.data.processor.mappers.spring.SpringTransactionalEventListenerMappe
 io.micronaut.data.processor.mappers.spring.SpringRepositoryMapper
 io.micronaut.data.processor.mappers.jpa.jakarta.StaticMetamodelAnnotationMapper
 io.micronaut.data.processor.mappers.jakarta.data.JakartaDataRepositoryMapper
-io.micronaut.data.processor.mappers.jakarta.data.JakartaDataQueryMapper
 io.micronaut.data.processor.mappers.jakarta.data.JakartaDataParamsMapper
 io.micronaut.data.processor.mappers.jakarta.data.JakartaDataInsertMapper
 io.micronaut.data.processor.mappers.jakarta.data.JakartaDataUpdateMapper
